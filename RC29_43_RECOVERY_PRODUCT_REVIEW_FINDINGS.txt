@@ -1,0 +1,31 @@
+RC29.44 source analysis performed 2026-10-21. The current Plan-to-recovery comparison is computed at runtime from the active Plan-2026. No current Plan-2026 workbook was supplied with this revision request, so this note does not claim a live difference count.
+
+Sources checked:
+- แผนผลิต Recovery เดือน ตุลาคม 2026-2.xlsx — latest attached recovery workbook; its สรุปแผนเข้าคลัง sheet carries 20-Oct-2026 as-of date.
+- รายการสินค้าส่งขึ้นทะเบียน  Revice 2565(16-10-2026).xlsx — Sales attachment, filename revision date 16-Oct-2026.
+- 1.มาตรฐานการบรรจุ-1.xlsx — Production packaging workbook; sheet มาตรฐานการบรรจุ labels itself as 2026. Saved-file created/modified timestamp is 2026-09-27; no approval status was inferred.
+
+Recovery source checks:
+- 554 recovery sheet rows represent 472 distinct Fac No values. 49 WO keys repeat (82 rows beyond one-per-WO); therefore the software displays source rows, duplicate warnings and distinct-WO metrics separately.
+- The recovery worksheet keeps original due date, internal new-date/hold text, QTY, WIP and recovery result separately. Text such as รอแผนขาย, NCR, and รอปรับแผน is not converted to a date.
+- 9 populated rows are present in สรุปรายการตกแผน. The file contains future due dates through 2027-03-28; future demand is not automatically classified as overdue.
+- Warehouse quantity is labelled in the UI as source unit unless its unit is proven. Recovery rows are not called production-approved where no explicit approval field exists.
+
+Sales vs Production packaging comparison by exact registered product code:
+- Sales: 6,789 usable rows, 6,703 distinct codes (13 repeated code groups).
+- Production standard: 704 nonblank rows, 621 distinct codes (61 repeated code groups).
+- 569 codes overlap exactly. Across distinct Sales codes, status counts: 296 pack quantity matches; 62 mismatches; 208 with missing/undefined pack quantity; 3 matching codes require duplicate Production-record review; 6,134 have no matching Production standard.
+- Example conflicts: 1GA060B1002SAAADAB and 1GA060B1201SAAADAB are Sales 1 pcs/box vs Production 10 pcs/box. These are flagged, not auto-resolved.
+
+Business distinction:
+Sales' registered master records registered product identity/code, customer-facing description/brand, and sales pack fields. Production's standard records the shop-floor packaging recipe: pack quantity and packing-material codes/quantities. These are related but have different owners and purposes. Exact code and pack quantity comparisons surface the difference; only the responsible owner should approve a correction.
+
+Backorder interpretation:
+- Plan-2026 is the continuing source for current WO state. The Production recovery workbook is a dated record of activity and may retain commitments from several earlier months.
+- At runtime, each recovery WO is matched to the active Plan-2026 and the shared current-overdue list. The comparison shows historical Recovery due date beside current Plan due date, open balance, closure, section/location and source rows.
+- A later current Plan date is flagged for authorized-revision confirmation. The historical date stays visible and the software does not infer approval.
+- Recovery-only, closed/no-balance, not-found and missing-date results are separate. Current overdue WOs absent from the snapshot are listed separately. Repeated recovery rows remain traceable and do not inflate distinct-WO headline counts.
+- The actual comparison counts are not stated here because no active Plan-2026 workbook was supplied for this review; the software calculates them after the current Plan is loaded.
+
+How to use the revised software:
+Home → All software inputs: upload the recovery workbook under Production recovery plan, the Sales workbook under Sales registered product master, and the Production workbook under Packaging standard. They are each stored as a versioned source and retained across page changes. Then open Reports → Recovery Snapshot & Product Master Review. Uploading newer revisions changes the analysis while keeping old revisions in Source Traceability.

@@ -1,0 +1,7 @@
+V16.23 — EXCEL DATES AND TWO-LAYER A/B WORK ORDER IDENTITY
+Stop app and back up code. Extract patch into existing V16.21 or V16.22 installation, replacing matching files. Keep CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat. Restart and recreate Daily Plan once to apply corrected decoding; older calculations are invalidated by the rules-version fingerprint.
+
+Excel numeric dates are decoded as days from 1899-12-30, not Unix nanoseconds. Invalid/blank/zero values remain missing; they are not forced into 2026. Explicit DD/MM/YYYY and Thai Buddhist dates are supported. Date fields only are normalized; status/action fields remain text.
+PS019A/B-010626 resolves to PS019A-010626 and PS019B-010626. Both rows are required for paired readiness. Existing minimum-layer availability logic is retained. Closed or missing layers are distinguished in issues.
+Choose 1 October 2026 in Dashboard date for that reporting date. Actual calculation timestamp remains Bangkok runtime time; it does not replace source due dates.
+Home/Sources duplicate upload-field fix from V16.22 is included, along with WIP corrections. The old error trace references V16.21: replace that installation's hub.py with this patch rather than running the unchanged copy.

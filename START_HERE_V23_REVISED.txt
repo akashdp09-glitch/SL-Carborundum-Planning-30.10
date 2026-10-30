@@ -1,0 +1,24 @@
+V23 COMPLETE REVISED FOLDER
+Built: 2026-10-02T12:43:32+07:00
+
+1. Stop the existing factory application.
+2. Extract this complete folder to D:\ (do not extract into V21).
+3. Before replacing an existing V23 folder, preserve your CENTRAL_DATA folder
+   and SERVER_STORAGE_CONFIG.bat. Copy these into the extracted folder if they
+   hold your live data/configuration. Keep your old folder as a backup.
+4. Double-click START_SL_CARBORUNDUM_PLANNING_CENTER.bat in this folder.
+5. The page shows V16.23, build time and the actual running program folder.
+
+This is the full V23 program, not a repair installer. Home and Sources have
+separate upload folder/revision widget keys and preserve source metadata.
+Existing V23 date parsing and combined A/B work-order matching are retained.
+The launcher title is corrected from its old V16.15 label to V16.23.
+
+Source: previously delivered SL_Carborundum_Smart_Factory_Center_V16_23.zip.
+New changes: visible build stamp/path, launcher title, this guide and manifest.
+Bundled references and knowledge snapshot are retained. Current production
+uploads from your PC cannot be included unless copied from your installation.
+
+Verified: archive integrity, Python syntax across the folder, four distinct
+upload keys, source metadata getters. Full Windows/Streamlit runtime has not
+been tested here. This package is not a claim that all broader issues are fixed.

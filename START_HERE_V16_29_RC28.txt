@@ -1,0 +1,35 @@
+SUPERSEDED: This RC28 guide is retained for history. Use START_HERE_V16_29_RC29.txt for the current release.
+
+SL CARBORUNDUM PLANNING CENTER — V16.29-RC28 (HISTORICAL)
+
+QUICK START (WINDOWS APP PC)
+1. Close the old app. Keep the existing data folder; do not replace or delete it.
+2. Extract this ZIP into a new program folder on D:, for example D:\SL_Carborundum_Planning_V16.29-rc28.
+3. Double-click START_SL_CARBORUNDUM_PLANNING_CENTER.bat. This version uses local D: storage and does not require Z: or a mapped network drive.
+4. Leave the server window open. Open the Planning Center on this PC. Operators connect to the PC app over factory Wi-Fi; phones do not read/write D: directly.
+5. For phone live-camera QR scanning, use the app's HTTPS camera link and follow docs\HTTPS.md. Confirm camera scanning on the actual phone before production use.
+
+ACTIVE DATA ROOT — KEEP THIS FOLDER BETWEEN CODE UPDATES
+D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA
+
+Main database:        ...\CENTRAL_DATA\DATABASE\sl_planning.db
+Mobile audit photos:  ...\CENTRAL_DATA\PHOTOS\MOBILE_AUDITS
+QR scan images:       ...\CENTRAL_DATA\PHOTOS\QR_SCANS
+Unidentified photos:  ...\CENTRAL_DATA\PHOTOS\UNIDENTIFIED_PARTS
+Source workbooks:     ...\CENTRAL_DATA\COMPANY_DATA and ...\SOURCE_COPIES
+Daily Status:         ...\CENTRAL_DATA\DAILY_STATUS
+KPI files:            ...\CENTRAL_DATA\KPI
+Production WIP:       ...\CENTRAL_DATA\PRODUCTION_WIP
+Reports and QR files: ...\CENTRAL_DATA\REPORTS
+Backups/cache:        ...\CENTRAL_DATA\BACKUPS and ...\CACHE
+Scenarios/settings:   ...\CENTRAL_DATA\DATA
+
+HOME SHORTCUTS
+- 🚨 Backorder / Delivery Risk opens the current overdue/open order view.
+- 🧯 Risk & Backorder Recovery Plan opens the weekly recovery action plan.
+- Both are also available under Reports & Tools. Backorder has a direct button to the recovery plan.
+
+DATA SAFETY
+Before updating, stop the app and copy the complete CENTRAL_DATA folder to a dated backup. Unzip code to a new folder; never unzip over CENTRAL_DATA. Keep your previous app folder until the new version's database, audit counts, photos and report exports are checked. The package is a candidate and still needs a trial on the factory PC and a real phone camera.
+
+Details: docs\STORAGE_GUIDE.md, docs\INSTALL_AND_UPDATE.md, docs\ON_PHONE_CHECKLIST.md.

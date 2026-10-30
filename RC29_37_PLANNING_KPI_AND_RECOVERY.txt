@@ -1,0 +1,20 @@
+V16.29-rc29.37 — change note
+
+Planning KPI correction
+- Uses the owner-attached Planning KPI workbook (FM-MR-02-02, KPI-PL-01..09), not the section or delivery/warehouse Production KPI workbooks.
+- The monthly results sheet has blank numerator/denominator/result fields. These stay NOT RECORDED until a user enters verified figures and source evidence.
+- Supports selecting a date range across months, source rows for each measure, target trend graph once results exist, and a selected month for entry.
+- New measurements use a new KPI definition version. Older records are retained, but not mixed into the changed KPI definitions.
+- The reference workbook is included under knowledge/ and copied into CENTRAL_DATA/KPI on first run; later revisions are archived.
+
+Other fixes
+- Daily Status upload section opens while one or more section workbooks are missing. Missing source status explains why Problem / Action analysis is empty.
+- Capacity page falls back to an existing published or bundled capacity file when an archived revision path is missing.
+- Removed the final TV dashboard slide that omitted useful month context.
+- Added the missing Source Manager material label that could cause KeyError.
+
+Verification
+- Python syntax compilation: passed for hub.py, suite/source_manager.py, suite/capacity_page.py, suite/planning_kpi.py and apps/daily/daily_planner_app.py.
+- Automated pytest: not run; pytest is not installed in the provided environment.
+- Not verified: Windows launcher, Streamlit UI interactions, live company workbooks, mobile camera, LAN access, concurrent users.
+- This ZIP is built from the local RC29.35 source snapshot because no RC29.36 source tree was available. It does not include CENTRAL_DATA or user audit records.

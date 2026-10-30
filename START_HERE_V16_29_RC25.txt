@@ -1,0 +1,44 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-rc25 CANDIDATE
+
+START HERE
+1. Extract this program ZIP into a normal folder on the PC that will host the software. Keep it outside CENTRAL_DATA.
+2. Your PC has Python 3.14. This release's pinned libraries require 64-bit Python 3.11, 3.12 or 3.13. Install Python 3.12.15 x64 from:
+   https://www.python.org/ftp/python/3.12.15/python-3.12.15-amd64.exe
+   Keep Python 3.14 installed. Run INSTALL_REQUIREMENTS.bat once, then START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+3. The app and phone must use the same running host PC. Keep its start window open. Put phones on the same reachable factory Wi-Fi and use the displayed LAN address. Phones never open the PC's D: drive directly.
+4. Customer/user accounts are managed by the administrator. Do not copy a signed-in page URL to another person; the temporary browser login ticket is valid for up to 8 hours.
+
+DATA AND PHOTO LOCATIONS ON THE HOST PC
+All active program data now defaults to the local D: data root so it does not require Z: drive access:
+  Root:             D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA
+  Main database:    D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\DATABASE\sl_planning.db
+  Uploaded sources: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\COMPANY_DATA
+  Daily Status:     D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\DAILY_STATUS
+  KPI sources:      D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\KPI
+  WO status events: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\COMPANY_DATA\daily_status_entries.sqlite3
+  Mobile photos:    D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\MOBILE_AUDITS
+  QR scan photos:   D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\QR_SCANS
+  Reports/exports:  D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\REPORTS
+  Camera TLS files: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\TLS
+
+The app copies uploaded workbooks into COMPANY_DATA; it does not edit the original workbooks. The D: folder must exist and be writable by the Windows account that starts the app.
+
+WHERE TO FIND FUNCTIONS
+The Home page has shortcuts for Daily Plan, Daily Plan download, Daily Open / Closed, WIP — Planning vs Production, Monthly Planning KPI, and Mobile / Desktop Audit. Use “Search any function” in the left menu to find other screens. Each item also appears in the named navigation group.
+
+• Daily Plan download: Home → Download Daily Plan. Create the plan first; the button generates the Excel workbook from that calculation.
+• Daily Open / Closed: Home shortcut or Search any function. For manual per-section updates use Production → Update WO Section Status. Closing one section does not close the whole order.
+• WIP: one report page with distinct PLAN-2026 PLANNING WIP and PRODUCTION WIP measures; do not add them together.
+• KPI: Monthly Planning KPI Scorecard. Department KPI Workbook Analysis remains a separate report for the two source KPI files.
+• Desktop status: Production → Update WO Section Status or Mobile / Desktop Audit. USB scanner input works as typing; the audit form supports a photo and location.
+• Phone status/photo: open Mobile Part Audit / QR, start the phone service, then scan the connection QR or use the LAN URL. The QR label for a work order stays IP-independent.
+
+PHONE CAMERA / QR
+Live camera scanning needs the secure HTTPS camera URL on port 8443. In the phone scan page, use “Open secure camera scan.” Install the factory camera certificate once using its certificate link, then trust it in phone settings if prompted. HTTP supports typing and photo upload but may block live camera access. The phone and host must be allowed to reach each other over Wi-Fi; ask IT to permit the app ports if the company network blocks them.
+
+The hub login lasts up to 8 hours across its own tabs and the embedded Daily Planner. The mobile audit app has its own login session.
+
+VERSION STATUS
+This is a release candidate. Automated source checks passed in the cloud workspace, but live Windows startup, D: permissions, phone camera/certificate trust, factory Wi-Fi/firewall, concurrent operators and company-data reconciliation still need to be checked on the host PC and real phones before factory-wide use.
+
+LOGIN FIX: Use this RC25 package. It fixes a defect that opened the October-2026 file dialog when attempting to log in.

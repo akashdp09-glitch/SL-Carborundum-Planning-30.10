@@ -1,0 +1,7 @@
+V16.29-rc29.41 — read-only view of existing uploaded firing loads and stored kiln pattern.
+
+On the Firing page, “View existing firing loads / kiln pattern” reads the active shared Firing Plan file directly. It does not run the firing planner, allocate/repack work orders, replace the source, or change saved plans.
+
+It shows existing loads by date and kiln, quantity and WO count, and load detail. When a full firing output includes “Floor Pattern Data”, it also draws the stored TOP/FRONT pattern for the selected load and floor. An Operator Print-only workbook has schedule/WO details but generally has no physical placement coordinates; the viewer says so rather than inventing a physical pattern.
+
+Verification: focused synthetic tests cover Operator Print-only schedules and full workbooks with stored pattern rows; Python compilation passed. Real factory workbook rendering and Windows launch remain unverified.

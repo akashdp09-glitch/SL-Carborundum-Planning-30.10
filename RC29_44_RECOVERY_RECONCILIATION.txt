@@ -1,0 +1,24 @@
+V16.29-rc29.44 — Recovery and Current Plan Reconciliation
+
+Plan-2026 is the ongoing source for current work-order state. Each Production recovery workbook is a dated snapshot of recovery activity and can contain older commitments from several months.
+
+Reports → Recovery Snapshot & Product Master Review now shows a work-order bridge between those sources. It compares:
+- historical due date in the Recovery workbook;
+- Production proposed recovery date or hold text and source result;
+- current Plan-2026 due date, open quantity, whole-order closure and section/location;
+- source sheet row references for both files;
+- whether the WO is still overdue under the shared current overdue rule.
+
+The analysis distinguishes a still-overdue order from a historical Recovery order no longer overdue today. It explains if the current Plan says closed, has no positive balance, has a later due date (authorization must be checked), has no usable date, or has no matching WO. Current Plan overdue WOs absent from the dated Recovery workbook are shown separately. It does not treat a Recovery entry as Production approval, overwrite the old date, or erase historical lateness. CSV exports are available for both lists.
+
+Product registration and Production packaging comparison from RC29.43 remains available on the same page.
+
+Verification performed:
+- Python compilation passed for hub, reconciliation module and regression test.
+- Six existing backorder/floor status unit tests passed.
+- Synthetic bridge cases passed for later dates, still-overdue, closed and missing WOs.
+- Actual attached Recovery snapshot parsed: 554 rows / 472 distinct work orders. Its bridge was tested against a clearly synthetic Plan, not the live factory Plan.
+- No current Plan-2026 workbook was supplied for this change, so current reconciliation totals are calculated only when the operator loads the latest Plan in the application.
+- Windows installation, Streamlit end-to-end, real source totals, and factory use have not been verified here. Treat this as a review candidate, not an approval of the production schedule.
+
+Update note: retain the existing CENTRAL_DATA folder. The ZIP does not include or replace operational database, photos, QR records, or audits.

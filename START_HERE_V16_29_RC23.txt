@@ -1,0 +1,37 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-rc23 candidate
+
+1. Extract this ZIP into a NEW folder. Keep the prior release folder and data for rollback.
+2. Review SERVER_STORAGE_CONFIG.bat before starting. Current defaults:
+   Shared source workbooks / source copies: Z:\Planning\Planning_Python data
+   Main audit/planning database: Z:\Planning\Planning_Python data\DATABASE\sl_planning.db
+   Manual WO-section event ledger: Z:\Planning\Planning_Python data\COMPANY_DATA\daily_status_entries.sqlite3
+   Audit photos: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\MOBILE_AUDITS
+   QR scan images: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\QR_SCANS\YYYY\MM\DD
+   Reports: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\REPORTS
+   The PC that runs the software must have Z: mapped/writable and D: present/writable.
+3. Start with START_SL_CARBORUNDUM_PLANNING_CENTER.bat. Sign in using the administrator-issued account. The initial login reference is in user details.txt at the package root; keep it with the software administrator. The operator interface does not show passwords.
+4. Upload/replace workbooks once through Home → Upload / Replace Source Files. Reports read the shared active revisions.
+5. Use the left menu in this order:
+   Planning: Daily Plan, Firing/Kiln Plan, MPS, New Part Plan, Material MRP, Capacity/Recovery.
+   Production: Update WO Section Status; Mobile Part Audit / QR; Mobile Audit Register.
+   Reports: Daily Open/Closed WO Report; WIP — Planning vs Production; Daily Status Analysis;
+            Monthly Planning KPI Scorecard; Department KPI Workbook Analysis; Backorder.
+   Data & Control: source uploads, traceability and revision history.
+6. Daily Open/Closed WO Report is read-only reporting. To record a WO-section OPEN/CLOSED event,
+   open Production → Update WO Section Status, scan/type and confirm the exact WO, choose section,
+   record status/quantity, and save. The report then shows the saved event ID, timestamp, user,
+   source workbook and Plan row. A section event does not itself close the whole work order.
+7. WIP appears in one central page. PLAN-2026 PLANNING WIP means calculated open planning queues
+   (pcs and estimated net tonnes). PRODUCTION WIP means department-reported section snapshots
+   (open section records and gross reported tonnes). These are different measures; do not add them.
+8. Monthly Planning KPI Scorecard contains the 11 revised output KPIs and targets. Enter reviewed
+   numerator/denominator and a source evidence reference each month. Each save is append-only in the
+   main SQLite database and retains the previous revision. The two revised source workbooks are in
+   knowledge\kpi\; department plan-vs-actual and warehouse-delivery workbook analysis remains separate.
+9. For phones, use the Mobile Part Audit / QR workflow on the factory network. Camera scanning needs
+   browser camera permission and HTTPS; a normal phone QR app opening a website is a different test.
+
+RC23 verification: Python syntax compilation and focused SQLite persistence/migration checks passed
+in the cloud workspace. Pytest and Streamlit were unavailable for this verification; Windows, phone,
+company share, camera and concurrent operator behaviour still require an on-device factory trial.
+See REVISION_NOTES_V16_29_RC23.md.

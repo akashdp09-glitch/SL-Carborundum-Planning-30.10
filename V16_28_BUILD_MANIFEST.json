@@ -1,0 +1,19 @@
+{
+  "version": "V16.28",
+  "built_at_bangkok": "2026-10-04",
+  "baseline_name": "SL_Carborundum_Smart_Factory_Center_V16_27 (1).zip",
+  "baseline_sha256": "7aee4709e06d651b08be9aacb8aa1c30ab2f4dfe602e7c4cab222469d9c5f6f1",
+  "changes": {
+    "hub.py": "542e89bbfc38243ec27881931958bacee42773f2b2f0e0eb61c6d6a57f52593e",
+    "suite/planners.py": "0944eb73adc610eb4b7908e1594eb0cfd86a6667796f98eedb4b41b32a8d8e4e",
+    "suite/suite_page.py": "6fd6b43ed921aeef78048904e8176000fe8600fc0c9c7d1a9b38c845d5fd62cf",
+    "suite/help_f1.py": "963b063cf4bd3915a2b46fa49449002918643163403a1b4300b7cae9a6ed8f01",
+    "suite/requirements_engine.py": "35a40a4af9bb4b7c7ff1c1d6242b843820c6acc80753b5b7fa40892cd5f2d7d2",
+    "suite/requirements_page.py": "6c79e5f944f861cf0324603610672ffaf296c2fb4adc8888bfb172b039228aa5",
+    "suite/test_requirements_engine.py": "e735fba8ed4c6dd9f8170e0fd8d292841f555a367fdfb49e4ab31b738522a148",
+    "START_SL_CARBORUNDUM_PLANNING_CENTER.bat": "dd6b566f3e9f532688957d902c71b81fd7ae5a47ec89398e949fa0377ee54ca0",
+    "START_HERE_V16_28.txt": "4203f61ad06b180dd20d7d5e12af9dd41a5498f345a4206f062c1f5f8fe25fc9"
+  },
+  "tests": "9 netting/date tests + generated export smoke + Python compile",
+  "unverified": "Real Streamlit/browser/phone; whole application requirements remain partially implemented"
+}

@@ -1,0 +1,13 @@
+V16.29-rc29.47 — Recovery plan execution analysis
+
+Added to Reports & Tools > Production Backorder Recovery Plan:
+- Week and month views of distinct WOs, planned pcs, actual reported pcs, and remaining pcs.
+- Weight estimates from the same workbook Cover sheet (GW / QTY); coverage is reported, missing values remain blank.
+- Work-order-linked reconciliation: actual reported for a WO is allocated to that WO's planned rows in schedule date order, so duplicate rows do not inflate its remaining quantity and output is never credited to another WO.
+- Source row evidence, downloadable period CSV, downloadable detail CSV, and cached reading keyed by source file modification time and size.
+
+Traceability:
+Source workbook: active Recovery-Plan-LATEST.xlsx (original uploaded name/import revision shown above the section).
+Sheet: แผน Recovery. Plan date/qty: columns 168–169 (row 3 headers). Actual date/qty: columns 170–171. Weight: Cover.GW / Cover.QTY.
+Remaining is reconciled per WO as max(total scheduled plan − same-WO actual, 0), then allocated to that WO's scheduled rows in date order. Actual output for a different WO never reduces the balance. Period plan and remaining are grouped by plan date; actual production is grouped by actual date. Actual quantity is also split into the portion matched to that WO's planned recovery quantity and unmatched (surplus/no scheduled-plan quantity), so planned = matched actual + remaining reconciles. Period WO counts are distinct within each period and may overlap across periods for split plans.
+No CENTRAL_DATA, audit database, photos, live workbook sources, or operator QR files are included in this ZIP.

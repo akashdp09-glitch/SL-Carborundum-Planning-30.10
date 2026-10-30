@@ -1,0 +1,20 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-rc22 candidate
+
+1. Unzip to a NEW folder. Keep the old program folder and data for rollback.
+2. Check SERVER_STORAGE_CONFIG.bat. Default shared root is:
+   Z:\Planning\Planning_Python data
+   Database: Z:\Planning\Planning_Python data\DATABASE\sl_planning.db
+   Audit photos: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\MOBILE_AUDITS
+   QR scan images: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\PHOTOS\QR_SCANS\YYYY\MM\DD
+   Saved report files: D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA\REPORTS
+   Manual section OPEN/CLOSED events: Z:\Planning\Planning_Python data\COMPANY_DATA\daily_status_entries.sqlite3
+   Confirm Z: is mapped and writable for the Windows account that starts the app. Confirm local D: exists and is writable; the app server writes photos/reports on the PC running it. The phone does not write to its own D: drive.
+3. Start with START_SL_CARBORUNDUM_PLANNING_CENTER.bat. Use the administrator-issued account.
+   Initial account instructions are in user details.txt in this folder; keep that file with the administrator. Credentials are not shown in the operator interface.
+4. Upload source files once from Home → Upload / Replace Source Files. Daily Status supports dropping multiple section workbooks into one area. If a filename does not identify one section, select its section. KPI remains two separate sources.
+5. Daily Open / Closed page: see workbook-based open/closed evidence, or choose Scan WO · section OPEN / CLOSED. Scan/type the WO, confirm the exact WO, select section/status/quantity, then save.
+6. Mobile: open the mobile page on the factory network. Tap Scan QR with Camera. Live scanning needs camera permission and HTTPS. On HTTP, the phone camera/photo fallback is offered; capture a clear picture or type the WO. A normal phone QR app opening the website is not the in-app scan test.
+7. Generate work-order QR labels from Shop Floor Support → Generate / print WO QR labels. Work-order QR payload is SLWO:<WO> and contains no IP. The separate website connection QR may show a network address.
+8. Exact source paths and file revisions are in desktop Data & Control → Files & Traceability. Operator screens hide usernames and storage paths; the database still records who made each event.
+
+Important: this candidate has not been tested on your Windows PC, Z: share, or phone. Back up before a trial. Test camera scan, scan retry, status save, desktop/mobile record agreement, and concurrent operators on a copy first. See docs/RC22_CHANGELOG.md and docs/ON_PHONE_CHECKLIST.md.

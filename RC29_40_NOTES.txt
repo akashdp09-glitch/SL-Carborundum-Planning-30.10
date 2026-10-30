@@ -1,0 +1,5 @@
+V16.29-rc29.40 candidate — based on the attached V16.29-rc29.39 ZIP.
+
+Changes: clear Home all-source upload; remove optional folder/revision prompts while retaining automatic provenance; contextual daily-source update link; Plan-2026 open/closed fallback when Daily Status data is unavailable; dashboard backorder cards use the deduplicated WO detail totals and publish a parity check.
+
+Plan-2026 and operational data are not included. Preserve your existing CENTRAL_DATA folder before extracting/updating. This candidate passed focused Python checks only. Windows launch, real factory workbook reconciliation, live phone/camera, network and concurrent operator tests remain outstanding.

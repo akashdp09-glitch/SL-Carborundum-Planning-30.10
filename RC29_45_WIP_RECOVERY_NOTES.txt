@@ -1,0 +1,28 @@
+V16.29-rc29.45 — Production WIP and Recovery / Plan Separation
+Build basis: full V16.29-rc29.44 package, with traceable section WIP and Production Recovery reconciliation updates.
+
+DEFINITIONS
+- Production WIP is read from each section's monthly transaction workbook. Open WIP work-order count is the summary's Total WO minus Closed WO, cross-checked against open detail rows. Open WIP tonnes use the detail rows' Total GW (Kg) / 1,000. Closed work orders are not subtracted from weight; the summary's GW (Kg) is the gross weight of open WIP.
+- Plan-2026 WIP/order balance is a separate demand/production-planning measure from the active Plan-2026 workbook. It is never added to or substituted for Production's physical section WIP.
+- Recovery status is a dated Production snapshot, not the same thing as strict overdue status in Plan-2026. The app reports source status and reconciles each WO to the active Plan separately.
+- F category maps to P as owner-approved. Missing/#N/A category values are preserved as SOURCE CATEGORY MISSING; no P/PB/R category is invented.
+
+SOURCE TRACE
+Production WIP uploads: the supplied October section files named “รับจ่ายสินค้ากลุ่มงานผสม เดือนตุลาคม.xlsx”, “รับจ่ายสินค้ากลุ่มงานขึ้นรูป เดือนตุลาคม.xlsx”, “รับจ่ายสินค้ากลุ่มงานเตา เดือนตุลาคม.xlsx”, “รับจ่ายสินค้ากลุ่มงานเจียร เดือนตุลาคม.xlsx”, and “รับจ่ายสินค้ากลุ่มงาน บรรจุ เดือนตุลาคม.xlsx”. Summary is “สรุปใบสั่งผลิต” A1:E8. Detail transactions begin at row 4; standard files use WO B, status BT, category BU, weight BW. Grinding/Cutting uses status BV, category BW, weight BY. Forming header/category reference contains #N/A and is inferred using the summary formula references; its sheet title says “กลุ่มงานเตา” / “กันยายน” despite the filename saying Forming / October, so the parser reports this mismatch. Summary formula and detail-row checks are shown in the software.
+
+Recovery source: “แผนผลิต Recovery เดือน ตุลาคม 2026-2.xlsx” (20-Oct snapshot) and “แผนผลิต Recovery เดือน ตุลาคม 2026-1.xlsx” (17-Oct snapshot). The “แผน Recovery” sheet has row 3 headers and detail from row 4; WO B, original due C, proposed/hold D, quantity G, source WIP I, status FQ, note FS, reason FT. Snapshot date is read from “สรุปแผนเข้าคลัง” A1. Source WIP unit is not specified and is not compared to tonnes or pcs.
+Plan comparison source available for this analysis: “Plan 2026-2-Update-121026.xlsx” (12-Oct). The app uses whatever active Plan-2026 workbook is uploaded; the following counts are the snapshot analysis at 22-Oct-2026 from the available 12-Oct workbook, not a claim about later uploads.
+
+ATTACHMENT-BASED CHECK RESULTS (22-Oct-2026)
+Production WIP by section (open WO records, tonnes): Mixing 26 / 4.780403; Forming 86 / 16.827964; Firing & curing 183 / 26.766798; Grinding/Cutting 280 / 49.245979; Packing 238 / 24.469749. Sum: 813 section-open records and 122.090894 tonnes. These are section records, not distinct factory-wide WOs; one WO may occur at multiple sections.
+Seven open detail rows have missing source categories and weigh 0.305164 t in total. Firing summary lists R/PB totals in opposite categories compared with the detail rows; F rows are treated as P under the approved mapping. Packing and other category formula/cached totals do not fully reconcile to detail rows. The UI keeps the detail weight and flags the source discrepancy rather than overwriting it with the summary.
+
+Available Plan-2026: 3,653 WOs total; 979 open with positive balance; estimated net open balance 228.559917 t. Strict overdue as-of 22-Oct-2026: 223 WOs, 86,601 pcs, 38.007724 t. Current Plan “open” and strict overdue are different filters.
+Production recovery 20-Oct snapshot: 554 source rows / 472 distinct WOs. Distinct WO status: 152 “ตามแผน”, 318 “ตกแผน”, 2 conflicting source statuses. Of 318 behind-plan WOs, 62 have a recorded reason/note and 256 have no reason in the source. Recorded reasons include waiting KVT shaft (21), waiting customer steel plate (17), production delay (4), NCR (3), waiting pair to assemble set (3), and other one-off entries. The application does not invent reasons for blank source cells.
+Bridge to available active Plan: 146 recovery WOs remain strict overdue, plus 77 strict-overdue Plan WOs absent from the recovery snapshot = 223 current Plan overdue. 419 recovery WOs remain open in Plan, 49 Plan-closed (7 have positive residual pcs and need data review), 4 with no positive balance, and 73 open recovery WOs have no usable active Plan due date. These are source-specific 22-Oct results and will change when source workbooks are updated.
+
+WHAT TO DO IN THE APP
+Upload each current section WIP workbook into the Production WIP input; upload the latest Plan-2026 and latest Production Recovery snapshot in their source panels. The pages use the shared active copies. Use the WIP source checks and the Recovery vs Plan report to inspect each workbook/sheet/row reference. Do not replace or delete CENTRAL_DATA when updating the program.
+
+VERIFICATION LIMITS
+Focused unit tests and Python compilation passed in the available Linux cloud environment. The user’s Windows startup, live Streamlit interaction, active factory PC files, mobile phone, camera, network, printer and concurrent operator workload were not tested here. This package is a candidate for local review, not a claim of perfect or factory-validated operation. No live CENTRAL_DATA, production workbook, database, or audit-photo content is packaged.

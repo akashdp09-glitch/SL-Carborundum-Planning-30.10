@@ -1,0 +1,13 @@
+V16.27 (built 2026-10-03) = V16.26 + easier navigation / Daily Status upload
+
+WHY: "Daily Open / Closed Work Orders" had no upload box on its page. It reads Daily Status workbooks, and their uploader was hidden in a collapsed sidebar inside the embedded Daily planner.
+
+CHANGES
+1. Daily planner (apps/daily/daily_planner_app.py): the Daily Status uploader is now a visible bar at the TOP of the page - "UPLOAD DAILY STATUS FILES HERE" - one box per section plus a "Drop ALL" box. It opens automatically on the Daily Open/Closed, Daily Status, KPI and WIP pages. The empty-state message now says exactly where to upload.
+2. Hub: a blue pointer above the embedded planner on those pages; new sidebar "Quick find" box (jump to any page, incl. "Upload Daily Status files" and "Upload Plan-2026 & other source files").
+3. Planning Suite: new tab "Open / Closed (Plan-2026)" = open/closed WOs per section straight from Plan-2026 (no Daily Status needed), with list + Excel download.
+4. F1 help knows where to upload Daily Status / Plan-2026 / Stock etc.
+5. Includes V16.26 fix (Production WIP unpack error).
+
+TESTED: compile, undefined-name scan = 0, Planning Suite headless smoke test (real 2 Oct workbooks). NOT tested: Streamlit/browser rendering of the new bar and Quick-find box.
+HOW DAILY OPEN/CLOSED WORKS: sheet tab name = production date. A WO-section is CLOSED when cumulative actual >= required qty or balance <= 0.

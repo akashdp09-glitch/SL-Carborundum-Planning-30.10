@@ -1,0 +1,7 @@
+FIRST RUN: clean source-data package
+
+Company-specific dated Plan-2026 and Stock-on-Hand workbooks and example mobile tracking database are excluded so stale data is not used. On first launch, upload the current Plan-2026 and Stock-on-Hand workbook on Home → Upload/Replace Source Files. Upload separate section Daily Status workbooks together and the two different KPI files separately in Daily Planner. Source register metadata and exact central storage paths are visible from Home.
+
+Daily Status date logic: sheet tab name is the reporting date; dates inside cells are ignored for report-period assignment.
+
+See START_HERE_V16_13.txt for navigation, scanner, file paths and first-run instructions. Built-in capacity and process reference data remain bundled. The app creates its shared database and evidence folders on startup.

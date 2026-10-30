@@ -1,0 +1,5 @@
+# Test and measurement tools (not needed on the factory server).
+pytest==9.1.1
+httpx==0.28.1
+playwright==1.49.0
+xlwt==1.3.0

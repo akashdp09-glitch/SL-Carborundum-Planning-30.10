@@ -1,0 +1,17 @@
+V16.24 (built 2026-10-03) - based on V16.23 REVISED. Root folder: SL_Carborundum_Smart_Factory_Center_V16_24
+
+HOW TO UPDATE: stop the app, extract to D:\ , copy CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat from your old folder into this one, run START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+Run RUN_SELFTEST.bat after any code change (compile + undefined-name scan).
+
+CHANGES vs V16.23
+1. Fixed undefined plotly names go/px in apps/*/firing_engine_desktop_v2.py (NameError risk). Charts now degrade safely if plotly is missing.
+2. Daily Status: new box "Drop ALL section workbooks at once" - several files in one upload, section detected from filename/first sheet. Per-section boxes still work. Unrecognised files are listed as rejected (include the department name in the filename).
+3. Added RUN_SELFTEST.bat + selftest_undefined_names.py (the check that would have caught su / actualu / kpis NameErrors).
+4. Old README/START_HERE/REVISION files moved to docs_archive/ (nothing deleted).
+5. Version label V16.24 in hub.py and launcher.
+
+NOT DONE / KNOWN OPEN (honest list)
+- Runtime NOT tested: no Streamlit/FastAPI/phone camera here. Only compile + undefined-name scan were executed.
+- apps/daily and apps/firing still contain duplicate engine copies; merging needs runtime testing.
+- Quick Daily Status entry (hub.py ~line 1157) still appends to DATA/daily_status_entries.csv, separate from the central Daily Status workbook.
+- New-WO planner capacity feasibility, Plan-2026 mapping verification: need your current workbooks.

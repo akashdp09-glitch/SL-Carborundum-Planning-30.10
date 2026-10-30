@@ -1,0 +1,35 @@
+SUPERSEDED: This RC26 guide is historical. For current instructions use START_HERE_V16_29_RC28.txt.
+The RC26 Z: storage instructions below are obsolete and must not be followed.
+
+SL CARBORUNDUM PLANNING CENTER — V16.29-RC26 (HISTORICAL)
+
+QUICK START (WINDOWS PC)
+1. Extract this ZIP to a NEW folder. Keep RC25 and existing data folders until RC26 is checked.
+2. Connect the PC to company Wi-Fi and sign in to Windows with the account that has the Z: drive mapped.
+3. Double-click START_SL_CARBORUNDUM_PLANNING_CENTER.bat. If Z: is unavailable or read-only, startup stops and explains the issue. It does not save data to D: as a fallback.
+4. Leave the black server window running. Open the Planning Center on the PC. Use the displayed factory-LAN address on phones. The phone sends scans/photos to the app; the PC app writes them to Z:.
+5. For live QR camera scanning, use the app's HTTPS camera link and the certificate instructions. HTTP supports ordinary web access and photo upload; a real phone camera test is still required.
+
+RC26 DATA PATHS
+Root:             Z:\Planning\Planning_Python data
+Database:         Z:\Planning\Planning_Python data\DATABASE\sl_planning.db
+Mobile audit pics:Z:\Planning\Planning_Python data\PHOTOS\MOBILE_AUDITS
+QR scan images:   Z:\Planning\Planning_Python data\PHOTOS\QR_SCANS
+Unidentified pics:Z:\Planning\Planning_Python data\PHOTOS\UNIDENTIFIED_PARTS
+Uploaded sources: Z:\Planning\Planning_Python data\COMPANY_DATA and source-specific folders
+Daily Status:     Z:\Planning\Planning_Python data\DAILY_STATUS
+KPI workbooks:    Z:\Planning\Planning_Python data\KPI
+Production WIP:   Z:\Planning\Planning_Python data\PRODUCTION_WIP
+Source archives:  Z:\Planning\Planning_Python data\SOURCE_COPIES
+Reports/QR files: Z:\Planning\Planning_Python data\REPORTS
+Backups/cache:    Z:\Planning\Planning_Python data\BACKUPS and CACHE
+
+AUDIT PHOTO RECOVERY
+On startup, RC26 checks the old D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA folders for photo files referenced by the Z: database and copies missing photos into the new Z: photo folder. It also merges unmatched audit rows from the old D: database additively. Both old database and photo folders are left untouched. Confirm audit counts and open several historical photos before removing any old folder.
+
+RECOVERY PLAN + KPIs
+In Weekly Report, download “Weekly + Recovery Action Pack”. Its Recovery Actions sheet lists urgent open orders and leaves Sales priority/date and Production capacity/feasible finish for cross-functional confirmation. The customer due date is not changed by the software.
+The Monthly Planning KPI page retains its controlled monthly measures and adds employee-specific KPI definitions and evidence for weekly, monthly, quarterly, yearly or custom periods. KPI results require a source/evidence reference.
+
+BEFORE USING LIVE
+This candidate has not been tested on the company PC, real Z: permissions, factory Wi-Fi or a real phone camera. First run on a copy. Verify the Z: path, audit images, QR scan and workbook exports before operational use. See docs\RC26_CHANGELOG.md, docs\STORAGE_GUIDE.md and docs\ON_PHONE_CHECKLIST.md.

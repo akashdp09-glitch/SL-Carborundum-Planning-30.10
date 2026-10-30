@@ -1,0 +1,55 @@
+V16.28 — Bond / Material Requirements Generator — 4 October 2026 (Bangkok)
+Baseline: user's SL_Carborundum_Smart_Factory_Center_V16_27 (1).zip.
+
+Run START_SL_CARBORUNDUM_PLANNING_CENTER.bat in this complete folder.
+Use the existing central data location configured for your installation; this
+archive does not contain your live production data, photos or saved uploads.
+Do not overwrite or delete CENTRAL_DATA / SL_SHARED_ROOT from your current installation.
+
+NEW: Sidebar > Planning Suite > Generate bond / material plans.
+1. Seed open/not-mixed requirements from active Plan-2026, or enter demand from
+   a project, RP/WO or forecast. Seed quantities are FULL WO requirements, not
+   automatically remaining unconsumed demand. Verify partial mixing usage.
+2. Confirm NEED DATE and kg. A due-date fallback is explicitly labelled and
+   must be replaced by the actual material need date. Review all recipe quantities.
+3. Inventory: available/released stock only, safety, calendar lead days, lot size,
+   minimum order. A blank required field blocks the code. 0 lot means unrestricted
+   ordering only when approved. Stock seed requires your current-stock verification.
+4. Enter confirmed incoming receipts with dates. LAB/held/unconfirmed/overdue
+   receipts are not silently made available. Same-day confirmed receipts are
+   assumed available before demand; verify this operational convention.
+5. Optional BOND recipe: approved component kg per batch and output kg per batch,
+   with source reference. Generates component demand with rounded batch count.
+   This is not a chemistry designer. Capacity/lead time for bond preparation needs
+   confirmation; purchase lead time must not be mistaken for production runtime.
+6. Save snapshot and calculate. Restore scenarios from the dropdown after navigation.
+7. Download proposals, dated ledger, diagnostics, input snapshots, recipe components,
+   weekly/monthly/quarterly/half-year/yearly requirements. Proposed receipts are
+   hypothetical and shown separately from confirmed supply.
+
+Storage: <SL_SHARED_ROOT>/DATA/planning_scenarios.sqlite (actual path on screen).
+Saved fields: immutable scenario ID, name, Bangkok creation time, all input rows.
+Downloads go to the browser's configured download folder, not an invented path.
+
+OTHER CONTROLLED CHANGES
+- Explicit new-request dates: YYYY-MM-DD or DD/MM/YYYY, so 05/12/2026 = 5 December.
+  Past new-order due dates still fail validation and must be corrected.
+- Sidebar uses Streamlit buttons instead of full-page links to preserve the active
+  connection during sidebar navigation. Browser refresh/restart still requires saved
+  scenarios; legacy widgets/plans have not all been made persistent.
+- Legacy material shortage status no longer treats LAB-held material as released.
+- Mobile QR files and validated firing algorithms unchanged.
+
+VERIFICATION
+9 deterministic netting/date tests passed; all edited Python compiled.
+Headless UI export-path test opened generated XLSX and verified proposal/recipe
+quantities and five reporting periods. No real Streamlit/browser or factory phone
+test was possible in this environment (Streamlit is not installed).
+
+NOT CLAIMED COMPLETE
+Whole-application upload unification, all-section capacity analytics, all-customer
+OTIF, every function's Thai translation/knowledge, legacy planning persistence and
+complete controlled WO generation still require implementation/verification.
+Existing WO packet remains a DRAFT review aid, not an approved blue-sheet template.
+This revision does not invent missing approved BOMs, units, suppliers, stock release,
+receipt promises, route times, or physical machine/mould/operator availability.

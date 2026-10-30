@@ -1,0 +1,42 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-RC29.30
+
+QUICK START (WINDOWS APP PC)
+1. Stop the running app. Back up the existing CENTRAL_DATA folder before updating.
+2. Extract this ZIP into a new program folder on D:, for example D:\SL_Carborundum_Planning_V16.29-rc29.30.
+3. Run START_SL_CARBORUNDUM_PLANNING_CENTER.bat. This build uses local D: data and does not require Z:.
+4. Leave the server window open. Mobile phones send scans, status and pictures through the app on this PC over factory Wi-Fi; they do not access D: directly.
+5. For live phone camera QR scanning, follow docs\HTTPS.md and test with a real phone before operational use.
+
+PERSISTENT FACTORY DATA — DO NOT REPLACE BETWEEN CODE UPDATES
+Preferred location after update: D:\<new program folder>\CENTRAL_DATA
+Legacy fallback when the copy beside the program is absent:
+D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA
+
+Main planning/audit DB: ...\CENTRAL_DATA\DATABASE\sl_planning.db
+Mobile audit photos:    ...\CENTRAL_DATA\PHOTOS\MOBILE_AUDITS
+QR scan images:         ...\CENTRAL_DATA\PHOTOS\QR_SCANS
+Unidentified photos:    ...\CENTRAL_DATA\PHOTOS\UNIDENTIFIED_PARTS
+Sources / archives:     ...\CENTRAL_DATA\COMPANY_DATA and ...\SOURCE_COPIES
+Daily Status:           ...\CENTRAL_DATA\DAILY_STATUS
+KPI sources:            ...\CENTRAL_DATA\KPI
+Production WIP:         ...\CENTRAL_DATA\PRODUCTION_WIP
+Reports and QR files:   ...\CENTRAL_DATA\REPORTS
+Backups and cache:      ...\CENTRAL_DATA\BACKUPS and ...\CACHE
+Scenarios/settings:     ...\CENTRAL_DATA\DATA
+
+DRYING IN DAILY PLANNING
+The category Lead Time row 6 provides a general post-forming oven/drying time gate: S=2, T=3, P=3, R=2, M=1 days; PB does not use this step. It gives no dryer capacity, and the source does not say whether category days are calendar or working days; the planner's readiness offsets use working days. Q26-009 reference WO P005-110826 is separately source-linked to 4 calendar days drying plus 2 calendar days pre-firing checks. RC29 applies those timings only to that exact WO. See F1 → “Drying time and pre-firing checks” and knowledge\PROCESS_EVIDENCE_DRYING_2026-10-06.json.
+
+PREVIOUS FIRING PLAN INPUT
+On the Firing page, upload either the complete firing workbook or the smaller Operator Print sheet issued to Production. The print-only sheet must contain Work Order, Kiln, Loading Date, planned quantity, and Firing Complete / firing finish date. It is used as the shared previous firing source by Firing and Daily. A file missing required columns is rejected before it can replace the active source.
+
+STOCK-ON-HAND MATERIAL STATUS
+Open Home → Quick access → Material status, or Planning → Stock-on-Hand Material Status. This standalone page reads the active shared Stock on Hand workbook directly; it does not require creating a Daily Plan. It displays shortage/urgent/watch/OK counts and a searchable table with source sheet, Excel row, balance column and unit. The CSV export includes source workbook, revision, import time and SHA-256. Upload a revised stock workbook once from the page source panel; the other modules reuse it.
+
+HOME SHORTCUTS
+🚨 Backorder / Delivery Risk and 🧯 Risk & Backorder Recovery Plan are direct Home / Quick Access links and remain under Reports & Tools.
+
+DATA SAFETY
+The RC29.30 ZIP contains application code, not your live CENTRAL_DATA. Before first launch, copy your existing complete CENTRAL_DATA folder beside the new program; do not replace the only copy. This update does not change the established QR payload, regenerate issued QR labels, or require reprinting them. Existing labels remain valid. Keep the original data folder and old program folder until DB rows, audits, photos, QR scan images, source history and exports are confirmed in the new app. This release candidate has passed source checks only; it still requires factory-PC and real-phone verification.
+
+More detail: docs\STORAGE_GUIDE.md, docs\INSTALL_AND_UPDATE.md, docs\ON_PHONE_CHECKLIST.md, docs\RC29_CHANGELOG.md.

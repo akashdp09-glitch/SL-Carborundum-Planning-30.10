@@ -1,0 +1,22 @@
+V16.29-rc29.48 — Production WIP reads the second-sheet summary
+
+What changed
+- Production WIP now reads the second worksheet in each uploaded section workbook. The summary row values “ยังไม่ปิด” (reported open WO count) and “GW (Kg)” are the WIP values used in desktop, home/dashboard, mobile report and downloadable report views.
+- Total WO minus Closed WO is retained as a check only. Conflicting rows stay visible and are flagged; the software does not replace the reported open count or invent a category from detail rows.
+- Category F is displayed as P. Workbook name, import time, source sheet and source cell references are retained.
+- Mobile WIP wording now identifies the displayed count as the reported open-WO count. F1 Help explains this rule in English and Thai.
+
+Validation against the attached workbook
+Source: รับจ่ายสินค้ากลุ่มงานเตา เดือนตุลาคม(1).xlsx, second sheet “สรุปใบสั่งผลิต”.
+Rows: S 17 open / 7,441.89 kg; T 10 / 4,836.63 kg; P 137 / 15,396.40 kg; R 36 / 3,948.76 kg; PB 8 / 1,160.12 kg; M 1 / 52.11 kg.
+Reported total: 209 open WO records and 32,835.93 kg (32.836 t).
+The R and PB rows have Total WO − Closed WO values that conflict with the reported “ยังไม่ปิด” field (R: 33−88 vs 36; PB: 124−25 vs 8). The report keeps the source's open-count field and flags these row-level inconsistencies for Production/DCC review.
+
+Checks run
+- WIP source discovery, full-path snapshot, mobile report loading and F1 help unit tests: passed.
+- Direct second-sheet parser tests: passed.
+- Python compileall for hub.py, suite, apps/daily and apps/mobile: passed.
+- Windows launch, Streamlit browser interaction, factory data-folder permissions, camera, and simultaneous operator load were not tested in this environment.
+
+Data handling
+The release ZIP excludes live CENTRAL_DATA, audit databases, audit photographs, and user workbooks. Keep and copy your existing CENTRAL_DATA into the new program folder during upgrade.

@@ -1,0 +1,8 @@
+V16.29-rc29.42 — Backorder dashboard parity, mobile status capture, contextual upload entry
+
+- The animated HTML dashboard obtains overdue work orders from the same full Plan-2026 parser used by the shared Backorder page. Date basis is revised delivery date with initial date fallback; whole-WO closed is Packing EU or FC; positive remainder only; due strictly before Phan Thong, Chonburi today. Product category and kg/pc are joined for chart stacks and weight totals. The existing daily-engine result is a fallback only if Plan-2026 cannot be parsed.
+- Mobile search no longer waits up to 1.5 seconds for background Plan-2026 synchronization on each lookup. An unchanged active plan does not start repeated sync threads.
+- Mobile Track adds section OPEN/CLOSED entry with optional actual quantity and remark. It validates the work order against the active mobile Plan-2026 database and writes an append-only event to the same CENTRAL_DATA/COMPANY_DATA/daily_status_entries.sqlite3 ledger used by desktop. Blank quantity remains explicitly unknown.
+- Every non-Home, non-Files Hub page now has a small Upload/replace source link. Page-specific upload panels include planning KPI sources and allow Daily Status workbook refresh near its related reports.
+
+Verification: Python syntax compilation and standard-library backorder/floor-ledger unit tests pass. Pytest and FastAPI are not installed in this workspace, so the mobile HTTP integration test could not run. Windows launch, production Plan-2026 parity totals, real phone camera/network, and concurrent operators remain unverified here. Keep existing CENTRAL_DATA; this package contains no live database, photos, source workbooks, or local audit history.

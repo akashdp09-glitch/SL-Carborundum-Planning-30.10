@@ -1,0 +1,18 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-RC29.5
+COMPLETE PROGRAM • ONE HOST PC • LOCAL D: DATA
+
+1. Extract this complete ZIP to a new folder on D:, for example D:\SL_Carborundum_Planning_V16.29-rc29.5.
+2. Run START_SL_CARBORUNDUM_PLANNING_CENTER.bat on the host PC. First setup requires 64-bit CPython 3.11, 3.12 or 3.13 and internet access for the pinned packages; Python 3.14 is not supported by this package set.
+3. Program files, its isolated runtime, install cache/temp, and default factory data all remain on D:. The base Python interpreter itself is installed separately by Windows.
+4. Open Part Audit, QR & Audit Register. The phone service starts automatically if stopped. A phone opens the displayed address in its browser over Wi-Fi; no app install and no second PC installation are needed. The configured HTTP address is http://176.0.3.99:8000/mobile.
+
+CAPACITY WORKBOOK
+The controlled capacity workbook is included at apps\daily\CAPACITY_DATABASE.xlsx and apps\firing\CAPACITY_DATABASE.xlsx. Do not upload it from the UI. The Daily Planner uses the copy beside daily_planner_app.py.
+
+FACTORY DATA LOCATIONS
+If it exists, RC29.5 reuses D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA. Otherwise it creates CENTRAL_DATA beside this program folder. It does not require Z:. Database: CENTRAL_DATA\DATABASE\sl_planning.db. Audit photos: CENTRAL_DATA\PHOTOS\MOBILE_AUDITS. QR scan photos: CENTRAL_DATA\PHOTOS\QR_SCANS. Files & Traceability shows exact active paths.
+
+MOBILE ACCESS
+Any signed-in account can scan/search and submit tracking observations across sections. Submitted records are immutable; submit a new observation with correction details in Notes. Live camera video needs HTTPS and camera permission. On HTTP, use manual search or Photo QR upload.
+
+Back up CENTRAL_DATA before changing program versions. This ZIP contains application code and the controlled capacity workbook; it does not contain your live database or audit photos.

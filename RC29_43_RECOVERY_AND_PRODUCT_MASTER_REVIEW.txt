@@ -1,0 +1,23 @@
+RC29.44 — Recovery Snapshot and Product Master Review
+
+New report page: Reports → Recovery Snapshot & Product Master Review.
+The page reads three separately versioned sources:
+  1) Production recovery snapshot
+  2) Sales registered-product master
+  3) Production packaging standard
+
+Plan-2026 is the ongoing current-state master; each Production recovery workbook is a dated activity snapshot. The page now reconciles every distinct recovery WO to active Plan-2026 and the same current-overdue calculation used by the Backorder page/dashboard. It compares historical Recovery due date, Production proposed date/hold and recovery result against current Plan due date, open balance, whole-WO closure, section/location and both source row references.
+
+The bridge distinguishes still-overdue WOs, recovery-only WOs (now closed/no balance, later current date, missing Plan match or missing current date), and current Plan overdue WOs absent from the dated recovery snapshot. A later Plan due date is flagged for authorized-revision confirmation; it never overwrites the historical Recovery due date or implies approval. The bridge and Plan-overdue-only list can be downloaded as CSV.
+
+Recovery analysis retains original customer due date separately from the internal recovery date/hold text. It shows source row, WO, customer/spec, QTY, WIP, recovery-result text, warehouse report quantity, duplicate-WO flag, reasons and a month/status graph. Duplicate WOs are not added together in headline order counts. Dates/quantity are rolled up only where duplicate rows agree. The exported CSV keeps every source row.
+
+Product master comparison matches exact registered product code. It compares Sales Pcs/Box with Production Pcs/Box and flags exact matches, quantity mismatches, missing/undefined values, duplicate Production codes and codes without a Production standard. It retains both masters' descriptions, pack fields, sheet names and source rows. It never changes one master to match the other.
+
+Reference snapshots included in REFERENCE_INPUTS are initial examples only. Upload each later revision through Home → All software inputs or the page's Update Sources panel. Source Manager stores revision history and all other existing central data remains external to this release ZIP.
+
+Important boundaries:
+- A recovery row is not treated as Production approval unless the source contains an approval field.
+- The workbook's WIP / warehouse report quantity units are shown as source units if no reliable unit is stated.
+- The Sales and Production product masters serve different purposes. Production's packaging standard is the work-floor packaging instruction; Sales' register is the registered code/product description and sales pack master. Differences require review by the responsible owner.
+- Snapshot WOs include dates outside October 2026. The page shows original due month and does not relabel future-due orders as overdue.

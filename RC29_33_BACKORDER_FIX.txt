@@ -1,0 +1,1 @@
+Dashboard overdue KPI now uses same overdue_backorders() detail as Backorder Analysis, all months. Source data unchanged. Live factory validation pending.

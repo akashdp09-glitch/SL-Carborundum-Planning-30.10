@@ -1,0 +1,1 @@
+Removed snapshot/fingerprint from HTML header; due today and next workday headings and table show dates DD-MM-YYYY. Backorder 31 vs 256 discrepancy NOT reconciled: requires inspecting actual input sources and master selection; no fabricated values.

@@ -1,0 +1,17 @@
+V16.29-rc29.46 — WIP + CAPACITY GRAPH FIX
+
+Production WIP: fixed a path bug that caused centrally stored Excel workbooks to be opened by basename only. Latest dated report is selected per section; older copies are retained and not added twice. When the newest report cannot be read, the latest readable prior report is used with a visible warning.
+
+WIP views: the central WIP page, dashboard, audit WIP summary and HTML dashboard share the same selected Production WIP snapshot. Plan-2026 WIP and physical Production WIP remain separate.
+
+Capacity: kept PCS capacity when daily capacity rows are aggregated. PCS-rated section charts can now compare daily plan to capacity. Tonnes remain separate, and Mixing is shown only in mill/batch units.
+
+Production recovery: direct navigation is available from Home quick access, Backorder, WIP and Reports under “Production Recovery Plan”.
+
+Plan WIP recovery: if the full plan analysis returns an error or empty open list, WIP uses a lightweight Plan-2026 parser. Error details stay visible.
+
+Preserve existing data: this ZIP does not contain or replace CENTRAL_DATA. Keep/copy your existing CENTRAL_DATA folder when installing this revision so audit DB, photographs, QR records, saved plans and recovery edits remain available.
+
+Tests: 13 targeted tests passed; all Python files compile. Five provided October Production WIP workbooks loaded from an isolated temporary folder: 5 sections, 34 category rows, 122.091 gross tonnes. This does not verify the active factory PC or the current 22-Oct Plan-2026 workbook.
+
+Release integrity: both release checks pass; carried-forward legacy changes are hash-pinned, with pending-review entries still identified in the check output.

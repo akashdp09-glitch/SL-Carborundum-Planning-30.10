@@ -1,0 +1,19 @@
+SL CARBORUNDUM PLANNING CENTER — V16.29-RC29.6
+Based on the complete RC29.5 package.
+
+INSTALL
+1. Keep the currently working program and CENTRAL_DATA unchanged. Make a backup of CENTRAL_DATA.
+2. Extract this ZIP into a new folder on D:, for example D:\SL_Carborundum_Planning_V16.29-rc29.6.
+3. Run START_SL_CARBORUNDUM_PLANNING_CENTER.bat on the host PC. Leave its server window open.
+4. Use the planning pages on the computer. Operators open the mobile audit URL shown in Home from phones on factory Wi-Fi. The configured address is 176.0.3.99:8000.
+
+WHAT IS INCLUDED
+- Complete RC29.5 planning, backorder/delivery-risk and recovery pages, mobile audit/QR, startup scripts and bundled capacity databases.
+- Capacity-path recovery: if an old saved plan points to an absent workbook in a previous RC folder, Daily Planner uses the active shared capacity source or the workbook included beside the Daily Planner.
+- Cost & Planning KPI Analysis under Reports. Upload Resin, Vitifile and Replacement costing files once there; Plan-2026 and Stock reuse the shared active uploads.
+
+DATA SAFETY
+This ZIP contains the program and controlled capacity workbooks, not live CENTRAL_DATA, audit database or photos. RC29.5 data-path logic reuses D:\SL_Carborundum_Planning_V16.29-rc14\CENTRAL_DATA when present; otherwise it creates local CENTRAL_DATA beside the new program. Do not delete or overwrite your existing data folder.
+
+CHECKS / LIMITS
+See REVISION_NOTES_V16_29_RC29_6_20261008.md and DEVELOPMENT_CANDIDATE_MANIFEST.json. Cost method conflicts remain flagged as diagnostic until approved. This package has not been tested on your Windows PC or real phone; test against a backup before operational rollout.

@@ -1,0 +1,4 @@
+Package: V16.29-rc29.32
+Root folder corrected from rc29.31 to rc29.32.
+This is a packaging/name correction of the previously supplied chart-fix ZIP, not a new functional change.
+Historical README/manifest references may still refer to earlier releases.

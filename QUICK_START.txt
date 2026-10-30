@@ -1,0 +1,21 @@
+SL CARBORUNDUM PLANNING CENTER — QUICK START
+
+1. Extract this ZIP to a writable folder on D: (do not extract over the old program).
+2. Keep your existing CENTRAL_DATA folder and SERVER_STORAGE_CONFIG.bat unchanged.
+3. Double-click START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+4. First start needs internet access to python.org and PyPI. It installs a private
+   runtime under D:\SL_Carborundum_Planning_V16.29-rc14\RUNTIME and creates the
+   “SL Carborundum Planning Center” desktop shortcut.
+5. For normal use, click only that desktop shortcut. It opens the interface without
+   reinstalling. Keep the program folder in place and leave the black window open.
+6. Open the local computer page at http://127.0.0.1:8510. Mobile page uses the
+   mobile URL/port configured by this release and your factory Wi-Fi settings.
+
+Do not delete CENTRAL_DATA, the audit-photo folder, or any existing database.
+The ZIP does not contain your production data or audit photographs.
+
+The existing D: CENTRAL_DATA database, QR records, and audit/scan photos are kept
+outside the program ZIP and are not replaced during a software update.
+
+See docs/INSTALL_AND_UPDATE.md and docs/STORAGE_GUIDE.md for data locations,
+backup/rollback instructions, and mobile access details.

@@ -1,5 +1,12 @@
 # Development status and verification
 
+## 2026-11-03 — owner revision scope and initial inspection (blocked)
+
+- Captured the owner's planning accuracy/speed, three manager KPIs derived from staff evidence, actual-production precedence, Recovery-only sheet analysis, bilingual/icon UI, plan edit traceability, persistence, Help and illustrated Word-manual requirements in `REVISION_SCOPE_20261103.md`.
+- Owner confirmed identical inputs/rules must yield identical plans, with reasons for any changed results.
+- Inspected current HEAD: daily/firing/mobile/shared source directories and controlled-release tools are missing. New workbooks and UI images were not available. Existing startup validation fails on missing `suite`; mobile tests and cloud validation cannot run because their paths are absent. No application implementation, data import/deletion or speed improvement is claimed.
+- Identified general edit-save audit failure suppression, missing edit reasons and three unresolved `uuid` references for correction once the full source and release workflow are restored. Production workbook mapping is recorded, without inventing sheet structure or KPI definitions. Production data and application code remain unchanged.
+
 Version: see `VERSION` (`V16.29-rc29.46`, release candidate; not factory-validated). Windows startup and live factory workbook acceptance remain unverified. Windows uses the private runtime installer in the RC29.7 launcher; it has not been executed on a factory Windows PC here. This package is a workspace snapshot without verified Git commit metadata; do not treat it as a merged PR.
 Requirements: `PROJECT_REQUIREMENTS.md` (R1-R12 + factory approval). Rules for agents: `AGENTS.md`. Approval record: `FACTORY_APPROVAL.md` + `knowledge/approved_rules.json`.
 

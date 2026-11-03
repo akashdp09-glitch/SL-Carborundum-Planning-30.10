@@ -50,19 +50,34 @@ The report does not resolve ambiguous repeated allocations or source freshness.
 
 ## KPI definitions and evidence
 
-The supplied staff references contain **six measures**, not an explicit mapping
-to three Planning Manager KPIs:
+The supplied staff references contain **six measures**:
 
 - Sirinun: material readiness confirmation; on-time WO distribution/acknowledgement.
 - Chosita: plan data accuracy; on-time plan preparation; on-time WIP reporting;
   on-time delivery-risk escalation.
 
-Open owner decisions were requested asynchronously:
+Owner subsequently confirmed the three Planning Manager KPIs:
 
-1. Three manager KPI names, their weights and staff-to-manager aggregation.
-2. Chosita monthly M8:M11 contain 0.15, 0.15, 0.05, 0.05 under annual target,
-   while Q9:Q10 say >=95% and N8:N11 each contain weight 20. Confirm whether
-   M means targets or contribution weights; do not silently resolve this conflict.
+1. Planning accuracy, inherited from the Planning Analyst's accuracy evidence.
+2. Planning open-versus-closed work-order percentage ratio. Closed/opened for
+   a common period versus same-cohort closure is awaiting confirmation; they
+   answer different questions and must not be silently interchanged.
+3. Production's actual packed work-order count divided by planned work-order
+   count, expressed as a percentage. Count WOs rather than pieces; align period,
+   plan revision and cohort, and distinguish partial receipts, completed packing
+   and unplanned/backlog packing before using source records as achievement.
+
+Owner clarified Chosita M8:M11 represent **HR maximum marks**, despite the
+workbook's target header and percentage storage/format: 15, 15, 5, 5 = 40 marks.
+They are not targets of 15%, 15%, 5%, 5%. Preserve the original 0.15/0.15/0.05/0.05
+values as evidence. Do not replace them with N8:N11's four entries of 20.
+Achievement percentages and awarded marks are separate measures; Q9:Q10's
+>=95% entries remain source scoring-band evidence, not maximum marks.
+
+Still awaiting the manager's three-way allocation of 40 marks and the HR method
+for converting achievement into awarded marks (proportional or score-band based).
+The analyst's four-way split must not be copied onto the manager's three KPIs.
+
 Resolved process clarification (owner, 3 November 2026): `เข้าเผา` is WIP of
 firing from the preceding drying process after forming. `จำนวนเข้าเตา` means
 quantity loaded into the firing kiln. Neither is proof of completed firing.
@@ -83,7 +98,11 @@ October execution evidence: material readiness actual/target = 469/469, and
 WO issuance actual/target = 313/313. These do not independently validate staff
 acknowledgement or manager KPI formulas. Zero-target days are N/A. Job closure
 contains 333 closed source items across category rows; they are not 333 pieces
-or necessarily 333 distinct WOs and must not be divided by issuance as a score.
+or necessarily 333 distinct WOs. A provisional 333/313 throughput ratio would
+be 106.39%, but it is not an approved manager score or same-cohort closure rate:
+the source groups, count units and ratio/cohort definition must first align.
+Older backlog closures can legitimately make a period-throughput ratio exceed
+100%; preserve and explain that effect rather than silently capping the ratio.
 
 ## Actual production and performance
 

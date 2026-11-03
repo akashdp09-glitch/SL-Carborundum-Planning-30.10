@@ -1,11 +1,12 @@
 # Owner revision request and source inspection — 3 November 2026
 
-Status: analysis only; implementation and factory acceptance are blocked by missing application source and attachments. No production data or application logic changed.
+Status: workbook analysis and separate evidence staging completed; application implementation and factory acceptance remain blocked by the oversized source ZIP. No production data or application logic changed.
 
 ## Confirmed requirements
 
 - Repeat runs with identical inputs, rules, resource calendars and source revisions must produce identical plans. The owner confirmed this on 3 November 2026. Explain result changes with the changed input/rule and affected orders; explicitly labelled alternative scenarios are separate results.
-- Treat Planning Department's three KPIs as Planning Manager KPIs derived from staff evidence. Exact names, targets, weights, formulas and aggregation require the new KPI files; do not infer them from older examples. Support manual entry and upload, durable history, corrections, trend analysis and source drill-down.
+- Treat Planning Department's three KPIs as Planning Manager KPIs. Owner confirmed: (1) planning accuracy from the Planning Analyst; (2) planning open-versus-closed WO percentage ratio; (3) actual packed WOs versus planned WOs, as a count-based percentage from Production KPI. Confirm KPI 2's ratio direction/cohort and the manager's allocation of 40 marks before final scoring. Do not substitute piece totals for WO counts or aggregate unrelated staff metrics into a manager KPI. Support manual entry and upload, durable history, corrections, trend analysis and source drill-down.
+- Owner clarified Chosita M8:M11 are HR maximum marks, not achievement targets: 15, 15, 5 and 5, totalling 40. Preserve source values 0.15/0.15/0.05/0.05 while displaying the confirmed marks. Achievement percentages, targets/score bands and awarded marks are distinct. Do not use N8:N11's four values of 20 as a replacement 80-mark scheme, assume the same split applies to three manager KPIs, or invent a conversion from achievement to awarded marks.
 - Retire obsolete KPI formats from the active workflow and stop prompting for them. Preserve historical evidence and revisions; do not delete factory data. New formats must be inspected before activation.
 - Daily and firing planning must apply downstream pull and upstream push, actual remaining stage quantities, dependencies, material readiness, approved capacity, resources, working calendars and existing bookings. Keep capacity units and time bases separate. Explain shortages and unused capacity. Never mark an unverified plan feasible.
 - An explicitly selected 30 October 2026 anchor stays 30 October in Asia/Bangkok. Distinguish the selected anchor from the first feasible operation date; if a calendar/resource/readiness constraint moves an operation to 31 October, show the exact reason. Never silently add a day or treat a selected historical scenario anchor as today's date.
@@ -19,7 +20,7 @@ Status: analysis only; implementation and factory acceptance are blocked by miss
 
 ## Owner-specified actual-production workbook mapping
 
-Expected file: `Plan 2026-2-Update-271026.xlsx` (not available in the current workspace).
+Received file: `Plan 2026-2-Update-271026.xlsx`; see `WORKBOOK_FINDINGS_20261103.md` for evidence and scope of analysis.
 
 | Worksheet | Owner's meaning |
 | --- | --- |

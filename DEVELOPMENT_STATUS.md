@@ -1,5 +1,11 @@
 # Development status and verification
 
+## 2026-11-03 — manager KPI mapping and HR marks clarified
+
+- Owner defined the three manager KPIs: analyst planning accuracy; planning open-versus-closed WO ratio; Production actual packed WOs versus planned WOs as a count-based percentage. Recorded the mapping without combining all six staff measures or substituting pieces for WOs.
+- Chosita M8:M11 are HR maximum marks 15, 15, 5 and 5 (40 total), not percentage targets. Corrected the interpretation in the findings and review export while retaining original source values. Achievement percentages and awarded marks remain separate.
+- Awaiting KPI 2's period/cohort ratio basis, the manager's three-way maximum-mark allocation, and the achievement-to-marks rule. No final manager scores or application integration are claimed. Source ZIP transfer remains blocked by the 32 MiB limit.
+
 ## 2026-11-03 — owner clarified firing WIP and loading semantics
 
 - `เข้าเผา` is firing WIP from the preceding drying process after forming; `จำนวนเข้าเตา` means quantity loaded into the firing kiln. Neither establishes firing completion. Recorded the distinction in the revision scope and workbook findings; confirmed firing output remains separate (`เตาจ่าย`).

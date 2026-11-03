@@ -1,0 +1,37 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.16
+Prepared 2026-10-02 (Asia/Bangkok)
+
+START
+1. Run INSTALL_REQUIREMENTS.bat on the Windows server, then START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+2. From Home → Upload / Replace Source Files, upload the current Plan-2026, Stock on Hand, Sales Forecast, Firing Plan, Packaging Standard, and other current source workbooks. The program never assumes this package contains today's live business files.
+3. In Daily Planner → Daily Status, upload each department's own workbook into its separate box: Preparation, Mixing, Forming, Firing, Grinding, Packing. The worksheet tab name is the daily reporting date; date cells inside the workbook are not authoritative.
+4. Keep the two KPI reports separate in their own upload boxes.
+5. For a new sales release, use Home → “RP → Work Order → Cover Sheet → Plan 2026”. Upload RP, review detected values, fill missing/uncertain fields, assign the controlled Work Order number, check the material/process/capacity/schedule/packaging gates, then download the draft packet. Copy reviewed data into your approved controlled blue-sheet cover template and release only through your normal approval process.
+6. The draft packet includes the Plan-2026-format sheet, RP_SOURCE provenance, WORK_ORDER_DRAFT, COVER_SHEET_DRAFT, PLANNING_BASIS, MATERIAL_FEASIBILITY and READINESS_CHECK. The software package does not include the current controlled blue-sheet cover template; the draft cover sheet is a data handoff, not a replacement for that approved form.
+7. Daily Planner left menu now expands categories in place. Open a category and select the exact page; Direct Access remains available for frequently used pages.
+8. Daily Planner → Mixing Mill Plan vs Actual compares plan batches and kg with source actuals and CAP ผสม capacity. Unknown machines and capacity overages are visible review items, not silently accepted capacity.
+9. Home → Work Order QR/Audit generates IP-independent SLWO:<WO> labels. The QR label itself contains no server address. The phone-camera connection QR is a separate link to the app; mobile live capture requires HTTPS, camera permission and a reachable server. Scan/audit photographs are saved separately with source/result metadata.
+
+SPEED AND INTERFACE CHANGES
+- Plan-2026 reader is bounded to the known A:IA field range (235 columns). The new-plan engine previously read the formatting-inflated worksheet width (~15,988 columns); it now reads the mapped 235 columns.
+- Daily Planner navigation is an expandable left hierarchy. Every subpage link is range-checked so an invalid navigation map cannot raise IndexError.
+- RP parsing now detects document number, customer, product/spec, size, qty, reference WO, material/bond, machine, firing program, packaging count, paper-wrap count and explicit no-brand-mark instruction when present in ordinary text cells.
+- Exact source upload filename, renamed stored filename, server location, import time, user/page, workbook modified time when available, file size and SHA-256 are recorded in Home → Uploaded Files & Traceability. The browser does not expose the source PC/phone folder; this is marked as unavailable rather than guessed.
+
+TRACEABILITY AND STORAGE (defaults; can be changed by SERVER_STORAGE_CONFIG.bat)
+- Shared live uploads: CENTRAL_DATA/COMPANY_DATA/
+- Daily Status: CENTRAL_DATA/DAILY_STATUS/; revisions: CENTRAL_DATA/DAILY_STATUS/history/; source_registry.json
+- KPI inputs: CENTRAL_DATA/KPI/; source_registry.json
+- Uploaded original/evidence copies and RP originals: CENTRAL_DATA/SOURCE_COPIES/ (RP intake subfolder: NEW_RP/)
+- Generated plans and report exports: CENTRAL_DATA/REPORTS/
+- QR scan pictures: CENTRAL_DATA/PHOTOS/QR_SCANS/YYYY/MM/DD/
+- Mobile audit pictures: CENTRAL_DATA/PHOTOS/MOBILE_AUDITS/
+- Shared QR/mobile database: CENTRAL_DATA/DATABASE/sl_planning.db (or configured SL_DB_PATH)
+- Main source registry: CENTRAL_DATA/source_registry.json
+- Knowledge snapshot: knowledge/knowledge_base.sqlite; source list: knowledge/SOURCE_MANIFEST_V16_15.csv. Its indexed files are a snapshot; upload current files for live operational analysis.
+
+VALIDATION / LIMITS
+- Python syntax checks passed for hub.py, daily_planner_app.py, mixing_capacity_trace.py and apps/mobile/app.py.
+- RP decoder smoke-tested against Q26-009: correctly detected product 38A400P7VB0400, size 80X25X7, qty 300, reference WO P005-110826, WA400/B04, H10, Program 2, 600 per box, 10 per wrap, no brand mark.
+- Daily Planner navigation map checked: all 24 links resolve; the formerly missing Mixing index now exists.
+- Full Streamlit runtime and Windows/server launch were not available in the development runtime. No phone camera, HTTPS, concurrent operator or thousand-scans/day stress test has been performed. Deploy on the secure company server and validate real devices and workload before high-volume production use.

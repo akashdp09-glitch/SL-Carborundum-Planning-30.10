@@ -1,0 +1,34 @@
+{
+  "ppc_desktop_core_v1_9.py": {
+    "baseline_sha256": "c9bbf10d7097e0c040db0a3096f65e489754898ec206658b0f685015d6f1586e",
+    "accepted_sha256": "a96f9b48f764d1dee7a1de259a3d3254fd3857214c9bb9f3b2324747bde0243a",
+    "reason": "Declared in the legacy CONTROLLED_CHANGES.json name list; per-file reason not recorded in the supplied documents.",
+    "evidence": "legacy declaration (V16.x release notes)",
+    "reviewed": false,
+    "recorded": "2026-10-04"
+  },
+  "traceable_views.py": {
+    "baseline_sha256": "a8492982190fc238e5abe2100a8affef5ca0104b228ac3263b52141901d7e3f1",
+    "accepted_sha256": "6ac55b0d969d728274b9ef6346d8f3c4325e9e2e49c7ef51a567bce8ab5ee644",
+    "reason": "Declared in the legacy CONTROLLED_CHANGES.json name list; per-file reason not recorded in the supplied documents.",
+    "evidence": "legacy declaration (V16.x release notes)",
+    "reviewed": false,
+    "recorded": "2026-10-04"
+  },
+  "firing_tomorrow_fast.py": {
+    "baseline_sha256": "f8a184730a4e86d3879a59ce607fdd89010b4d25304bcdcaddf8629292ae3f20",
+    "accepted_sha256": "48d14490755d711723be263567eb5b8acd531a26e5ade5cd973a282766cf9f5d",
+    "reason": "Pre-existing RC29.44 carried-forward change; not modified for this WIP/capacity release, current hash is pinned pending review.",
+    "evidence": "DEVELOPMENT_STATUS.md",
+    "reviewed": false,
+    "recorded": "2026-10-22"
+  },
+  "firing_engine_desktop_v2.py": {
+    "baseline_sha256": "08cf55f1044fa3a8e688930ae39833bb9686c06f829ce486d2f925fa83df2db3",
+    "accepted_sha256": "bdfa7014b273f89e445231eeaafee10df85a73d6ed6241adef3dc7e2da6d0d47",
+    "reason": "V16.24 plotly guard replaced: the earlier 'go = px = None' fallback would raise AttributeError on first chart. plotly is a required dependency (INSTALL_REQUIREMENTS.bat), so a missing install now raises ImportError with a clear message. Baseline equals V23_BUILD_MANIFEST.json hash, i.e. the only change since V16.23 is this guard.",
+    "evidence": "tests/release/test_controlled_changes.py::test_missing_plotly_fails_with_clear_message",
+    "reviewed": true,
+    "recorded": "2026-10-04"
+  }
+}

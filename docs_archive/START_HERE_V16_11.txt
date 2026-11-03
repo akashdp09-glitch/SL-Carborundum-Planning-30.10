@@ -1,0 +1,13 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.11
+Prepared 2026-09-30 (Asia/Bangkok)
+
+Start the Windows server with apps/mobile/start_server.bat.
+Use the main desktop hub for planning. In the mobile app's top navigation, open:
+- Scan QR for phone camera/photo capture and Work Order lookup.
+- QR Generator for a single PNG or a printable QR label workbook.
+- Files & Traceability for the server paths, imported source-file history and checksums.
+- History for scan event/photo evidence and physical audits.
+
+Work Order labels now default to SLWO:<Work Order ID>, with no changing IP address. Scan Work Order labels inside the app. The separate connection QR opens the mobile website and can display the server's network address.
+
+Review apps/mobile/README.md and REVISION_TRACEABILITY_V16_11.txt for usage, storage, source files, revision details, test limits and backup paths.

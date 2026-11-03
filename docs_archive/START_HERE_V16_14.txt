@@ -1,0 +1,32 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.14
+Prepared 2026-10-01 (Asia/Bangkok)
+
+MAIN NEW FEATURE — CODE / PART / WORK ORDER KNOWLEDGE
+Home page → 📚 Search Work Orders, Parts & Codes, or sidebar MAIN → 📚 Code & Part Knowledge.
+Search by WO, part/product code, material/bond, customer, specification, packaging code, PO or S&OP number. A match shows its source workbook, sheet, row, file hash, source timestamps and the row fields. Related cover, S&OP, plan, material, stock, capacity, daily/KPI and engineering rows can appear together. Blue-sheet WO pages are indexed separately and flagged to verify release/status/date. Formula errors and template rows are not treated as confirmed released orders.
+
+For a new RP, choose “Review a new RP / request”, then upload the request workbook. The first-pass view lists input rows, matched codes and unmatched tokens, with a downloadable CSV. It is a review aid; it does not release a WO or invent missing process, BOM, capacity, machine, material, packaging, vendor or schedule rules. Q26-009 is retained as a user-taught dated reference with quantity and process-date flags. Use the glossary for field meanings and hand-off checks.
+
+REFERENCE SNAPSHOT / PROVENANCE
+- Bundled searchable database: knowledge/knowledge_base.sqlite
+- 24 supplied workbooks, imported as a source snapshot on 2026-10-01 (Asia/Bangkok). Original filenames, source paths, file sizes, filesystem/workbook modified times, SHA-256, sheet and row are shown in the Knowledge page.
+- Source workbooks themselves are not copied into this application ZIP. The searchable values are stored in the derived SQLite snapshot; upload current production sources through Files & Traceability separately. Daily Status analysis treats each sheet-tab name as that sheet's date; a stale date printed inside a sheet does not override the tab. The dedicated Daily Status workflow reads all date-named sheets; this knowledge index keeps source provenance and summary rows.
+- Snapshot source files include October Cover S&OP, October Bond MRP, sales SOP/release, PM/PBM and PS/PBS blue-sheet work orders, P280 product/material/package/order master, RP-S, Plan 2026, Stock on Hand, Capacity, material usage, six September section/daily files, two separate September KPI workbooks, and four engineering/test review workbooks.
+
+REFRESH THE KNOWLEDGE SNAPSHOT
+Copy approved reference workbooks into CENTRAL_DATA\COMPANY_DATA, then run REBUILD_KNOWLEDGE_DATABASE.bat and restart the planning center. The builder writes a staging database and replaces the snapshot only after a successful index. For another input folder, run:
+  py knowledge\build_knowledge_db.py "D:\path\to\approved\workbooks"
+Do not replace source workbooks with unsigned copies; each snapshot row points back to the source filename and source row.
+
+CURRENT SOFTWARE STORAGE
+- CENTRAL_DATA\COMPANY_DATA\ — active Plan and source inputs
+- CENTRAL_DATA\DAILY_STATUS\ and DAILY_STATUS\history\ — section daily status uploads and revisions
+- CENTRAL_DATA\KPI\ — separate KPI workbooks
+- CENTRAL_DATA\SOURCE_COPIES\ — archived source uploads
+- CENTRAL_DATA\REPORTS\ — exports/reports
+- CENTRAL_DATA\PHOTOS\QR_SCANS\YYYY\MM\DD\ — QR scan images
+- CENTRAL_DATA\PHOTOS\MOBILE_AUDITS\ — audit photos
+- CENTRAL_DATA\DATABASE\sl_planning.db — shared tracker, user and override database
+- CENTRAL_DATA\source_registry.json — source upload registry
+
+Planning center remains at http://127.0.0.1:8510. Generate labels from Home → Open Desktop Operator / QR / Audit → QR Generator. Mobile scanning is served at port 8000. Camera and QR behavior still needs real-device testing on the company network and secure origin.

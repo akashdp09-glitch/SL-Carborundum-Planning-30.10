@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="/mobile/scan">← Scan again</a><div class="mobile-title">Is this the part?</div><div class="muted">ใช่ชิ้นงานนี้หรือไม่</div></div></div>
+  {% if d.kind == 'WO' %}
+  {% set w = d.wo %}{% set s = card.snap %}
+  <section class="panel confirm-card">
+    <div class="confirm-id">{{ w.production_code or w.wo_id }}</div>
+    <div class="mobile-facts">
+      <div><span>WO</span><b>{{ w.wo_id }}</b></div><div><span>Part</span><b>{{ w.product_code or '—' }}</b></div>
+      <div><span>Spec</span><b>{{ w.specification or '—' }}</b></div>
+      <div><span>Order qty</span><b>{{ w.qty|round(0)|int }}</b></div><div><span>Due</span><b>{{ w.due_date or '—' }}</b></div>
+      <div><span>Status</span><b>{{ status_labels.get(s.status, s.status) }}</b></div><div><span>Process</span><b>{{ s.current_process or w.plan_location or '—' }}</b></div>
+    </div>
+    {% if card.recent %}<h3>Last physical observations</h3>{% for o in card.recent %}<div class="mobile-row"><div><b>{{ o.physical_location or 'no location' }}</b><small>{{ o.created_at }}</small></div><div class="mobile-row-right"><strong>{{ o.verified_qty|round(0)|int if o.verified_qty is not none else 'qty ?' }} {{ o.qty_unit or '' }}</strong></div></div>{% endfor %}{% endif %}
+  </section>
+  {% if can_capture %}<a class="button primary operator-main-button" href="/mobile/audit/{{ w.wo_id }}">✅ YES - AUDIT THIS PART · ใช่ ตรวจสอบ</a>{% endif %}
+  <a class="button operator-main-button" href="/mobile/wo/{{ w.wo_id }}">📋 Full history / ประวัติ</a>
+  {% else %}
+  {% set u = d.unidentified %}
+  <section class="panel confirm-card">
+    <div class="confirm-id">{{ u.temp_id }}</div>
+    <div class="alert danger">Temporary tracking ID - not a work order. State: {{ u.identification_state }}{% if u.resolved_wo_id %} → {{ u.resolved_wo_id }}{% endif %}</div>
+    <p>{{ u.description or u.markings or 'No description' }}</p>
+    {% for p in d.photos[:1] %}<img class="audit-photo-thumb" src="{{ p.thumb_url }}" alt="part photo" loading="lazy">{% endfor %}
+  </section>
+  <a class="button operator-main-button" href="/mobile/part/{{ u.temp_id }}">📋 Open record</a>
+  {% endif %}
+  <a class="button operator-main-button" href="/mobile/scan">✖ NOT THIS ONE · ไม่ใช่</a>
+</div>{% endblock %}

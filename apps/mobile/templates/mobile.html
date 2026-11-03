@@ -1,0 +1,48 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><div class="mobile-title">SL shop floor</div>
+    <div class="muted">Scan, type a work order, or record a part without a label.</div></div></div>
+  {% if not can_capture %}<div class="alert danger">Your role can view records but cannot submit audits. Ask an administrator if this is wrong.</div>{% endif %}
+  <div class="home-grid">
+    <a class="home-tile orange" href="/mobile/scan">📷 Scan QR</a>
+    <a class="home-tile blue" href="/mobile/find">⌨️ Type WO</a>
+    <a class="home-tile" href="/mobile/unidentified">❓ No WO / No QR</a>
+    <a class="home-tile" href="/mobile/submissions">📤 My list</a>
+    <a class="home-tile" href="/mobile/report">📊 Report</a>
+    <a class="home-tile blue" href="/register">📋 All audits</a>
+  </div>
+  <form class="mobile-search operator-search" method="get" action="/mobile/find">
+    <input id="homeSearch" name="q" placeholder="Type WO any way — P005-110826 or p005110826" autocomplete="off" minlength="1">
+    <button class="primary" type="submit">Find</button>
+  </form>
+  <div id="homeSuggest" class="mobile-list" aria-live="polite"></div>
+  <section class="panel"><h2>Last submissions</h2><div class="mobile-list">
+    {% for r in recent %}<a class="mobile-row" href="/mobile/part/{{ r.tracking_id }}"><div><b>{{ r.tracking_id }}</b><small>{{ r.status or '—' }} · {{ r.location or 'no location' }}</small></div><div class="mobile-row-right"><strong>{% if r.qty_unknown %}qty ?{% else %}{{ r.qty|round(0)|int }} {{ r.unit or '' }}{% endif %}</strong><small>{{ r.received }}</small></div></a>{% else %}<div class="muted">No submissions yet.</div>{% endfor %}
+  </div></section>
+  <div id="pendingBox" class="panel hidden"></div>
+</div>{% endblock %}
+{% block scripts %}
+<script src="/static/pending_queue.js"></script>
+<script>
+SLQueue.renderBanner(document.getElementById('pendingBox'));
+(function(){
+  const input=document.getElementById('homeSearch'), list=document.getElementById('homeSuggest');
+  if(!input||!list) return;
+  let t=null, seq=0;
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  input.addEventListener('input',()=>{
+    clearTimeout(t);
+    t=setTimeout(async()=>{
+      const q=input.value.trim(), n=++seq;
+      if(q.length<1){ list.innerHTML=''; return; }
+      try{
+        const d=await (await fetch('/api/v2/search?q='+encodeURIComponent(q))).json();
+        if(n!==seq) return;
+        if(!d.rows||!d.rows.length){ list.innerHTML='<div class="muted">No match yet — keep typing, or open No WO / No QR.</div>'; return; }
+        list.innerHTML=d.rows.map(r=>'<a class="mobile-row" href="/mobile/confirm/'+encodeURIComponent(r.tracking_id)+'"><div><b>'+esc(r.title||r.tracking_id)+'</b><small>'+esc(r.part||r.description||'—')+' · '+esc(r.customer||'—')+'</small></div><div class="mobile-row-right"><strong>'+(r.qty!=null?Math.round(r.qty):'')+'</strong><small>'+esc(r.kind)+'</small></div></a>').join('');
+      }catch(e){ if(n===seq) list.innerHTML='<div class="muted">Search unavailable. Check the connection.</div>'; }
+    },180);
+  });
+})();
+</script>
+{% endblock %}

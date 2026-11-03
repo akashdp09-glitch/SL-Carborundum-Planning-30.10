@@ -1,0 +1,1 @@
+Fixes the plan_date NameError by using the actual selected planning-start variable `start`. Preserves F2 balanced-pull and equal-view logic.

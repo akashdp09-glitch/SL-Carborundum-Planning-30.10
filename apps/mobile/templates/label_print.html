@@ -1,0 +1,4 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SL labels</title><style>body{font-family:Segoe UI,Arial,'Noto Sans Thai',sans-serif;margin:12px}.lab{display:inline-flex;gap:10px;width:9.5cm;height:4.6cm;border:1px solid #333;padding:8px;margin:4px;vertical-align:top;page-break-inside:avoid}.lab img{width:3.6cm;height:3.6cm}.lab b{font-size:15px;word-break:break-all}.lab div{font-size:11px;line-height:1.25}.noprint{margin-bottom:10px}@media print{.noprint{display:none}}</style></head><body>
+<div class="noprint"><button onclick="print()">🖨 Print</button> QR content is the stable identity code (SLWO:… / SLTMP:…), read by the in-app Scan button. It contains no IP address.</div>
+{% for l in labels %}<div class="lab"><img src="{{ l.img }}" alt="QR"><div><b>{{ l.title }}</b>{% for x in l.lines %}{% if x %}<br>{{ x }}{% endif %}{% endfor %}<br><small>{{ l.payload }}</small></div></div>{% else %}<p>No matching ids.</p>{% endfor %}
+</body></html>

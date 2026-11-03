@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ title|default('SL Part Tracking') }}</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><header class="topbar"><div class="brand"><img src="/static/sl_logo.png" style="height:38px"><b id="brandText">SL PART TRACKING</b></div><div class="mobile-lang"><button onclick="setLang('en')">EN</button><button onclick="setLang('th')">ไทย</button><button onclick="setLang('my')">မြန်မာ</button></div>{% if user %}<a href="/logout" id="logoutText">Logout</a>{% endif %}</header>
+{% if user %}<nav class="nav"><a href="/mobile" id="navHome">🏠 Home</a><a href="/mobile/scan">📷 Scan</a><a href="/mobile/find">⌨️ Type</a><a href="/mobile/unidentified">❓ No WO</a><a href="/mobile/report">📊 Report</a><a href="/register">📋 Audits</a><a href="/mobile/submissions">📤 My list</a><a href="/qr-generator" class="desk-only">▦ QR</a></nav>{% endif %}
+<main class="container">{% if plan_banner %}<div class="alert danger" style="margin:8px 0 12px">{{ plan_banner }}</div>{% endif %}{% block content %}{% endblock %}</main>
+<script>
+window.SL_LANG=localStorage.getItem('sl_lang')||'en';
+const G={en:{brand:'SL PART TRACKING',logout:'Logout',track:'🔎 Track / Audit',history:'🕘 History'},th:{brand:'SL ติดตามชิ้นงาน',logout:'ออกจากระบบ',track:'🔎 ติดตาม / ตรวจ',history:'🕘 ประวัติ'},my:{brand:'SL အစိတ်အပိုင်းခြေရာခံ',logout:'ထွက်ရန်',track:'🔎 ခြေရာခံ / စစ်ဆေး',history:'🕘 မှတ်တမ်း'}};
+function setLang(x){localStorage.setItem('sl_lang',x);window.SL_LANG=x;applyGlobalLang(x);document.dispatchEvent(new CustomEvent('sl-language',{detail:x}));}
+function applyGlobalLang(x){let d=G[x]||G.en;let e=document.getElementById('brandText');if(e)e.textContent=d.brand;e=document.getElementById('logoutText');if(e)e.textContent=d.logout;e=document.getElementById('navTrack');if(e)e.textContent=d.track;e=document.getElementById('navHistory');if(e)e.textContent=d.history;document.documentElement.lang=x;}
+window.addEventListener('DOMContentLoaded',()=>{applyGlobalLang(window.SL_LANG);setTimeout(()=>document.dispatchEvent(new CustomEvent('sl-language',{detail:window.SL_LANG})),0)});
+</script>{% block scripts %}{% endblock %}</body></html>

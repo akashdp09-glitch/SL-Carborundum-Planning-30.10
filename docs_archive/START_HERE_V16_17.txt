@@ -1,0 +1,29 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.17
+
+First run
+1. Extract the ZIP to a writable folder.
+2. Start the desktop app with START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+3. Open New Order Workflow → Native P280 work-order draft builder.
+4. Upload the current approved P280 workbook. It is archived and registered; it is not bundled with this release.
+5. Enter one or more request rows. Leave unknown values blank. Exact SD/customer history and GROUPING package matches appear as sourced review hints only.
+6. Optionally paste original RP/email text. It is saved in the output packet with a SHA-256 fingerprint.
+7. Create the draft packet, open the generated P280 workbook in Excel so linked formulas recalculate, review PACKAGING_REVIEW and SL_ORDER_STATUS, and complete planner release controls.
+8. To make it searchable on mobile, upload the generated P280 workbook through mobile Work Order Import. It remains DRAFT until an authorized release process changes its state.
+
+Traceable file locations (default)
+- Active P280 master: CENTRAL_DATA/COMPANY_DATA/P280526-LATEST.xlsx
+- Original uploaded source archive: CENTRAL_DATA/SOURCE_COPIES/
+- Native WO workbooks, QR PNG labels, ZIP packets and trace reports: CENTRAL_DATA/REPORTS/WORK_ORDER_DRAFTS/
+- Source/generated-file index: CENTRAL_DATA/source_registry.json
+- Mobile QR scan images and audit photos: see mobile Files & Traceability.
+
+QR labels
+- Each PNG encodes only SLWO:Pnnn-DDMMYY. It contains no server IP. Scan using the SL mobile app; import the generated P280 workbook into mobile first so the new WO is searchable.
+
+Planning safety and current limits
+- Missing fields stay visible. An exact product code must match a unique SD row before technical master data is suggested. Ambiguous/missing matches require review.
+- GROUPING packaging matches require review and are never auto-applied to the blue sheet.
+- This release does not book mill/press/kiln/cutting capacity, calculate shortages against a released BOM and live stock, or write directly into Plan 2026. Use the existing capacity/material pages and planner approval workflow for those decisions.
+- Browser upload APIs record selected original filename and server path, not the source PC folder.
+
+See REVISION_TRACEABILITY_V16_17.txt for full change and verification notes.

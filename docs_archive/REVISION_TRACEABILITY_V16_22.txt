@@ -1,0 +1,18 @@
+V16.22 — 2026-10-02 Asia/Bangkok
+
+Issue 1: StreamlitDuplicateElementKey at hub.py source-folder widget.
+Cause: Streamlit executes all tab bodies; Home and Sources each rendered key upload_source_folder (and the revision key).
+Fix: unique home_/sources_ field keys, and register_source chooses provenance fields from the actual upload context. Prevents properties from the other tab being used.
+
+Issue 2: Firing WIP uploaded but not shown.
+Confirmed code gaps: filename classifier omitted Thai เตา and English Kiln, and summary reader required exact sheet spelling/header position. Added these filename terms, stripped sheet-name whitespace, and reads category rows within first 40 source rows.
+The exact current Firing workbook/path on the user's PC is not available here; these changes fix verified code gaps, not a claim that the current factory upload was tested. Existing source selection/read diagnostics show remaining issues without guessing figures.
+
+Issue 3: Preparation optional, no large error wanted.
+Missing report remains excluded from graphs; no fabricated zero. Existing file read diagnostics collapsed by default. Generic cut-off reminder uses a small caption.
+
+Files: hub.py, apps/daily/production_wip_sources.py, apps/daily/production_wip_control.py, apps/daily/daily_planner_app.py.
+Patch includes packaging_standard_source.py required by hub/Daily dependencies.
+
+Validation: Python compilation passed. Key audit confirms each new source folder/revision key occurs exactly once. Registry tests with two different source paths prove correct Home-vs-Sources provenance. Classifier tests verify Thai เตา and English Kiln map to Firing + curing.
+Full live Streamlit/browser and actual current Firing workbook run unavailable here.

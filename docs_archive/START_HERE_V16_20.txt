@@ -1,0 +1,10 @@
+V16.20 — SAVED PLAN RESTORE AND STREAMLIT NAVIGATION FIX
+2026-10-02, Asia/Bangkok
+
+Stop the app. Back up existing code. Extract patch files into matching locations in your existing V16.18/V16.19 installation. Preserve CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat. Restart.
+Create Daily Plan once after upgrading to write settings and overrides into the saved snapshot. Thereafter leaving the page and returning restores those settings and the same saved result if the source fingerprint matches.
+Look for Saved plan ID and calculation timestamp above the dashboard. Same ID and time identify the same restored calculation; creating a new plan assigns a new ID.
+Source changes, settings edits, or override changes still require recalculation and show the existing reconciliation hold. Page switching alone should not do so.
+Saved plan: <SL_SHARED_ROOT>/CACHE/daily_result.pkl. Default: CENTRAL_DATA/CACHE/daily_result.pkl.
+The saved snapshot includes result, source fingerprint, settings, column mapping, firing edits, and plan overrides. Firing source is reloaded only when its path/size/modified time changes.
+Navigation buttons now set the Quick Access widget through a Streamlit callback, before its next instantiation. This fixes StreamlitWidgetAlreadyInstantiatedError for daily_quick_access_v13.

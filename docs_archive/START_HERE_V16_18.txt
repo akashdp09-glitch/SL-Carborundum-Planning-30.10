@@ -1,0 +1,25 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.18
+Release date: 2026-10-02 (Asia/Bangkok)
+
+Install/update
+1. Extract this ZIP to a writable folder.
+2. Start with START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+3. Upload/activate the current source workbooks in Source Upload. Source workbooks are not bundled.
+4. After changing an input workbook or planning control, recreate the Daily Plan before comparing dashboard views.
+
+Data consistency controls
+- Integrated Analysis reads the same active central store as Home and the Daily Planner: CENTRAL_DATA/COMPANY_DATA (or the paths in SERVER_STORAGE_CONFIG.bat).
+- A Daily Plan is tied to its source-file paths, streamed SHA-256 hashes, sizes, modified times and planning controls. A changed source/control clears the prior calculation and shows a DATA RECONCILIATION HOLD.
+- The animated HTML dashboard is a static export from that verified calculation. Its timestamp and fingerprint are embedded in the HTML and shown in the download panel.
+- The HTML risk card/charts use the selected due-date window. The live Delivery Risk tab uses the full calculated horizon. The app states this scope beside the download so unlike periods are not compared as if they were the same measure.
+- Use the HTML parity values shown beside the export button to compare its Today Target, Next Workday Target, risk WO count and risk remaining quantity against the exported HTML cards.
+- Production start-day defaults and backorder “today” checks use Asia/Bangkok time.
+
+Traceability
+- Active central uploads: CENTRAL_DATA/COMPANY_DATA/
+- Immutable uploaded source copies: CENTRAL_DATA/SOURCE_COPIES/
+- Generated reports: CENTRAL_DATA/REPORTS/
+- Source registry: CENTRAL_DATA/source_registry.json
+- Dashboard snapshot cache: CENTRAL_DATA/CACHE/daily_result.pkl (verified against current inputs before reuse)
+
+For the issue cause, changed files, and verification limits, see REVISION_TRACEABILITY_V16_18.txt.

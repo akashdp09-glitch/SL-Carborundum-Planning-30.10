@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block content %}
+<div class="detail-wide">
+<div class="page-head"><div><h1>🗂 Part register</h1><div class="muted">Physical audit observations and unidentified parts - the same records the phones submit. Latest observation per work order / location / batch. Observations are not stock and not production.</div></div></div>
+<form class="panel filter-grid" method="get" action="/register">
+  <input name="q" value="{{ qp.q or '' }}" placeholder="Search anything">
+  <input name="wo" value="{{ qp.wo or '' }}" placeholder="Work order">
+  <input name="part" value="{{ qp.part or '' }}" placeholder="Part / description">
+  {% if show_customer %}<input name="customer" value="{{ qp.customer or '' }}" placeholder="Customer">{% endif %}
+  <input name="section" value="{{ qp.section or '' }}" placeholder="Section / process">
+  <select name="status"><option value="">Any status</option>{% for s in ['OK','SHORT','EXCESS','NOT_FOUND','WRONG_LOCATION','DAMAGE','HOLD','OTHER','UNKNOWN'] %}<option {{ 'selected' if qp.status == s }}>{{ s }}</option>{% endfor %}</select>
+  <input name="location" value="{{ qp.location or '' }}" placeholder="Location">
+  <input type="date" name="date_from" value="{{ qp.date_from or '' }}" title="From"><input type="date" name="date_to" value="{{ qp.date_to or '' }}" title="To">
+  <select name="state"><option value="">Any identification state</option>{% for s in ['WO_ASSIGNED','WO_ASSIGNED_QTY_UNKNOWN','UNIDENTIFIED','LINKED'] %}<option {{ 'selected' if qp.state == s }}>{{ s }}</option>{% endfor %}</select>
+  <label><input type="checkbox" name="unidentified" value="1" {{ 'checked' if qp.unidentified }}> Unidentified only</label>
+  <label><input type="checkbox" name="conflicts" value="1" {{ 'checked' if qp.conflicts }}> Conflicts only</label>
+  <button class="primary" type="submit">Filter</button><a class="button" href="/register">Clear</a>
+</form>
+<div class="muted">{{ total }} record(s) · page {{ page }}/{{ pages }} · <a href="/register/export.csv?{{ qs }}">⬇ CSV</a> · <a href="/register/export.xlsx?{{ qs }}">⬇ Excel</a> <small>(browser download of the current filter; nothing is saved on the server)</small></div>
+<div class="table-wrap"><table class="grid-table"><thead><tr><th>Tracking ID</th><th>WO</th><th>Part / spec</th><th>Description</th><th>Section</th><th>Status</th><th>Qty</th><th>Unit</th><th>Location</th><th>Photo</th><th>Last observed</th><th>By</th><th>State</th></tr></thead><tbody>
+{% for r in rows %}<tr class="{{ 'conflict' if r.conflict }}"><td><a href="/register/{{ r.tracking_id }}">{{ r.tracking_id }}</a>{% if r.conflict %} ⚠{% endif %}</td><td>{{ r.wo_id or '—' }}</td><td>{{ r.part_code }}</td><td>{{ r.description[:60] }}</td><td>{{ r.section }}</td><td>{{ r.status }}</td><td>{% if r.qty_unknown %}unknown{% else %}{{ r.qty|round(0)|int }}{% endif %}</td><td>{{ r.unit }}</td><td>{{ r.location }}</td><td>{% if r.photo_url %}<img loading="lazy" class="reg-thumb" src="{{ r.photo_url }}" alt="">{% endif %}</td><td>{{ r.last_observed }}</td><td>{{ r.ident_state }}</td></tr>
+{% else %}<tr><td colspan="13" class="muted">No records match.</td></tr>{% endfor %}</tbody></table></div>
+<div class="pager">{% if page > 1 %}<a class="button" href="/register?{{ qs }}&page={{ page - 1 }}">← Prev</a>{% endif %}{% if page < pages %}<a class="button" href="/register?{{ qs }}&page={{ page + 1 }}">Next →</a>{% endif %}</div>
+</div>{% endblock %}

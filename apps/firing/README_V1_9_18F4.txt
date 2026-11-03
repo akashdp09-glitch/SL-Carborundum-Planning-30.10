@@ -1,0 +1,1 @@
+Preserves F3 runtime/planning behavior. All stacked graphs now print one clear total for the whole stack: daily kiln starts/day and floor total pcs. Segment details remain hover/table only.

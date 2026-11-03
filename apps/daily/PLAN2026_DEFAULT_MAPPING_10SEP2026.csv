@@ -1,0 +1,47 @@
+﻿Field,Default Excel Column
+Work Order / Production Code,A
+WO Date,B
+Warehouse Target,C
+ORDER,D
+Revised Due Date,E
+Customer,F
+Specification,H
+Order Qty,J
+Product Code,K
+Product Type / Real Spec,L
+D,M
+T,N
+H,O
+Net Weight g/pc,AF
+Gross Weight g/pc,AH
+Firing Program,BB
+Product Category,BF
+Shape,BW
+Cut Factor,CP
+Preparation Plan,CW
+Preparation Actual,CX
+Preparation Status,CY
+Mixing Plan,DF
+Mixing Actual,DG
+Mixing Status,FH
+Forming Plan,DP
+Forming Actual,DQ
+Forming Status,DR
+Firing Plan,DZ
+Firing Actual Qty,EA
+Firing Actual/Load Date,EB
+Firing Status,EC
+Firing Exit/Finish Date,DX
+Firing Issue,DY
+Grinding/Cutting Plan,EJ
+Grinding/Cutting Actual,EK
+Grinding/Cutting Status,EL
+Packing Plan,ES
+Packing Actual,ET
+Packing Status,EU
+Actual Warehouse Date,EV
+Overall WO Closed,FC
+NCR,FF
+APPROVE,FG
+REJECT,FH
+Sales Delivery Date,IB

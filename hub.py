@@ -1,5 +1,5 @@
 from __future__ import annotations
-import io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, urllib.parse, zipfile, math, shutil, json, hashlib, secrets, posixpath, tempfile, base64, threading, xml.etree.ElementTree as ET
+import uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, urllib.parse, zipfile, math, shutil, json, hashlib, secrets, posixpath, tempfile, base64, threading, xml.etree.ElementTree as ET
 from datetime import datetime, date, time
 from zoneinfo import ZoneInfo
 from pathlib import Path
@@ -1399,7 +1399,7 @@ def plan2026_wo_detail(plan_path, query, raw_df=None):
 _TREE=[('▾ HOME & REFERENCE',[('🏠 Home / Main Page','control'),('📚 Code & Part Knowledge','knowledge')]),
        ('▾ PLANNING',[('📅 Daily Production Plan','daily'),('🔥 Firing / Kiln Plan','firing'),('🗓️ MPS / Future Plan','mps'),('🆕 New Part Plan','newplan'),('📦 Stock-on-Hand Material Status','material'),('🧪 Material MRP','mrp'),('⚖️ Capacity / Recovery','capacity'),('⚖️ Capacity vs Plan vs Actual','capacity_actual'),('📦 Packaging Plan','pack'),('🧰 Planning Suite','suite')]),
        ('▾ PRODUCTION & PART TRACKING',[('📋 Update WO Section Status','floor'),('⚡ Mobile Part Audit / QR','audit'),('📋 Mobile Audit Register','audits')]),
-       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Monthly Planning KPI Scorecard','kpi'),('🎯 Department KPI Workbook Analysis','daily_kpi'),('💰 Cost & Planning KPI Analysis','cost'),('🚨 Backorder / Delivery Risk','back'),('🧯 Weekly Recovery Action Plan','daily_recovery'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
+       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Manager KPI / KPI ผู้จัดการ','kpi'),('🎯 Department KPI Workbook Analysis','daily_kpi'),('💰 Cost & Planning KPI Analysis','cost'),('🚨 Backorder / Delivery Risk','back'),('🧯 Weekly Recovery Action Plan','daily_recovery'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
        ('▾ DATA & CONTROL',[('📥 Upload / Replace Source Files','src'),('🔎 Source Traceability','src')])]
 _goto_terms={
  'daily':'download plan excel export daily production schedule แผนรายวัน ดาวน์โหลดแผน',

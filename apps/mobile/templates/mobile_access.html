@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell">
+  <div class="mobile-head"><div><a href="/mobile">← Mobile Audit</a><div class="mobile-title">📱 Phone Connection</div></div></div>
+  <section class="panel">
+    <h2>Connect this phone to the same factory network</h2>
+    <p>On your phone, join the same Wi-Fi/LAN that can reach the Planning PC/server.</p>
+    <div class="access-url">{{ server_url }}/mobile</div>
+    {% if access_items %}
+      <h3>Available server addresses</h3>
+      {% for url, qr in access_items %}
+      <div class="access-option">
+        <div><b>{{ url }}/mobile</b><div class="muted">Try this address if the previous one does not open on the phone.</div></div>
+        <img src="{{ qr }}" alt="QR to open Mobile Audit">
+      </div>
+      {% endfor %}
+    {% endif %}
+    <p class="muted"><b>Network requirement:</b> the phone must be able to reach this PC. If company Wi-Fi blocks phone-to-PC traffic, connect the phone to an approved company network/VPN or to the Windows Mobile Hotspot provided by this PC. The software cannot bypass an IT network restriction.</p>
+    <a class="button primary mobile-big-button" href="{{ server_url }}/mobile">Open Mobile Audit on this PC</a>
+  </section>
+</div>
+{% endblock %}

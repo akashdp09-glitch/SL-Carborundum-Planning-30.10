@@ -1,0 +1,31 @@
+V16.15 REVISION / VALIDATION — 2026-10-01 (Asia/Bangkok)
+
+SOURCE WORKBOOKS USED FOR VALIDATION
+- Plan 2026-2-Update-240926.xlsx — active supplied Plan-2026 structure, WO values and Plan-2026 section status columns.
+- 2.เดือน กันยายน  ผสม(1).xlsx — 24 date-tab sheets, 450 valid WO evidence rows. Date-tab name overrides any stale date printed in the workbook.
+- Cap แต่ละแผนก(20260911-074159).xlsx — verified CAP ผสม layout and source values. Packaged capacity reference: apps/daily/CAPACITY_DATABASE.xlsx → CAP ผสม.
+- Existing V16.14 knowledge snapshot and source manifest — reused without changing source content.
+
+CHANGES
+1. Hub Plan reader limits the Pandas source frame to columns A:IA (235 columns). It previously read the inflated sheet range reported as 15,988 columns, increasing memory and search cost.
+2. WO suggestions project only display/search columns; normalized WO, customer, customer ID, product code, specification, ORDER and PO search are supported.
+3. Added apps/daily/mixing_capacity_trace.py. For each dated Mixing sheet it reports planned mill batches, assigned mills, actual active machines, plan/actual pcs, plan kg derived from the workbook's order weight and quantity, actual kg from the source, batch and kg capacity from assigned machines, and source workbook/tab/row/path. Capacity counts each assigned machine identity once per date; unknown mappings remain visible.
+4. Added a direct Daily Planner page and quick access entry for Mixing Mill Plan vs Actual. It flags planned batch capacity overloads and actual kg above nominal assigned-mill capacity.
+5. Replaced the single multi-file Daily Status chooser with six separately labeled department file pickers. The saved files and revision registry remain section/month-specific. Date source remains the sheet tab.
+6. Mobile Plan import is bounded to columns A:IA. Each WO stores source row and source section states (Preparation, Mixing, Forming, Firing, Grinding, Packing, Production, Planning); mobile suggestions and WO detail show these states with source filename/import time.
+7. Live mobile QR capture now saves its camera frame through the same traceable evidence endpoint as photo scans. QR value, result, method, path, time and digest remain logged.
+8. New Plan suggestion export includes READINESS_CHECK for unresolved material/process/tooling/staff/capacity/schedule/packaging/release gates. Existing and historical execution dates are still cleared before drafting.
+
+VERIFICATION RUN
+- Python py_compile: hub.py, daily_planner_app.py, mixing_capacity_trace.py, mobile/app.py — passed.
+- Mixing workbook parser: 24 dates and 450 detail rows; tab dates verified (1-9-2026 → 2026-09-01); detail source rows and machine-capacity mapping returned. No date cell used.
+- Controlled Plan import SQL exercised independently against supplied Plan workbook: 3,409 rows imported; P005-110826 returned source row 2963 and eight decoded Plan section states.
+- Desktop Plan search function exercised against supplied Plan: punctuation-free P005110826 found P005-110826; Nordent customer search returned matching WOs. Only 235 columns loaded.
+- Full Streamlit/browser launch was not available because Streamlit is absent in this execution environment. Mobile app end-to-end import used an isolated SQL test because FastAPI/qrcode are absent here. Phone camera, HTTPS permissions, network, photo decoder and concurrent scan load require deployment/device validation.
+
+KNOWN BOUNDARIES
+- The source Daily Mixing template contains planned mill batches but no actual mill-batch count. Actual active mills is the number of distinct M/C labels with actual qty > 0.
+- Historical source actual kg exceeds assigned nominal capacity on some days; the app flags this as review, does not claim those figures are feasible, and does not invent overtime.
+- CAP machine category/abrasive restrictions and live machine/shift downtime are not automatically overridden or inferred. Review unmapped assignments and eligibility against the source CAP ผสม rows.
+- QR work-order labels are IP-independent. Normal phone camera live scan still needs a stable secure (HTTPS) app origin and real-device permission test.
+- High-concurrency thousand-scans/day performance has not been stress-tested. The revised lookup avoids full Plan column reads; do not interpret source-based verification as a peak-load certification.

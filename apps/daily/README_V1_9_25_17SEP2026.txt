@@ -1,0 +1,9 @@
+V1.9.25 changes requested 17-Sep-2026
+- Test Work inherited from Firing Planner WO-level selection. Fallback only for old firing files: Product Code starts 1 = TEST. Code 4 not assumed.
+- Grinding and Cutting are displayed as separate processes; route decides which one applies to a WO.
+- Bar graphs show values on each bar; stacked graphs show one total above each stack; pie charts show value/percent and total.
+- Backorder OPEN vs CLOSED shown together for direct total-quantity comparison; OPEN is darker.
+- Delivery-risk and Test Work stacked charts show totals via common chart helper.
+- Operational MPS process schedule changed to grouped bar Plan ton vs Controlled Capacity ton, with focus/resource action table.
+- Added all constrained-process Pareto so multiple bottleneck processes are visible, not only one WO label.
+- Bundled and mapped Planning's Diamond reservation workbook dated 16-09-2026 (Sum sheet: code/category/tool/min-mid-max/warehouse stock/reservation signal/average monthly).

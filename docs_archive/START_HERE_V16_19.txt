@@ -1,0 +1,24 @@
+V16.19 — PACKAGING SOURCE RECOGNITION AND ORIGINAL FILE PROPERTIES
+Release: 2026-10-02 Bangkok
+
+Fixes
+- Reads the approved Thai sheet มาตรฐานการบรรจุ in both Home Packaging and Daily Planner. A Usage sheet is not required for this workbook.
+- Detects original filename 1.มาตรฐานการบรรจุ-1.xlsx in known program source folders if no canonical active file exists. Multiple copies require source selection; no arbitrary choice.
+- Original filename, original source folder, upload time, workbook internal modified time, and user-provided revision are distinct properties. Server filename/location remain separate.
+- Original source folder cannot be automatically recovered from a browser upload. Enter it beside the upload controls. Existing records can be corrected at Home -> Uploaded Files & Traceability -> Record original source properties, without uploading again. Edits retain prior values in provenance history.
+- Unknown historical upload times/source filenames show Not recorded, never the destination file modification time presented as upload time.
+- Upload replacement retains prior source provenance in source_history and original uploaded bytes in SOURCE_COPIES.
+
+Use
+1. Install the full ZIP, or stop the V16.18 app and copy patch files into matching locations. Back up your existing files first.
+2. Keep your existing CENTRAL_DATA directory when updating. If using a new folder, configure SERVER_STORAGE_CONFIG.bat to point at your existing data folder; otherwise a new install cannot see previous uploads.
+3. Open Home -> Uploaded Files & Traceability. Check the packaging record's ORIGINAL filename.
+4. If the existing record is present, enter its actual source folder/revision through the correction control. Do not replace it just to edit properties.
+5. If the source is absent in that running installation, upload the approved workbook through Home or Sources; enter its actual original folder first.
+6. Recreate the Daily Plan if inputs changed, then open Packaging Plan. It shows source-loaded row count and separates unknown product codes from missing/unreadable files.
+
+Default server locations
+Active sources: CENTRAL_DATA/COMPANY_DATA
+Source provenance registry: CENTRAL_DATA/source_registry.json
+Archived uploaded originals: CENTRAL_DATA/SOURCE_COPIES
+These are destination storage, not the original PC/network source folder.

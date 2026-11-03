@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<h1>2026 Plan View</h1><div class="muted">Basic long-term view derived from imported Work Orders. Drill down to the Work Order for status/WIP.</div>
+<section class="panel"><h2>Monthly Summary</h2><table><thead><tr><th>Month</th><th>Orders</th><th>Planned Qty</th></tr></thead><tbody>{% for month,v in monthly %}<tr><td>{{ month }}</td><td>{{ v.orders }}</td><td>{{ '%.0f'|format(v.qty) }}</td></tr>{% endfor %}</tbody></table></section>
+<section class="panel"><h2>Order Detail</h2><table><thead><tr><th>WO</th><th>Product</th><th>Qty</th><th>Produced</th><th>Remaining</th><th>Status</th><th>Due</th></tr></thead><tbody>{% for s in rows %}<tr><td><a href="/work-orders/{{ s.wo.wo_id }}">{{ s.wo.wo_id }}</a></td><td>{{ s.wo.product_code }}</td><td>{{ '%.0f'|format(s.wo.qty) }}</td><td>{{ '%.0f'|format(s.produced) }}</td><td>{{ '%.0f'|format(s.remaining) }}</td><td>{{ status_labels.get(s.status,s.status) }}</td><td>{{ s.wo.due_date }}</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

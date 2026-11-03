@@ -1,0 +1,11 @@
+V1.9.3 DAILY PLANNER
+- Plan 2026 open demand is the base.
+- Valid Due Date is the first priority. Plan/process date is fallback only when Due Date is missing.
+- Existing WIP pushes forward; due-date demand pulls upstream.
+- Preparation, Mixing, Forming, post-firing and Packing remain limited by controlled daily capacity/resource rules. No unlimited pull.
+- Uploaded Firing Planner remains the firing synchronization/release anchor.
+- Far-due work may fill otherwise-idle capacity only after earlier-due executable demand is protected.
+- Default planning horizon 60 days, editable to 365.
+- New Dashboard Date selector: create management/execution dashboard for ANY selected date without changing planning start.
+- Selected-date dashboard shows section plan pcs/kg, WO count, peak resource load, executable WO rows, due/overdue protection, delivery targets, risk Gantt and bottleneck evidence.
+- Plan2026 is not overwritten.

@@ -1,0 +1,30 @@
+V16.18 DATA RECONCILIATION — 2026-10-02 (Asia/Bangkok)
+
+USER ISSUE
+Dashboard charts and the standalone HTML dashboard showed different values. In a company environment, unexplained differences are unacceptable.
+
+ROOT CAUSES CONFIRMED
+1. Integrated Analysis used a separate legacy company_data location while Home/Daily Planner used CENTRAL_DATA/COMPANY_DATA. That could make it analyze an older workbook.
+2. Daily Planner reused a persistent daily_result.pkl without checking whether its source workbooks or planning controls changed.
+3. The standalone TV HTML applies a selected date window to its risk cards/charts, whereas the live Delivery Risk page represents the full calculated horizon. The HTML export did not clearly expose that scope or its calculation identity.
+4. Daily Planner default start/backorder dates used host-local date, while calculation timestamps use Bangkok time.
+
+CHANGES
+- shared_analytics.py now reads SL_COMPANY_DATA / SL_SHARED_ROOT, matching hub.py and SERVER_STORAGE_CONFIG.bat. It identifies the active Plan 2026 path, file modified time in Bangkok time, and SHA-256 in the page.
+- apps/daily/daily_planner_app.py fingerprints selected source contents (streamed SHA-256), paths, file sizes/modified times, relevant planning controls, field mapping, and override tables. Hashes are cached across ordinary reruns, then freshly checked before/after a plan calculation. It refuses to reuse an unverified/old pickle and clears a session result when the fingerprint changes. It also checks before and after calculation to prevent mixed-input publication.
+- Moved the fingerprint helper before the Create Daily Plan action so the first plan creation can call it safely.
+- TV HTML is built from the active verified result; its cards and charts use the selected TV window. It embeds generated timestamp and input fingerprint in metadata and display. The app shows the four HTML parity figures with the same date scope beside the download. Full-horizon live Delivery Risk is labeled as a separate scope.
+- Daily Planner default plan start and backorder today checks use Asia/Bangkok date.
+- hub.py application title updated to V16.18.
+
+VERIFICATION
+- `python -m py_compile apps/daily/daily_planner_app.py shared_analytics.py hub.py` passed.
+- Static review confirmed the Daily Plan action references a helper defined before it; no duplicate helper remains.
+- Attempted a synthetic HTML runtime parity check, but this execution environment does not have Plotly installed (`ModuleNotFoundError`). The Windows package includes dependencies from requirements; a live Streamlit/Plotly and Excel workbook run was not possible here.
+- Therefore compile and code-path checks passed; full production environment validation is still required before relying on these views for operational decisions.
+
+IMPORTANT SCOPE NOTES
+- HTML is a frozen snapshot at export time; it does not update if source files change afterward. Recreate the Daily Plan and download a new HTML snapshot to refresh it.
+- The TV risk scope is selected due dates only, and excludes rows projected to finish on/before their due date. The main risk tab has full-horizon rows and different table detail. These differences are intentional and now labeled; compare only matched scope/measure.
+- The fingerprint includes a streamed SHA-256 for each selected workbook. Hashes are cached using path/size/modified time during ordinary reruns to preserve speed and are forcibly refreshed before and after each calculation. Integrated Analysis shows SHA-256 for its active Plan 2026 source. Full source registry also retains per-upload SHA-256.
+- Source workbooks are not included in this release. Upload current files in the running program.

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="/mobile">← Home</a><div class="mobile-title">WIP & Audit Summary / สรุป WIP และการตรวจนับ</div>
+    <div class="muted">Production WIP, tracked order balance and latest physical audits are shown as separate measures.</div></div></div>
+  {% set s = report.summary[0] if report.summary else {} %}
+  <div class="summary-grid">
+    <div class="summary-item"><b>Audited WOs</b><strong>{{ s.get('Audited WOs', 0) }}</strong></div>
+    <div class="summary-item"><b>Categories</b><strong>{{ s.get('Categories', 0) }}</strong></div>
+    <div class="summary-item"><b>Statuses</b><strong>{{ s.get('Statuses', 0) }}</strong></div>
+    <div class="summary-item"><b>Locations</b><strong>{{ s.get('Locations', 0) }}</strong></div>
+  </div>
+  {% if report.production_wip_section %}
+  <div class="summary-grid">
+    <div class="summary-item"><b>Production WIP / WIP ผลิต</b><strong>{{ '%.2f'|format(report.production_wip_total_t) }} t</strong></div>
+    <div class="summary-item"><b>Reported open WIP WOs</b><strong>{{ report.production_wip_open_wo_records|int }}</strong></div>
+    <div class="summary-item"><b>Data checks / ตรวจสอบข้อมูล</b><strong>{{ report.production_wip_data_checks }}</strong></div>
+  </div>
+  <section class="report-card"><h3>Production WIP by section · tonnes / WIP ผลิตแยกตามแผนก · ตัน</h3>
+    <p class="muted">WIP count = total WO less closed WO; cross-checked against “ยังไม่ปิด”. Tonnes = open-row Total GW (Kg) ÷ 1,000. Source: active Production WIP workbooks. WO counts can repeat across departments.</p>
+    {% for r in report.production_wip_section %}
+      <div class="bar-row"><span>{{ r.Section }} <small>{{ r['Open WO records']|int }} WOs</small></span><div class="bar-track"><i style="width:{{ (100.0 * r['Open WIP t'] / (report.production_wip_t_max or 1))|round(0) }}%"></i></div><b>{{ '%.2f'|format(r['Open WIP t']) }} t</b></div>
+    {% endfor %}
+  </section>
+  <section class="report-card"><h3>Production WIP by product category · tonnes / WIP ผลิตแยกตามประเภทสินค้า · ตัน</h3>
+    {% for r in report.production_wip_category %}
+      <div class="bar-row"><span>{{ r.Category }}</span><div class="bar-track"><i style="width:{{ (100.0 * r['Open WIP t'] / (report.production_wip_t_max or 1))|round(0) }}%"></i></div><b>{{ '%.2f'|format(r['Open WIP t']) }} t</b></div>
+    {% endfor %}
+  </section>
+  <section class="report-card"><h3>WIP source files / ไฟล์ต้นทาง WIP</h3><div class="mobile-list">{% for r in report.production_wip_sources %}<div class="mobile-row"><b>{{ r.Section }} · {{ r.Category }}</b><small>{{ r.get('Original filename','—') }} · {{ r.get('Uploaded at','time not recorded') }}</small></div>{% endfor %}</div></section>
+  {% elif report.production_wip_errors %}<section class="report-card"><h3>Production WIP / WIP ผลิต</h3>{% for e in report.production_wip_errors %}<p class="muted">{{ e }}</p>{% endfor %}</section>
+  {% else %}<section class="report-card"><h3>Production WIP / WIP ผลิต</h3><p class="muted">No active section WIP files are loaded. Upload them once on the Planning Center Home page.</p></section>{% endif %}
+  {% if report.open_wip_by_process %}
+  {% set wx = report.open_wip_by_process|map(attribute='Remaining order pcs')|max %}
+  <section class="report-card"><h3>Open order balance by last scanned process · pcs</h3>
+    <p class="muted">{{ report.basis }} Source: shared mobile work-order and production-event database.</p>
+    {% for r in report.open_wip_by_process %}
+      <div class="bar-row"><span>{{ r.Process }}</span><div class="bar-track"><i style="width:{{ (100.0 * r['Remaining order pcs'] / (wx or 1))|round(0) }}%"></i></div><b>{{ '{:,.0f}'.format(r['Remaining order pcs']) }}</b></div>
+    {% endfor %}
+  </section>
+  {% else %}<section class="report-card"><h3>Open order balance by process</h3><p class="muted">No production-event balances are available yet.</p></section>{% endif %}
+  {% macro bars(title, rows, name_col) -%}
+  <section class="report-card"><h3>{{ title }}</h3>
+    {% if rows %}
+      {% set mx = rows|map(attribute='WOs')|max %}
+      {% for r in rows %}
+      <div class="bar-row"><span>{{ r[name_col] }}</span><div class="bar-track"><i style="width:{{ (100.0 * r['WOs'] / (mx or 1))|round(0) }}%"></i></div><b>{{ r['WOs']|int }}</b></div>
+      {% endfor %}
+    {% else %}<div class="muted">No audits yet.</div>{% endif %}
+  </section>
+  {%- endmacro %}
+  {{ bars('By product category', report.by_category, 'Product category') }}
+  {{ bars('By date', report.by_date, 'Date') }}
+  {{ bars('By status', report.by_status, 'Status') }}
+  {{ bars('By location', report.by_location, 'Location') }}
+  {{ bars('Audit summary by section · audited WOs', report.by_process, 'Observed process') }}
+  {% if report.audit_section_summary %}<section class="report-card"><h3>Audit section summary / สรุปตรวจนับแยกแผนก</h3><div class="mobile-list">{% for r in report.audit_section_summary %}<div class="mobile-row"><div><b>{{ r.Section }}</b><small>{{ r['Quantity by unit'] }} · unknown qty {{ r['Unknown quantity'] }}</small></div><strong>{{ r['Audited WOs'] }} WOs</strong></div>{% endfor %}</div></section>{% endif %}
+  {{ bars('Plan location vs observed location', report.by_location_comparison, 'Location comparison') }}
+  {% if s.get('Quantity unknown', 0) %}<p class="muted">{{ s.get('Quantity unknown', 0) }} latest audits have unknown quantity and are excluded from quantity totals.</p>{% endif %}
+  <section class="panel"><h2>Latest records</h2>
+    <div class="mobile-list">
+      {% for a in audits %}
+      <a class="mobile-row audit-photo-row" href="/mobile/part/{{ a.wo_id }}">{% if a.photo_url %}<img class="audit-thumb" src="{{ a.photo_url }}" alt="Audit photo for {{ a.wo_id }}" loading="lazy">{% endif %}<div><b>{{ a.wo_id }}</b><small>{{ a.product_category or 'NOT IN PLAN' }} · {{ a.observed_process or 'Section not recorded' }} · {{ a.physical_location or '—' }}</small></div><div class="mobile-row-right"><strong>{{ a.physical_status or '—' }}</strong><small>{{ a.created_at }}</small></div></a>
+      {% else %}<div class="muted">Scan or type a work order, then save status with a photo.</div>{% endfor %}
+    </div>
+  </section>
+</div>{% endblock %}

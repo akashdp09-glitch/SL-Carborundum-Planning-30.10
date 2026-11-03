@@ -1,0 +1,9 @@
+V16.22 — DUPLICATE SOURCE KEYS AND FIRING WIP RECOGNITION
+Stop app, back up code, extract patch into matching locations of existing V16.21 folder. Preserve CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat. Restart.
+
+Home and Sources original source-folder/revision controls have distinct keys and record their own values. This fixes StreamlitDuplicateElementKey for upload_source_folder.
+Firing section recognition now accepts filenames containing เตา or Kiln in addition to firing/เผา/curing. Source summary sheet names are whitespace-normalized; category rows are read within the first 40 rows instead of assuming one header row and eight rows.
+Missing Preparation report is not plotted or substituted with zero. Diagnostics for existing files needing attention are shown only in a collapsed source-details panel.
+If Firing is still absent, Home -> Select active Production WIP files: choose its actual original filename for Firing + curing and Apply. This uses the existing upload; do not upload again just to assign it.
+Inspect Production WIP source details for an actual workbook parse error. A stored file with a missing summary sheet is distinguished from an absent file. Original summary layout A:E remains category / total WO / open WO / open kg / closed WO; unknown layouts are not inferred.
+Includes earlier V16.20 navigation/reset and V16.21 single WIP upload fixes.

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="/mobile">← Home</a><div class="mobile-title">📤 My submissions</div><div class="muted">Saved on the server vs waiting on this phone</div></div></div>
+  <section class="panel"><h2>Waiting on this phone · รอส่ง</h2><div class="muted">These are NOT saved on the server yet. They stay here until the server confirms them.</div><div id="pendingList" aria-live="polite"></div></section>
+  <section class="panel"><h2>Confirmed by the server · บันทึกแล้ว</h2><div class="mobile-list">
+    {% for r in rows %}<a class="mobile-row" href="/mobile/part/{{ r.tracking_id }}"><div><b>{{ r.tracking_id }}</b><small>{{ r.kind }} · {{ r.status or '—' }} · {{ r.location or 'no location' }}</small></div><div class="mobile-row-right"><strong>{% if r.qty_unknown %}qty unknown{% else %}{{ r.qty|round(0)|int }} {{ r.unit or '' }}{% endif %}</strong><small>{{ r.received }}</small></div></a>{% else %}<div class="muted">Nothing yet.</div>{% endfor %}
+  </div></section>
+</div>{% endblock %}
+{% block scripts %}<script src="/static/pending_queue.js"></script><script>SLQueue.renderList(document.getElementById('pendingList'));</script>{% endblock %}

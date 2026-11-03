@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><h1>Planning Control Center</h1><div class="muted">Live database summary · refreshes automatically every 20 seconds</div></div><div><a class="button" href="/export/control-pack">⬇ Control Pack Excel</a> <a class="button" href="/mobile">📱 Mobile Audit</a></div></div>
+<div class="cards">
+  <div class="card"><div>Active WO</div><strong>{{ stats.active }}</strong></div>
+  <div class="card"><div>🟢 Running</div><strong>{{ stats.running }}</strong></div>
+  <div class="card"><div>🟡 Waiting</div><strong>{{ stats.waiting }}</strong></div>
+  <div class="card"><div>🔴 Hold</div><strong>{{ stats.hold }}</strong></div>
+  <div class="card"><div>🔵 Production Complete</div><strong>{{ stats.production_complete }}</strong></div>
+  <div class="card"><div>🟠 QC Pending</div><strong>{{ stats.qc_pending }}</strong></div>
+  <div class="card"><div>♻ Rework</div><strong>{{ stats.rework }}</strong></div>
+  <div class="card"><div>⚠ Unconfirmed</div><strong>{{ stats.unconfirmed }}</strong></div>
+  <div class="card"><div>⏰ Due Today</div><strong>{{ stats.due_today }}</strong></div>
+  <div class="card"><div>🔴 Overdue</div><strong>{{ stats.overdue }}</strong></div>
+  <div class="card"><div>📱 Audits Today</div><strong>{{ stats.audits_today }}</strong></div>
+  <div class="card"><div>⚠ Audit Mismatch</div><strong>{{ stats.audit_mismatch }}</strong></div>
+</div>
+<div class="grid2">
+  <section class="panel"><h2>Open order balance by process · pcs</h2><div class="muted">Remaining order quantity grouped by last scanned process. This is not a physical WIP count.</div>
+    {% if wip %}{% for p,q in wip %}<div class="bar-row"><span>{{ p }}</span><div class="bar-track"><i style="width:{{ (100.0 * q / (wip_max or 1))|round(0) }}%"></i></div><b>{{ '%.0f'|format(q) }}</b></div>{% endfor %}{% else %}<div class="muted">No process WIP events yet.</div>{% endif %}
+  </section>
+  <section class="panel"><h2>Production status · work orders</h2>
+    {% for label,value in status_graph %}<div class="bar-row"><span>{{ label }}</span><div class="bar-track"><i style="width:{{ (100.0 * value / (status_max or 1))|round(0) }}%"></i></div><b>{{ value }}</b></div>{% endfor %}
+  </section>
+</div>
+<div class="grid2"><section class="panel"><h2>Exceptions</h2>
+    {% if exceptions %}<table><thead><tr><th>Type</th><th>WO</th><th>Product</th><th>Status</th></tr></thead><tbody>{% for typ,s in exceptions %}<tr><td>{{ typ }}</td><td><a href="/work-orders/{{ s.wo.wo_id }}">{{ s.wo.wo_id }}</a></td><td>{{ s.wo.product_code }}</td><td>{{ status_labels.get(s.status,s.status) }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="good">No exceptions currently.</div>{% endif %}
+  </section>
+</div>
+<section class="panel"><div class="page-head"><h2>Active Work Orders</h2><div><a href="/work-orders">View all</a> · <a href="/export/control-pack">Excel Control Pack</a></div></div>
+<table><thead><tr><th>WO</th><th>Product</th><th>Qty</th><th>Produced</th><th>Remaining</th><th>Process</th><th>Status</th><th>Due</th></tr></thead><tbody>
+{% for s in snapshots %}<tr><td><a href="/work-orders/{{ s.wo.wo_id }}">{{ s.wo.wo_id }}</a></td><td>{{ s.wo.product_code }}</td><td>{{ '%.0f'|format(s.wo.qty) }}</td><td>{{ '%.0f'|format(s.produced) }}</td><td>{{ '%.0f'|format(s.remaining) }}</td><td>{{ s.current_process or '—' }}</td><td><span class="status {{ s.status|lower }}">{{ status_labels.get(s.status,s.status) }}</span></td><td>{{ s.wo.due_date or '—' }}</td></tr>{% endfor %}
+</tbody></table></section>
+<script>setTimeout(()=>location.reload(),20000);</script>
+{% endblock %}

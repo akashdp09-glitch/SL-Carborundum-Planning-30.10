@@ -1,0 +1,45 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.11 REVISION TRACEABILITY
+Prepared: 2026-09-30 (Asia/Bangkok)
+
+BUILD SOURCE
+- Base software supplied for revision: SL_Carborundum_Smart_Factory_Center_V16_8_HOME_MULTI_WO_KPI_FIX.zip
+  Working copy used: SL_Carborundum_Smart_Factory_Center_V16_10 (V16.10 source tree)
+  Key files revised: hub.py; apps/mobile/app.py; apps/mobile/start_server.bat;
+  apps/mobile/requirements.txt; apps/mobile/templates/base.html, operator.html,
+  mobile_scan.html, data_location.html, audit_history.html, upload.html,
+  qr_generator.html; apps/mobile/README.md.
+- This release builds on the existing V16.10 new-WO/material/mobile update, preserving its other software files and supplied database/seed inputs.
+
+USER-PROVIDED BUSINESS REFERENCES
+- Plan 2026-2-Update-240926.xlsx — available in this work session at upload/Plan 2026-2-Update-240926.xlsx.
+- Stock on hand_230926(1).xlsx — available locally as upload/Stock on hand_230926(1).xlsx. The user request also named Stock on hand_250926(1).xlsx; that exact file was not present in the local build inputs.
+- Cap แต่ละแผนก(20260911-074159).xlsx — available at upload/Cap แต่ละแผนก(20260911-074159).xlsx.
+- Q26-009 Test 2 manual route and dates — source is the user's message in this session (2026-09-30). These production instructions were not imported or altered by this QR/traceability-focused release.
+- The user also named สรุปทบทวน38A400P4VB04 80X25X7 Q26-009 - ผลิตทดแทน - ครั้งที่2.xlsx,
+  Revice Forecast P,PB in Quater 3,4.xlsx, and SL_Planning_MD_Daily_20260924.xlsx.
+  These exact files were not present under the local upload/ folder used for this build. They were not silently substituted.
+
+V16.11 CHANGES
+- Work Order QR payload defaults to SLWO:<WO ID>; no detected/current LAN IP is embedded.
+- Desktop QR registry versioned as SLWO:v1. On first generation, previous IP-based QR registry entries are treated as old and all current WOs are regenerated. Later “new WOs” generation skips only WOs already recorded under SLWO:v1.
+- Mobile QR Generator is directly linked in the app navigation. It creates one PNG or a printable workbook. Optional direct-open labels require an explicit stable SL_PUBLIC_URL.
+- Mobile scan flow attempts live browser camera where available and exposes phone camera/photo capture as fallback. Photo-based scans save the submitted image, SHA-256, decoded payload, WO, operator, method, result, and time. Failed photo scans are retained for diagnosis. Live camera scans log their payload and result but do not store an image frame.
+- Work Order source imports record saved absolute path and SHA-256. QR workbook generation is now on-demand instead of blocking every import.
+- Search uses bounded SQL queries and indexed exact WO/production-code fields. SQLite WAL is enabled once at initialization, avoiding a journal-mode change on each request.
+
+SERVER STORAGE LOCATIONS
+- Mobile app: apps/mobile.
+- Mobile database: SL_DB_PATH or <SL_SHARED_ROOT>/shared_database/sl_planning.db.
+- Mobile QR PNG cache: apps/mobile/qr.
+- QR scan evidence: SL_PHOTO_ROOT/QR_SCANS/YYYY/MM/DD; default <SL_SHARED_ROOT>/PHOTOS/QR_SCANS/YYYY/MM/DD.
+- Part physical-audit images: SL_PHOTO_ROOT/MOBILE_AUDITS.
+- Work Order import uploads: apps/mobile/uploads.
+- Report and mobile QR workbooks: SL_REPORT_ROOT; default <SL_SHARED_ROOT>/REPORTS.
+- Plan source copies: SL_SOURCE_COPY_ROOT; default <SL_SHARED_ROOT>/SOURCE_COPIES.
+- Desktop hub QR temporary PNGs: <SL_REPORT_ROOT>/QR_TEMP.
+- Desktop hub QR registry: <SL_SHARED_ROOT>/QR_REGISTRY.json.
+- The in-app Files & Traceability page displays resolved live paths plus recorded Work Order imports. Older source rows without path fields remain marked as not recorded.
+
+VERIFICATION
+- Python syntax compilation and AST parsing passed for apps/mobile/app.py and hub.py.
+- Runtime, browser and physical phone camera integration tests were not run in this build environment (FastAPI/OpenCV are not installed in the scratch runtime and no factory phone/network is attached). The package requirements install OpenCV headless for the server-side photo decoder.

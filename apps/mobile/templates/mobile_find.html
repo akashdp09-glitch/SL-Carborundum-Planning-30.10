@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="/mobile">← Home</a><div class="mobile-title">🔎 Find part / WO</div></div></div>
+  <form class="mobile-search operator-search" method="get" action="/mobile/find"><input name="q" value="{{ q }}" placeholder="WO, production code, part, customer" autocomplete="off" autofocus><button class="primary" type="submit">FIND · ค้นหา</button></form>
+  {% if q and not rows %}<div class="alert danger">No work order or tracking ID matches “{{ q }}”.</div><a class="button operator-main-button" href="/mobile/unidentified">❓ Record as unidentified part</a>{% endif %}
+  {% if rows|length > 1 %}<div class="muted">{{ rows|length }} matches - choose the right one. Nothing is selected for you.</div>{% endif %}
+  <div class="mobile-list">{% for r in rows %}<a class="mobile-row" href="/mobile/confirm/{{ r.tracking_id }}"><div><b>{{ r.title }}</b><small>{{ r.part or r.description or '—' }} · {{ r.customer or ('Unidentified' if r.kind == 'TEMP' else '—') }}</small></div><div class="mobile-row-right"><strong>{{ r.qty|round(0)|int if r.qty is not none else '' }}</strong><small>{{ r.kind }}{% if r.state %} · {{ r.state }}{% endif %}</small></div></a>{% endfor %}</div>
+</div>{% endblock %}

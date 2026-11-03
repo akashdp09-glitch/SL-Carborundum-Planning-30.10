@@ -1,0 +1,6 @@
+........                                                                 [100%]
+8 passed in 10.75s
+
+Streamlit initial startup: no exceptions for both apps.
+WIP render, Firing switch, issue drilldown: no exceptions.
+Full scheduling/Windows/physical print tests: NOT completed.

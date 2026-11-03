@@ -1,0 +1,21 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.13 TRACEABILITY
+Prepared 2026-09-30 Asia/Bangkok
+
+SOURCE PACKAGE
+Based on clean V16.12 software source; company-specific dated Plan, Stock, and example mobile database remain excluded for clean first-run upload. Current user reference workbooks are analyzed from the upload area but are not copied into the release ZIP. Sheet tab dates are treated as authoritative for Daily Status analysis; dates typed within a worksheet do not override its tab name.
+
+DESKTOP WORK ORDER LOOKUP FIX
+- Previous implementation opened the active Plan workbook again on each Home rerun, assumed WO was in column A, and hid every exception by returning None. This led to a generic “not found” for missing files, schema changes, and read errors, and could be slow while typing.
+- New desktop lookup uses the already loaded Plan dataframe, dynamically matches the ProductionCode header, normalizes case/punctuation, strips SLWO:/WO: prefixes and URL wrappers, and offers in-memory partial suggestions. It reports missing Plan, no match and lookup error separately. Successful results identify the source Plan row.
+- Verified with user reference `Plan 2026-2-Update-240926.xlsx`, sheet `แผนการเผา`, header row 3; 3,409 data rows. Exact normalized WO `P025-230926` found in Plan row 3412; prefix `P025` returned suggestions; typed, dashless, `SLWO:` and URL forms normalize consistently.
+
+OTHER V16.13 CHANGES
+- Daily navigation direct links for Production WIP, Daily Open/Closed, Daily Status, and both KPI analyses.
+- Production WIP upload prompts are visible on its main page; section/customer/WO hierarchy and dynamic monthly sheet selection retained.
+- KPI Thai month parser capture-group error fixed; tested attached September department and warehouse KPI files with non-empty metric maps.
+- Mobile autocomplete presents process/location/due/last-scan details; searchable key normalized; image scan input is visibly clickable for mobile camera/photo fallback.
+- Physical audit report exports event data with photo thumbnails and file evidence.
+- Mobile standalone launcher loads the same SERVER_STORAGE_CONFIG.bat as the desktop app.
+
+VALIDATION
+Python syntax and controlled baseline verification run separately before release. Desktop WO search helper tested against the 3,409-row Plan as described above. No actual operator network, handset browser, multi-user server, or thousands-per-day load test was available, so those deployment conditions still need validation on the production network/device. Search path itself is in-memory; each upload still parses the workbook once to refresh page data.

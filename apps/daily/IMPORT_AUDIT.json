@@ -1,0 +1,47 @@
+[
+  {
+    "section": "Mixing",
+    "rows": 542,
+    "seconds": 0.168,
+    "negative_balances": 41,
+    "issue_rows": 43,
+    "summary_balance_errors": 0,
+    "open_gross_kg_summary": 7791.543770957924
+  },
+  {
+    "section": "Forming",
+    "rows": 283,
+    "seconds": 0.176,
+    "negative_balances": 38,
+    "issue_rows": 46,
+    "summary_balance_errors": 0,
+    "open_gross_kg_summary": 13382.769267451735
+  },
+  {
+    "section": "Firing + curing",
+    "rows": 304,
+    "seconds": 5.75,
+    "negative_balances": 37,
+    "issue_rows": 37,
+    "summary_balance_errors": 2,
+    "open_gross_kg_summary": 36287.43836068995
+  },
+  {
+    "section": "Grinding / Cutting (Production combined)",
+    "rows": 599,
+    "seconds": 0.207,
+    "negative_balances": 16,
+    "issue_rows": 64,
+    "summary_balance_errors": 0,
+    "open_gross_kg_summary": 49783.26734638213
+  },
+  {
+    "section": "Packing",
+    "rows": 430,
+    "seconds": 0.131,
+    "negative_balances": 34,
+    "issue_rows": 43,
+    "summary_balance_errors": 0,
+    "open_gross_kg_summary": 16635.97452652735
+  }
+]

@@ -1,0 +1,51 @@
+SL PPC DAILY PLANNER V1.7.0 — VALIDATION REPORT
+Date: 10-Sep-2026
+
+1) Revised Plan 2026 mapping
+Synthetic workbook tested with the revised addresses supplied by the user.
+Verified parsed fields:
+- A Work Order, E Due Date, AF NW, AH GW, BB Program, BF Category, BW Shape, CP Cut Factor
+- CW/CX/CY Preparation
+- DF/DG/FH Mixing
+- DP/DQ/DR Forming
+- DZ/EA/EB/EC Firing
+- EJ/EK/EL Grinding/Cutting
+- ES/ET/EU Packing
+- FC overall closure
+Result: PASS. Fast local-store sync also preserved Cut Factor and all revised process actuals.
+
+2) WIP synthetic result
+Order Qty 100; Prep Actual 50; Mixing 20; Forming 10; Firing 5; G/C 0; Packing 0
+Calculated queues: Preparation 50, Mixing 30, Forming 10, Firing 5, Grinding/Cutting 5, Packing 0.
+Result: PASS.
+
+3) Post-firing routing regression
+- CP > 1 => Cutting: PASS
+- CP=1 + Category T => QC -> Packing: PASS
+- CP=1 + HONNING spelling => QC -> Packing: PASS
+- CP=1 + SEGMENT-R => QC -> Packing: PASS
+- CP=1 + normal P => Grinding: PASS
+Cleaning is not presented as a separate route/process.
+
+4) A/B two-layer pair regression
+PM024A-010126 + PM024B-010126 are recognized as one pair key PM024-010126.
+Preparation/Mixing/Forming synchronization uses the later feasible date; if this makes an issued firing date too early, firing status is changed to HOLD - A/B PAIR NOT READY rather than falsely released.
+Result: PASS.
+
+5) Stock parser real-file regression
+Source: Stock on hand_010926.xlsx
+Only three controlled sheets parsed:
+- Abrasive: 419 rows
+- ทรายบด-ล้างR: 25 rows
+- ทรายบด-ล้างSPB: 22 rows
+Total 466 material rows.
+Parsed stock totals in this source: Balance 529.407 t; Order on Hand 123.314 t; Waiting to Receive 202.325 t; Under Test 40.000 t; negative-balance materials 20.
+Result: PASS.
+
+6) Accuracy guardrails
+- Current firing plan remains the firing anchor.
+- Previous issued firing plans bridge already-fired post-firing WIP.
+- Due date stays the primary priority; firing anchor is a secondary synchronization signal; spare capacity is filled from executable due-date queue.
+- Normal productive-day parameter defaults to 7.40 h; OT suggestion is shown separately.
+- Historical daily/weekly/monthly/quarterly Plan-vs-Actual does NOT invent process dates. With the currently supplied mapping it is shown as due-date cohorts unless dated actual data is supplied.
+- Height utilization in Firing Performance is shown only when the load data contains a valid Height Util value; the fast 30-day allocator does not fabricate exact height usage.

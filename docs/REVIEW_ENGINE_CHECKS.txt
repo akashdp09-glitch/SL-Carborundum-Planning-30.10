@@ -1,0 +1,17 @@
+COMMAND: bash scripts/cloud/validate.sh
+EXIT: 127
+bash: scripts/cloud/validate.sh: No such file or directory
+
+COMMAND: /workspace/sl-carborundum-venv/bin/python apps/daily/VERIFY_RELEASE.py
+EXIT: 1
+FAIL:
+  - daily_linear_engine_v1_1.py: file changed after it was accepted (current e8528932472c != accepted ed44ac2109d3); re-review required
+
+COMMAND: /workspace/sl-carborundum-venv/bin/python apps/firing/VERIFY_RELEASE.py
+EXIT: 1
+FAIL:
+  - firing_tomorrow_fast.py: file changed after it was accepted (current bf3f2c33c461 != accepted 48d14490755d); re-review required
+  - sl_daily_engine_v3_22_from_v17.py: differs from baseline and has no controlled-change entry
+  - fast_stage4_v15.py: differs from baseline and has no controlled-change entry
+  - firing_engine_desktop_v2.py: file changed after it was accepted (current 8f58656335ad != accepted bdfa7014b273); re-review required
+  - ppc_fast_core_v4_6.py: differs from baseline and has no controlled-change entry

@@ -1,0 +1,1 @@
+V1.9.20 chart rule: simple one-dimensional categorical distributions with only 2-4 categories automatically render as pie charts. Time-series, process-wise, grouped comparisons, stacked graphs, capacity comparisons and Gantt charts remain bar/timeline because pie would lose the required comparison. Existing JPEG graph download and Excel table export behavior retained.

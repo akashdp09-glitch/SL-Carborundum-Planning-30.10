@@ -1,0 +1,10 @@
+SL Planning Center - Quick install
+
+1) Install Python 3.11+ on the server.
+2) Double-click start_server.bat.
+3) The first run creates a virtual environment and installs dependencies.
+4) Open http://SERVER-IP:8000 from planning/production PCs.
+5) Windows Firewall may ask for permission for Python/Uvicorn; allow on the private factory network.
+6) Change default passwords before production use.
+7) Register each production terminal under Admin -> Terminals.
+8) Use QR Work Order printouts from Upload WO.

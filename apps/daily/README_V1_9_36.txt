@@ -1,0 +1,15 @@
+V1.9.36 — F12Z CONTROLLED INTEGRATION + PER-ANALYSIS DATES
+- Controlled continuation of V1.9.35 / V1.9.32 Animated Control Center lineage; calculation architecture preserved.
+- Verified against uploaded Firing Planner V1.9.18F12Z package and its retained F12W/F12T rules.
+- Firing authority: normal vitrified T1-T12/T14 hard maximum 2 starts/day; T0 excluded; resin R4/R5/R6 separate.
+- Firing TEST/NORMAL remains WO-level: product code starting 1 defaults TEST; code 4 defaults NORMAL/manual. EU Packing Status OR FC Overall WO Closure closes WO.
+- Removed hidden/global graph clipping from the common Plotly renderer. A graph can no longer be silently clipped by another analysis' global window.
+- Plan-vs-Actual retains its own local FROM/TO selector.
+- Delivery Risk retains its own local FROM/TO selector and filters risk evidence before plotting.
+- Backorder OPEN/CLOSED now has its own local FROM/TO selector and filters category evidence by due month.
+- TV dashboard retains its own local FROM/TO selector.
+- Planner Decision Layer remains non-destructive to source Plan2026.
+- Material alternatives remain recommendation-only until Planner approval; shortage-first + Show All retained.
+- OPEN/CLOSED Backorder remains category stacked P/R/S/T/M/PB and future due demand is not backorder.
+- Grinding and Cutting remain separate routes.
+- Static compile validation passed. Factory/runtime validation with current Plan2026, Daily Status, Capacity and F12Z output remains required before production release.

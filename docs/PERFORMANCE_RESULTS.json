@@ -1,0 +1,171 @@
+{
+ "conditions": {
+  "when_bkk": "2026-10-05 01:16",
+  "python": "3.12.3",
+  "vcpu": 4,
+  "browser": "headless Google Chrome (Playwright 1.49) phone viewport 390x844 @2x",
+  "server": "uvicorn, single process, SQLite WAL, local disk",
+  "data": "2000 synthetic work orders, throw-away database",
+  "photo_bytes": 3732754,
+  "runs_per_cell": 5,
+  "caveat": "Emulated throttling on a cloud VM. Not a real phone, not the factory Wi-Fi, not factory validation."
+ },
+ "profiles": {
+  "no_throttle (VM loopback)": {
+   "/mobile": {
+    "ttfb": 3,
+    "dcl": 9.7,
+    "load": 11.3,
+    "fcp": 24,
+    "lcp": 24,
+    "bytes": 5366,
+    "status": "ok"
+   },
+   "/mobile/scan": {
+    "ttfb": 2.5,
+    "dcl": 9.4,
+    "load": 11.2,
+    "fcp": 20,
+    "lcp": 20,
+    "bytes": 4739,
+    "status": "ok"
+   },
+   "/mobile/find": {
+    "ttfb": 2.6,
+    "dcl": 9.1,
+    "load": 10.8,
+    "fcp": 24,
+    "lcp": 24,
+    "bytes": 3495,
+    "status": "ok"
+   },
+   "/mobile/audit/WO-P-0001": {
+    "ttfb": 4.9,
+    "dcl": 12.8,
+    "load": 15.4,
+    "fcp": 28,
+    "lcp": 28,
+    "bytes": 9351,
+    "status": "ok"
+   },
+   "/register": {
+    "ttfb": 3.7,
+    "dcl": 10.9,
+    "load": 15.8,
+    "fcp": 28,
+    "lcp": 28,
+    "bytes": 15625,
+    "status": "ok"
+   },
+   "AUDIT SUBMIT (1 photo, tap -> 'saved')": {
+    "tap_to_saved_ms": 256.2,
+    "server_wait_ms": 202.2,
+    "runs": 3
+   }
+  },
+  "factory_wifi_emulated (4 Mbps down / 2 Mbps up / 80 ms RTT, CPU x4)": {
+   "/mobile": {
+    "ttfb": 3.4,
+    "dcl": 264.3,
+    "load": 390.6,
+    "fcp": 276,
+    "lcp": 276,
+    "bytes": 62465,
+    "status": "ok"
+   },
+   "/mobile/scan": {
+    "ttfb": 2.5,
+    "dcl": 265.8,
+    "load": 390.2,
+    "fcp": 272,
+    "lcp": 272,
+    "bytes": 63345,
+    "status": "ok"
+   },
+   "/mobile/find": {
+    "ttfb": 3.1,
+    "dcl": 244.9,
+    "load": 379,
+    "fcp": 256,
+    "lcp": 256,
+    "bytes": 55488,
+    "status": "ok"
+   },
+   "/mobile/audit/WO-P-0001": {
+    "ttfb": 6.1,
+    "dcl": 296.4,
+    "load": 415,
+    "fcp": 308,
+    "lcp": 308,
+    "bytes": 74703,
+    "status": "ok"
+   },
+   "/register": {
+    "ttfb": 4.3,
+    "dcl": 277.3,
+    "load": 512,
+    "fcp": 292,
+    "lcp": 292,
+    "bytes": 122549,
+    "status": "ok"
+   },
+   "AUDIT SUBMIT (1 photo, tap -> 'saved')": {
+    "tap_to_saved_ms": 15235.5,
+    "server_wait_ms": 15103.1,
+    "runs": 3
+   }
+  },
+  "poor_wifi_emulated (1 Mbps down / 0.5 Mbps up / 200 ms RTT, CPU x6)": {
+   "/mobile": {
+    "ttfb": 3.3,
+    "dcl": 713,
+    "load": 1127.2,
+    "fcp": 716,
+    "lcp": 716,
+    "bytes": 62437,
+    "status": "ok"
+   },
+   "/mobile/scan": {
+    "ttfb": 4.2,
+    "dcl": 737.6,
+    "load": 1149.4,
+    "fcp": 744,
+    "lcp": 744,
+    "bytes": 63345,
+    "status": "ok"
+   },
+   "/mobile/find": {
+    "ttfb": 3.2,
+    "dcl": 666.1,
+    "load": 1084.2,
+    "fcp": 680,
+    "lcp": 680,
+    "bytes": 55488,
+    "status": "ok"
+   },
+   "/mobile/audit/WO-P-0001": {
+    "ttfb": 5.1,
+    "dcl": 802.6,
+    "load": 1204.4,
+    "fcp": 800,
+    "lcp": 800,
+    "bytes": 74703,
+    "status": "ok"
+   },
+   "/register": {
+    "ttfb": 5.1,
+    "dcl": 716.7,
+    "load": 1864.5,
+    "fcp": 712,
+    "lcp": 712,
+    "bytes": 158592,
+    "status": "ok"
+   },
+   "AUDIT SUBMIT (1 photo, tap -> 'saved')": {
+    "tap_to_saved_ms": 60143.4,
+    "server_wait_ms": 59962.3,
+    "runs": 3
+   }
+  }
+ }
+}

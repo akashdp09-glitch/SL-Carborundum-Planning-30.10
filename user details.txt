@@ -1,0 +1,12 @@
+SL Carborundum Planning Center
+
+User accounts and roles: see docs/PERMISSION_MATRIX.md.
+Installation: see docs/INSTALL_AND_UPDATE.md and docs/WINDOWS_INSTALL.md.
+Configure and review user accounts on the server before factory use.
+This package does not contain live user credentials or a factory database.
+Keep the existing CENTRAL_DATA folder and restore the knowledge database from
+the existing installation; see docs/KNOWLEDGE_DATABASE.md.
+
+บัญชีผู้ใช้และสิทธิ์: ดู docs/PERMISSION_MATRIX.md
+เก็บโฟลเดอร์ CENTRAL_DATA เดิมไว้ ไม่เขียนทับข้อมูลโรงงาน
+แพ็กเกจนี้ไม่มีฐานข้อมูลผู้ใช้จริงหรือรหัสผ่านของโรงงาน

@@ -1,0 +1,23 @@
+V16.25 (built 2026-10-03) - based on V16.24. NEW: folder suite/ + sidebar group "PLANNING SUITE" + F1 help.
+
+UPDATE: stop app, extract to D:\ , copy CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat from the old folder, run START_SL_CARBORUNDUM_PLANNING_CENTER.bat.
+
+NEW IN V16.25
+1. Planning Suite page (sidebar > PLANNING SUITE), tabs: Bond | Material | Daily by section | Weekly/Monthly | Backorder | New orders (pointer) | Revised Plan-2026 (audit) | Diamond/Packaging (pointer) | Download all.
+   - Reads the ACTIVE central Plan-2026 (sheet "แผนการเผา", or "Plan2026"), by column position. First read ~9 s, then cached (<0.1 s).
+   - Bond: demand from Plan col BE for open, un-mixed WOs; stock/avg/lot from the bond MRP workbook (upload once, stored as COMPANY_DATA/Bond-MRP-LATEST.xlsx).
+   - Material: grain requirement (Plan R..AA) vs stock + incoming + LAB from the Stock workbook sheet "Abrasive".
+   - Daily plan per section: Excel, one sheet per section, Daily-Status-style columns, Sundays skipped.
+   - Weekly / Monthly plan, Backorder plan: Excel download.
+   - Revised Plan-2026: latest mobile/scanner audit per WO vs plan -> proposed section/qty corrections + change log. Original file is never modified.
+2. F1 key: focuses the "F1 Help" box in the sidebar; searches factory rules, project notes, knowledge database and code function names.
+3. suite/ code is isolated: if it fails, the rest of the app still runs (errors shown in the tab / sidebar).
+
+TESTED HERE (executed): Plan reader, bond, material, backorder, weekly/monthly, section daily, audit revision (with a SYNTHETIC audit database), Excel export, F1 search, and the whole Planning Suite page run headless with a stubbed Streamlit (suite/smoke_test_headless.py), all on your 2 Oct 2026 workbooks.
+NOT TESTED: real Streamlit/browser rendering, the F1 key in a browser, the mobile server, phone camera.
+
+OPEN / ASSUMPTIONS (please confirm)
+- Capacity per day in the Daily tab is a typed value (placeholders: 20 mills prep/mixing, 500/300/400/400 pcs). Not yet read from the Cap workbook.
+- Daily-Status layout is inferred from the software's editor columns; send a real section Daily Status file to match exactly.
+- Bond rule: +20% uplift, safety 1.5 x avg, lot size from the MRP remark. Weekly call-off vs lot (790 vs 825 kg etc.) unexplained - not modelled.
+- Firing plan: existing Firing Planner unchanged; sheet "ตารางเตา" not yet read. Packaging/Diamond: existing planners unchanged (no packaging files were attached this time).

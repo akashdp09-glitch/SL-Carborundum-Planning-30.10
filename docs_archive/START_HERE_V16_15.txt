@@ -1,0 +1,35 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.15
+Prepared 2026-10-01 (Asia/Bangkok)
+
+START
+1. Install Python requirements using INSTALL_REQUIREMENTS.bat.
+2. Upload Plan-2026, Stock on Hand, Forecast, Firing Plan, and other live sources from Home → Upload / Replace Source Files.
+3. Open Daily Planner → Daily Status. Each department now has its own upload box: Preparation, Mixing, Forming, Firing, Grinding, Packing. Upload all applicable section files separately. Date in each daily workbook comes from its worksheet tab name.
+4. KPI workbooks remain two separate inputs: section plan-vs-actual and warehouse delivery.
+5. Daily Planner → DIRECT ACCESS → Mixing Mill Plan vs Actual for daily planned batches, assigned batch capacity, planned/actual pcs and kg, and actual active mixer count.
+6. Home → Work Order QR/Audit for label generation. Labels contain `SLWO:<WO>` and no IP address. Home/Operator QR points to the phone app server and is only a connection code.
+7. On mobile, open /mobile/scan. Live scan requires HTTPS and browser camera support; scan-frame evidence is saved. The camera/photo fallback saves the image and QR result. Work-order suggestions now show the Plan-2026 section markers.
+
+V16.15 CHANGES
+- Desktop work-order search reads only Plan columns A:IA (235 columns) instead of copying the Excel inflated 15,988-column used range per lookup. Search covers WO, customer, customer ID, product, spec, order, and PO.
+- Added Mixing Mill Plan vs Actual page. It reads active Mixing daily files with date-tab dates and source columns: B WO, L machine, M mill plan, N plan pcs, O actual pcs, Q group, R actual kg. Plan kg is calculated from the source order total kg / order qty × daily planned qty. Actual kg is the daily workbook value.
+- Capacity is read from apps/daily/CAPACITY_DATABASE.xlsx → CAP ผสม. Capacity is counted once for each assigned machine identity per day. Unmapped machines are shown. Batch capacity, kg capacity, and active machine count are separate measures; the daily template has no actual mill-batch count, so actual machine count is shown without inventing an actual batch total.
+- Daily Status upload controls have one file box per section; sources remain separate, registry-tracked workbooks. KPI uploads remain two separate controls.
+- Mobile Plan-2026 import reads only the known source width through IA. Section close status, source row, source file, and import time appear on the WO page and search suggestions.
+- Live camera QR scans save a camera-frame JPEG with QR result, timestamp, operator and SHA-256 in the scan registry.
+- New Plan output now contains a READINESS_CHECK sheet for missing/unchecked material, process, tooling, staffing, daily capacity, schedule, packaging, and release gates. It remains a draft and cannot be treated as a released WO.
+
+TRACEABILITY AND STORAGE
+- Shared uploaded source workbooks: CENTRAL_DATA/COMPANY_DATA/
+- Daily Status separate section workbooks: CENTRAL_DATA/DAILY_STATUS/; revisions: CENTRAL_DATA/DAILY_STATUS/history/; registry: CENTRAL_DATA/DAILY_STATUS/source_registry.json
+- Separate KPI workbooks: CENTRAL_DATA/KPI/; registry: CENTRAL_DATA/KPI/source_registry.json
+- Uploaded evidence copies: CENTRAL_DATA/SOURCE_COPIES/
+- Reports and generated new-plan suggestions: CENTRAL_DATA/REPORTS/
+- QR scan pictures: CENTRAL_DATA/PHOTOS/QR_SCANS/YYYY/MM/DD/
+- Physical audit pictures: CENTRAL_DATA/PHOTOS/MOBILE_AUDITS/
+- Mobile tracking DB: CENTRAL_DATA/shared_database/sl_planning.db (or configured SL_DB_PATH)
+- Uploaded source registry (filename, upload date/user, workbook modified time if present, storage path, SHA-256): CENTRAL_DATA/source_registry.json
+- Bundled knowledge snapshot: knowledge/knowledge_base.sqlite. Source files at snapshot time are listed in knowledge/SOURCE_MANIFEST_V16_15.csv. Workbooks remain uploadable separately and the local source paths from snapshot may not exist on another server.
+
+CAPACITY AND DEVICE VALIDATION
+The supplied Mixing workbook and CAP ผสม capacity were parsed and cross-checked against each other. Historical September actual kg exceeds the assigned machine capacity on some days; the dashboard flags those dates for review. The report does not infer actual mill-batch counts or silently approve overtime. Real phone camera permissions require deployment on the company network using HTTPS and a device/browser test. Multi-operator peak-load testing has not been performed in this offline build environment.

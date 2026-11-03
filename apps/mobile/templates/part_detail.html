@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% block content %}
+<div class="{{ 'mobile-shell operator-screen' if compact else 'detail-wide' }}">
+  <div class="mobile-head"><div><a href="{{ '/mobile' if compact else '/register' }}">← {{ 'Home' if compact else 'Register' }}</a><div class="mobile-title">{{ d.tracking_id }}</div>
+    <div class="muted">{{ 'Unidentified / temporary ID' if d.kind == 'UNIDENTIFIED' else 'Work order' }}{% if d.wo %} · {{ d.wo.product_code or '' }}{% endif %}</div></div></div>
+  {% if d.kind == 'UNIDENTIFIED' %}{% set u = d.unidentified %}
+  <section class="panel"><div class="mobile-facts">
+    <div><span>State</span><b>{{ u.identification_state }}</b></div><div><span>Linked WO</span><b>{% if u.resolved_wo_id %}<a href="/register/{{ u.resolved_wo_id }}">{{ u.resolved_wo_id }}</a>{% else %}—{% endif %}</b></div>
+    <div><span>Description</span><b>{{ u.description or '—' }}</b></div><div><span>Markings</span><b>{{ u.markings or '—' }}</b></div>
+    <div><span>Quantity</span><b>{% if u.qty is none %}unknown{% else %}{{ u.qty }} {{ u.qty_unit or '' }}{% endif %}</b></div><div><span>Process / status</span><b>{{ u.process_name or 'UNKNOWN' }} / {{ u.status_text or u.issue_type or 'UNKNOWN' }}</b></div>
+    <div><span>Location</span><b>{{ u.location or '—' }} ({{ u.location_source or 'legacy' }})</b></div><div><span>GPS</span><b>{{ u.gps_status or 'not recorded' }}{% if u.gps_lat is not none %} {{ '%.5f'|format(u.gps_lat) }}, {{ '%.5f'|format(u.gps_lon) }} ±{{ u.gps_accuracy_m|round(0)|int }} m{% endif %}</b></div>
+    <div><span>Submitted (phone clock)</span><b>{{ u.client_time or '—' }}</b></div><div><span>Server received (Bangkok)</span><b>{{ u.server_received_at or u.created_at }}</b></div>
+    <div><span>Counts toward WO</span><b>{{ 'yes' if u.counts_toward_wo else 'no (evidence only)' }}</b></div>
+  </div>{% if u.notes %}<p>Notes: {{ u.notes }}</p>{% endif %}
+  <a class="button" href="/labels/print?id={{ u.temp_id }}" target="_blank">🖨 QR label for this ID</a></section>
+  {% if can_link %}<section class="panel"><h2>Identify and link</h2>
+    {% if u.identification_state == 'LINKED' %}<form id="unlinkForm"><label>Reason for unlinking</label><input id="unlinkReason" required><button class="button" type="submit">Unlink</button></form>
+    {% else %}<form id="linkForm"><label>Real work order (exact WO number)</label><input id="linkWo" required placeholder="WO…"><label>Reason / evidence for identification</label><input id="linkReason" required>
+      <label><input type="checkbox" id="linkCounts" checked> Count this quantity toward the work order (untick if it is the same parts already observed)</label><button class="primary" type="submit">Link to work order</button></form>{% endif %}
+    <div id="linkResult" class="hint" aria-live="polite"></div></section>{% endif %}
+  <section class="panel"><h2>Reconciliation history</h2>{% for h in d.reconciliation %}<div class="mobile-row"><div><b>{{ h.action }}</b><small>{{ h.created_at }}{% if h.wo_id %} · {{ h.wo_id }}{% endif %}</small><small>{{ h.reason }}</small></div></div>{% endfor %}</section>
+  {% else %}
+  {% set w = d.wo %}
+  <section class="panel"><div class="mobile-facts"><div><span>Order qty</span><b>{{ w.qty|round(0)|int }}</b></div><div><span>Due</span><b>{{ w.due_date or '—' }}</b></div>
+    <div><span>Observed (physical, not stock)</span><b>{{ d.observed_total|round(0)|int }}</b></div><div><span>Source</span><b>{{ d.source.source_file or '—' }}{% if d.source.plan_source_row %} · row {{ d.source.plan_source_row }}{% endif %}</b></div></div>
+    <div class="muted">{{ d.observed_total_note }}</div>
+    {% if d.source.upload %}<div class="muted">Import: {{ d.source.upload.filename }} · sha256 {{ d.source.upload.sha256[:16] }}… · {{ d.source.upload.uploaded_by }} · {{ d.source.upload.uploaded_at }}</div>{% endif %}
+    {% if not compact %}<a class="button" href="/labels/print?id={{ w.wo_id }}" target="_blank">🖨 QR label</a>{% endif %}
+    <a class="button primary" href="/mobile/confirm/{{ w.wo_id }}">Audit this part</a></section>
+  {% if d.conflicts %}<section class="panel conflict"><h2>⚠ Conflicting observations - review</h2>{% for c in d.conflicts %}<div class="alert danger">{{ c.location or 'no location' }}{% if c.batch %} / batch {{ c.batch }}{% endif %}: {{ c.first_qty }} ({{ c.first_by }}, {{ c.first_at }}) vs {{ c.second_qty }} ({{ c.second_by }}, {{ c.second_at }}). Both are kept; neither overwrites the other.</div>{% endfor %}</section>{% endif %}
+  <section class="panel"><h2>Physical observations</h2>{% for o in d.observations %}<div class="obs"><div class="mobile-row"><div><b>{{ o.physical_location or 'no location' }}{% if o.batch_ref %} · batch {{ o.batch_ref }}{% endif %}</b><small>{{ o.physical_status }} · {{ o.observed_process or '—' }}</small><small>phone {{ o.client_time or '—' }} · server {{ o.server_received_at or o.created_at }} · GPS {{ o.gps_status or 'n/a' }}</small>{% if o.notes %}<small>{{ o.notes }}</small>{% endif %}</div><div class="mobile-row-right"><strong>{% if o.verified_qty is none %}qty unknown{% else %}{{ o.verified_qty|round(0)|int }} {{ o.qty_unit or '' }}{% endif %}</strong></div></div>
+    {% for p in o.photos %}<a href="{{ p.url }}" target="_blank"><img class="audit-photo-thumb" loading="lazy" src="{{ p.thumb_url }}" alt="photo {{ p.id }}"></a>{% endfor %}</div>{% else %}<div class="muted">No physical observations yet.</div>{% endfor %}</section>
+  {% if d.linked_unidentified %}<section class="panel"><h2>Linked unidentified parts</h2>{% for l in d.linked_unidentified %}<div class="mobile-row"><div><b><a href="/register/{{ l.temp_id }}">{{ l.temp_id }}</a></b><small>{{ l.description or '' }} · {{ l.location }} · {{ l.resolved_at }}</small></div><div class="mobile-row-right"><strong>{{ l.qty if l.qty is not none else 'qty ?' }} {{ l.qty_unit or '' }}</strong><small>{{ 'counted' if l.counts_toward_wo else 'evidence only' }}</small></div></div>{% endfor %}</section>{% endif %}
+  <section class="panel"><h2>Production movements (events)</h2>{% for e in d.movements %}<div class="mobile-row"><div><b>{{ event_labels.get(e.event_type, e.event_type) }}</b><small>{{ e.process_name or '—' }} · {{ e.location or '—' }}</small></div><div class="mobile-row-right"><strong>{{ e.qty if e.qty is not none else '' }}</strong><small>{{ e.event_time }}</small></div></div>{% else %}<div class="muted">No production events.</div>{% endfor %}</section>
+  {% endif %}
+</div>{% endblock %}
+{% block scripts %}<script>(function(){const tid={{ d.tracking_id|tojson }};const out=document.getElementById('linkResult');
+async function post(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json().catch(()=>({ok:false,error:'Bad server response'}));}
+const lf=document.getElementById('linkForm');if(lf)lf.onsubmit=async e=>{e.preventDefault();const d=await post('/api/v2/unidentified/'+encodeURIComponent(tid)+'/link',{wo_id:document.getElementById('linkWo').value.trim(),reason:document.getElementById('linkReason').value.trim(),counts_toward_wo:document.getElementById('linkCounts').checked});out.textContent=d.ok?'Linked. Reloading…':(d.error||'Failed');if(d.ok)setTimeout(()=>location.reload(),600);};
+const uf=document.getElementById('unlinkForm');if(uf)uf.onsubmit=async e=>{e.preventDefault();const d=await post('/api/v2/unidentified/'+encodeURIComponent(tid)+'/unlink',{reason:document.getElementById('unlinkReason').value.trim()});out.textContent=d.ok?'Unlinked. Reloading…':(d.error||'Failed');if(d.ok)setTimeout(()=>location.reload(),600);};})();</script>{% endblock %}

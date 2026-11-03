@@ -1,0 +1,24 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="/mobile">← Home</a><div class="mobile-title">Scan or find</div>
+    <div class="operator-instruction">Start the camera, take a photo of the QR, or type the work order in any format.</div></div></div>
+  <section class="panel">
+    <button id="startScan" class="primary home-tile orange" type="button" style="width:100%">📷 Start camera</button>
+    <div class="muted" style="margin-top:8px">Live camera needs the secure HTTPS address. If you opened HTTP, use the secure link below after the one-time certificate setup. Photo upload and typing work on HTTP.</div>
+    <a id="httpsCameraLink" class="button home-tile blue" href="/mobile/scan" style="display:block;text-align:center;margin-top:8px">🔒 Open secure camera scan</a>
+    <a class="muted" href="/tls/ca.crt">Download factory camera certificate (one time)</a>
+    <video id="liveVideo" playsinline autoplay muted hidden style="width:100%;max-height:46vh;border-radius:12px;background:#111;margin-top:8px"></video>
+    <canvas id="scanCanvas" hidden></canvas>
+    <button id="stopScan" class="home-tile" type="button" hidden style="width:100%;margin-top:8px">Stop camera</button>
+    <div id="scanStatus" role="status" aria-live="polite" class="muted">Camera, photo or type — all three work. On some phones the browser asks for camera permission once.</div>
+    <label for="scanPhoto" class="home-tile blue" style="display:block;text-align:center;cursor:pointer;margin-top:10px">📸 Photo of QR</label>
+    <input id="scanPhoto" type="file" accept="image/*" capture="environment">
+  </section>
+  <section class="panel">
+    <label class="operator-label" for="woSearch">Type work order — any format</label>
+    <input id="woSearch" class="operator-wo-input" autocomplete="off" placeholder="p005110826 or P005-110826">
+  </section>
+  <div id="candidateList" class="mobile-list" aria-live="polite"></div>
+  <a id="unidLink" class="button home-tile" href="/mobile/unidentified" hidden>❓ Record as unidentified</a>
+</div>{% endblock %}
+{% block scripts %}<script>const secureLink=document.getElementById('httpsCameraLink');if(secureLink)secureLink.href='https://'+location.hostname+':8443/mobile/scan';</script><script src="/static/scan_v2.js?v=3"></script>{% endblock %}

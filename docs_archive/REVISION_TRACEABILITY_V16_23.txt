@@ -1,0 +1,18 @@
+V16.23 — 2026-10-02 Asia/Bangkok
+
+User: risk dates show around 1970, PS019A/B-010626 incorrectly missing vs two Plan2026 rows, repeated duplicate-key error in V16.21.
+Confirmed: daily_linear_engine_v1_1.pdate used pd.to_datetime on numeric values without Excel units. Shared store date deserialization also used general pd.to_datetime. Combined A/B handling existed in final scheduler but relied on literal matching/open-row map; issue wording confused closed layers with absent source rows.
+
+Changes
+apps/daily/date_and_wo_rules.py: explicit date parser; Excel numeric serials/numeric strings, date text and Thai Buddhist DD/MM dates; bounded valid operational dates; normalize WO spelling/case/spacing and controlled A/B expansion; preserves both source layer identifiers.
+apps/daily/daily_linear_engine_v1_1.py: safe date parser; normalizes input identities; combined layer lookup shared across firing checks; final scheduling distinguishes both source rows existing but not open from truly missing layer rows. Paired ready=min(A available,B available) and existing consumption logic remain.
+apps/daily/sl_ppc_fast_store_v4_6.py: explicit date decoding at data-layer deserialization.
+apps/daily/daily_planner_app.py: normalize only explicitly named date fields before risk formatting/filtering; calculation rules-version invalidates old cached results.
+hub.py: V16.23 title and inherited V16.22 unique Home/Sources widget keys.
+Patch carries shared WIP/packaging dependencies so V16.21 can be updated directly.
+
+Tests passed
+Excel serial for 1-Oct-2026, same numeric string, pandas epoch-misparsed serial, DD/MM/2026 and DD/MM/2569 all resolve to 2026-10-01.
+Zero and genuine 1970 date rejected; no arbitrary year replacement.
+Exact PS019A/B-010626 and whitespace/lowercase variant resolve both layer rows. Earliest due chosen for joined metadata; missing B returns unresolved.
+Python compilation passed for modified code. Full actual customer source calculation/Windows Streamlit run not available here; parser/matcher tests use controlled values including the user's exact WO example.

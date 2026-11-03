@@ -1,0 +1,9 @@
+CONTROLLED TEST CANDIDATE — SL_DAILY_V1_9_53
+
+Extract to a NEW folder. Keep the working installation. Existing launch BAT files are retained.
+This package is Python source, not a Windows EXE/runtime.
+Read AUDIT_AND_DEVELOPMENT_PLAN.md before using calculated output.
+A recognized Plan2026 column mismatch now stops import rather than returning incorrect WIP.
+Complete mapping verification is required before scheduling.
+Do not change kiln/safety checks to bypass an import failure.
+Run python VERIFY_RELEASE.py for local syntax/hash checks.

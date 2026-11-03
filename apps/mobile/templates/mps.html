@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}
+<h1>MPS</h1><div class="muted">Basic Master Production Schedule view by due month, customer and product.</div>
+<section class="panel"><table><thead><tr><th>Month</th><th>Product</th><th>Qty</th></tr></thead><tbody>{% for month,customer,product,qty in rows %}<tr><td>{{ month }}</td><td>{{ product }}</td><td>{{ '%.0f'|format(qty) }}</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

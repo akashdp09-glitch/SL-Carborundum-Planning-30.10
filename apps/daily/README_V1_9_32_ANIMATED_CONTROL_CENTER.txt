@@ -1,0 +1,1 @@
+V1.9.32: animated HTML/CSS control-center shell, 5 large left module groups, horizontal function slider, global Analysis FROM/TO graph window, larger chart spacing/height. Existing PPC calculation engine preserved. This is an iterative UI architecture revision; planner logic remains traceable.

@@ -1,0 +1,35 @@
+V16.16 REVISION TRACEABILITY — 2026-10-02 (Asia/Bangkok)
+
+SOURCE / BASE
+- Base software: SL_Carborundum_Smart_Factory_Center_V16_15.zip, persistent Library file; original item dated 2026-10-01. V16.15 archive SHA-256: 98b8922812ac3924cff414abedb7c5cc602f5977d66de8d98b8904f2cec90d48.
+- V16.15 extracted source directory: SL_Carborundum_Smart_Factory_Center_V16_15/ inside that package.
+- Business references already bundled with V16.15 remain as-is. Source manifest: knowledge/SOURCE_MANIFEST_V16_15.csv. Live user files are intentionally uploaded by the operator on first/current use.
+
+CHANGED FILES
+1. hub.py
+   - Changed package title to V16.16.
+   - Replaced New Requirement → Plan-only explanation with an explicit RP → Work Order → Cover Sheet → Plan 2026 workflow.
+   - Added RP upload evidence saved under SOURCE_COPIES/NEW_RP/, recording original filename, stored filename/location, upload time and SHA-256.
+   - Fixed RP field regexes, added document-number and packaging/mark parsing for common text cells.
+   - Added an RP_SOURCE, WORK_ORDER_DRAFT and COVER_SHEET_DRAFT worksheet to the downloadable new-order packet; retained Plan-2026, planning basis, material feasibility and readiness gates.
+   - Bounded new-plan source worksheet header to max_col=235 (A:IA), avoiding a ~15,988-column inflated read.
+   - Traceability register now spells out the original import name, stored name, exact path, import time, archive copy, hash and that client-side device paths are not exposed by browser uploads.
+2. apps/daily/daily_planner_app.py
+   - Added missing Navigation index 23 for Mixing Mill Plan vs Actual (it was referenced by Quick Access and group navigation but absent from _NAV).
+   - Replaced the single main-category radio + separate subpage select with inline expandable category groups and direct page buttons.
+   - Added defensive index validation and a reset-to-dashboard guard to eliminate the reported IndexError.
+   - Version label is V1.9.54.
+3. START_HERE_V16_16.txt
+   - Added install/use steps, workflow, storage defaults, provenance limits and validation boundary.
+
+VERIFICATION
+- py_compile passed for hub.py, apps/daily/daily_planner_app.py, apps/daily/mixing_capacity_trace.py, apps/mobile/app.py.
+- RP field parser smoke test passed for the user example: Q26-009; Nordencent (USA); 38A400P7VB0400; 80X25X7; 300 pcs; P005-110826; WA400/B04; H10; Program 2; 600/box; 10/wrap; no brand mark.
+- AST navigation test confirmed 24 menu targets and every group index resolves. The missing Mixing page was index 23.
+- Full Streamlit/Windows runtime was unavailable; device camera, secure URL, multiuser concurrency and thousand scans/day still require deployment testing.
+
+CONTROLLED LIMITS
+- Browser upload APIs do not expose the uploader's local source-folder path. The program records the original selected filename and exact server destination, and labels the unavailable local path explicitly.
+- The approved blue-sheet cover template is not bundled with the recovered V16.15 archive. COVER_SHEET_DRAFT contains a structured reviewed-data handoff; it is not represented as the company's approved form.
+- New WO numbering, official recipe/BOM, packaging approval and machine/operator booking remain gated to authorized master/source confirmation.
+- The user-provided V16.15 Gantt sequence and mixing capacity rules remain the prior source of truth; this package does not claim live resource availability or stress-test certification.

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}{% block content %}
+{% set wo = card.snap.wo if card else None %}
+<div class="mobile-shell operator-screen">
+  <div class="mobile-head"><div><a href="{{ ('/mobile/confirm/' ~ wo_id) if mode == 'WO' else '/mobile' }}">← Back</a>
+    <div class="mobile-title">{{ '✅ Audit part' if mode == 'WO' else '❓ Unidentified part' }}</div>
+    <div class="muted">{{ 'ตรวจสอบหน้างาน' if mode == 'WO' else 'ไม่มีใบสั่งงาน / ไม่มี QR - ระบบสร้างรหัสชั่วคราวให้อัตโนมัติ' }}</div></div></div>
+  {% if not can_capture %}<div class="alert danger">Your role cannot submit audits (server rule).</div>{% endif %}
+  {% if wo %}<section class="panel confirm-card"><div class="confirm-id">{{ wo.production_code or wo.wo_id }}</div>
+    <div class="muted">{{ wo.product_code or '' }} · order qty {{ wo.qty|round(0)|int }}</div></section>{% endif %}
+  <form id="auditForm" class="audit-form-v2" autocomplete="off">
+    <label>1 · Status / สถานะ</label>
+    <div class="choice-grid">{% for s in statuses %}<button type="button" data-status="{{ s }}">{{ s.replace('_',' ') }}</button>{% endfor %}</div>
+
+    <label for="qty">2 · Quantity counted / จำนวน</label>
+    <input id="qty" type="number" inputmode="decimal" min="0" step="any" placeholder="Counted quantity">
+    <div class="chip-row" role="group" aria-label="Unit">{% for u in units %}<button type="button" data-unit="{{ u }}">{{ u }}</button>{% endfor %}</div>
+    <label class="check"><input type="checkbox" id="qtyUnknown"> Quantity unknown / ไม่ทราบจำนวน</label>
+
+    <label>3 · Location / สถานที่</label>
+    <select id="locBuilding" aria-label="Building"></select>
+    <select id="locSection" aria-label="Section"></select>
+    <select id="locPosition" aria-label="Machine, rack or bin"></select>
+    <input id="locText" type="text" placeholder="Not in the list? Type the location">
+    <label class="check"><input type="checkbox" id="locUnknown"> Location unknown / ไม่ทราบ</label>
+    <input id="locNotes" type="text" placeholder="Location note (optional)">
+    <button type="button" id="gpsBtn" class="button operator-main-button">📍 Add GPS (optional)</button><div id="gpsOut" class="hint" aria-live="polite">GPS is only a guide outdoors; indoors always pick the rack/area.</div>
+
+    <label for="process">4 · Process / กระบวนการ</label>
+    <input id="process" type="text" list="processList" placeholder="{{ 'Unknown' if mode != 'WO' else '' }}" value="{{ (card.recent[0].observed_process if card and card.recent else '') or (card.snap.current_process if card else '') or '' }}">
+    <datalist id="processList">{% for l in locations %}{% if l.section %}<option value="{{ l.section }}">{% endif %}{% endfor %}<option value="UNKNOWN"></datalist>
+
+    {% if mode == 'UNIDENTIFIED' %}
+    <label for="desc">Description / คำอธิบาย</label><input id="desc" type="text" placeholder="What is it? (wheel, size, colour…)">
+    <label for="marks">Visible markings / ตัวอักษรบนชิ้นงาน</label><input id="marks" type="text" placeholder="Text or numbers on the part, or 'none visible'">
+    {% endif %}
+
+    <label>5 · Photos / รูปภาพ <span id="photoCount" class="muted">0 / 6</span></label>
+    <div class="photo-actions"><label class="btnlike" for="photoCam">📷 Take photo</label><label class="btnlike" for="photoGal">🖼 Upload photo</label></div>
+    <input id="photoCam" type="file" accept="image/*" capture="environment" multiple><input id="photoGal" type="file" accept="image/*" multiple>
+    <div id="photoPreview"></div>
+
+    <details><summary>More (notes{{ ', batch' if mode == 'WO' else '' }})</summary>
+      <label for="notes">Notes / หมายเหตุ</label><input id="notes" type="text">
+      {% if mode == 'WO' %}<label for="batch">Batch / lot (when parts are split)</label><input id="batch" type="text">{% endif %}
+    </details>
+    <button id="submitBtn" class="primary operator-main-button" type="submit" {{ '' if can_capture else 'disabled' }}>{{ '✅ SUBMIT · ส่งข้อมูล' }}</button>
+  </form>
+  <div id="auditResult" class="result" aria-live="polite" role="status"></div>
+  <div id="pendingBox" class="panel hidden"></div>
+</div>
+<script id="auditCfg" type="application/json">{{ {'mode': mode, 'woId': wo_id, 'woLabel': (wo.production_code or wo.wo_id) if wo else '', 'units': units, 'locations': locations, 'maxPhotos': 6,
+  'defaultStatus': 'OK' if mode == 'WO' else 'UNKNOWN', 'submitLabel': '✅ SUBMIT · ส่งข้อมูล',
+  'prefillLocationId': (card.recent[0].location_id if card and card.recent else None)}|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="/static/pending_queue.js"></script><script src="/static/audit_form.js"></script><script>SLQueue.renderBanner(document.getElementById('pendingBox'));</script>{% endblock %}

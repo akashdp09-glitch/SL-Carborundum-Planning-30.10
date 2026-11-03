@@ -1,0 +1,1 @@
+F12W: four large left control groups + horizontal function slider + animated HTML/CSS presentation shell. F12V Test Work due-date selector and EU/FC closure logic retained. Normal vitrified UI/execution hard maximum remains 2/day excluding T0.

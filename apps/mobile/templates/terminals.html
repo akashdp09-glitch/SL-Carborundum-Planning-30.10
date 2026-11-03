@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Terminal / Station Setup</h1>
+<section class="panel"><form method="post" action="/admin/terminals" class="inline-form"><input name="terminal_code" placeholder="GR-03" required><input name="process_name" placeholder="Grinding" required><input name="location" placeholder="Grinding 03" required><button class="primary">Save</button></form></section>
+<section class="panel"><table><thead><tr><th>Terminal</th><th>Process</th><th>Location</th><th>Active</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ r.terminal_code }}</td><td>{{ r.process_name }}</td><td>{{ r.location }}</td><td>{{ 'Yes' if r.active else 'No' }}</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

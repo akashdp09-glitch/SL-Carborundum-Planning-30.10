@@ -1,0 +1,29 @@
+V16.20 — 2026-10-02 Bangkok
+
+Issues addressed
+1. Saved Daily Plan disappears after navigation or reconnect and asks for another calculation.
+2. StreamlitWidgetAlreadyInstantiatedError: daily_quick_access_v13 modified after its selectbox was created.
+
+Causes confirmed in code
+- Calculation cache held result/metadata but did not restore controls and override DataFrames before fingerprint validation. A new page session used default controls and treated the prior result as mismatched.
+- Firing input reloaded every rerun, overwriting in-session edits. One editor replaced full firing data with only visible columns, changing the fingerprint/losing hidden source fields.
+- Navigation button branch directly assigned quick-access widget state after selectbox creation.
+
+Changes: apps/daily/daily_planner_app.py
+- Restore saved control values, mapping, paths and overrides once before widgets initialize. Widgets have explicit stable keys.
+- Persist settings/overrides with the result. Normalize absent firing input to the same empty DataFrame before hashing.
+- Reload firing data only if its source identity changes; preserve unedited fields during the selected-column editor.
+- New plan ID recorded in metadata; restored ID/time shown in dashboard. A new calculation assigns a new ID.
+- Navigation uses on_click callback for state transitions; only the focus URL parameter is cleared.
+- Existing source/content fingerprint invalidation retained.
+hub.py: version title V16.20.
+Patch also includes V16.19 shared packing reader required by these files.
+
+Verification
+Python compile passed.
+Executed actual restoration block in a fresh fake session with saved custom start=2026-10-05, horizon=90, preparation=1400, people=9, other custom controls and overrides. Settings restored; identical source/state produced identical SHA fingerprint; changing source bytes produced a different fingerprint.
+Executed navigation callback: selected requested module, reset Quick Access and cleared focus without deleting unrelated URL parameters.
+Full interactive Streamlit/browser runtime not available here. Tests verify restoration and callbacks, not complete Windows/browser behavior.
+
+Migration
+Create plan once after upgrade to persist the new state payload. Older snapshots may lack override state and require this one-time recalculation. Preserve the existing CENTRAL_DATA folder.

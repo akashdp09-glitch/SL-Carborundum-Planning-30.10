@@ -1,0 +1,33 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.13
+Prepared 2026-09-30 (Asia/Bangkok)
+
+Start on Windows with START_SL_CARBORUNDUM_PLANNING_CENTER.bat. It starts the desktop planning center and mobile tracking service with shared storage. For a separately started mobile service, use apps/mobile/start_server.bat.
+
+DESKTOP WORK ORDER LOOKUP
+Home → Open Desktop Operator / QR / Audit → type or scan a WO. Lookup now uses the already loaded Plan in memory (fast), normalizes spaces/dashes/case and SLWO: QR values, and offers matching suggestions for partial input. Results show customer, product, quantity, due dates, plan section status and source Plan row. If Plan is missing, unmatched or unreadable, the page shows a distinct message and active file path.
+
+PLANNING & ANALYSIS
+- Sidebar Planning Department has direct links to section/customer/WO WIP, Daily Open/Closed WOs, Daily Status analysis and KPI analysis.
+- Upload each section's Daily Status workbook together; tab names are authoritative dates (sheet date, not stale cell dates).
+- Upload the two KPI files separately: department production and delivery to warehouse.
+- New request planning uses current available plan/capacity and displays known inputs, assumptions and missing inputs; it does not silently assert unknown capacity/material dates.
+- Home → Active Files / Uploaded Files & Traceability lists source filename, stored path, import time, workbook modified time (if present), size/hash and archive path.
+
+MOBILE / QR / AUDIT
+- QR Generator uses IP-independent SLWO:<WO> labels; phone scanner also accepts old URL QR codes.
+- Mobile WO search has autocomplete and shows plan status/current process/location, due date and last scan.
+- Use OPEN PHONE CAMERA / CHOOSE QR PHOTO for browser photo capture and fallback. Live camera needs browser permission and a secure origin.
+- Physical audits can capture image, location/section, GPS when allowed, notes and time. Audit History can export an Excel report with embedded thumbnails.
+
+DEFAULT STORAGE (resolved paths are shown inside Files & Traceability)
+- CENTRAL_DATA/COMPANY_DATA/ — active Plan and planning inputs
+- CENTRAL_DATA/DAILY_STATUS/ and DAILY_STATUS/history/ — separate section workbooks and revisions
+- CENTRAL_DATA/KPI/ — separate KPI workbooks
+- CENTRAL_DATA/SOURCE_COPIES/ — archived source uploads
+- CENTRAL_DATA/REPORTS/ — exports and reports; REPORTS/QR_TEMP/ — generated labels
+- CENTRAL_DATA/PHOTOS/QR_SCANS/YYYY/MM/DD/ — QR scan image files
+- CENTRAL_DATA/PHOTOS/MOBILE_AUDITS/ — physical audit photos
+- CENTRAL_DATA/DATABASE/sl_planning.db — shared tracking and overrides database
+- CENTRAL_DATA/source_registry.json — file provenance registry; QR_REGISTRY.json — generated label registry
+
+First-run build contains no dated company source workbooks. Upload current files yourself on first launch. The default directory above can be changed in SERVER_STORAGE_CONFIG.bat for a shared Windows server.

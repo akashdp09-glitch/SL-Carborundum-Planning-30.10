@@ -1,0 +1,28 @@
+V16.14 REVISION / TRACEABILITY
+Prepared 2026-10-01 (Asia/Bangkok)
+
+CHANGES
+1. Added the Code & Part Knowledge tab and direct home/sidebar entry.
+2. Added local read-only SQLite lookup of WO, product, material/bond, customer, packaging and planning terms; no workbook re-open per keystroke.
+3. Added source evidence table with import filename/path, filesystem modified time, workbook modified metadata when available, SHA-256, sheet, row and evidence quality.
+4. Added RP first-pass workbook review: uploaded source is archived, with hash/path/import time, source-row preview, code matching, unmatched-token list and CSV export. It does not issue/release a work order.
+5. Added glossary covering WO/RP/S&OP, material and Bond MRP fields, code-decoding and planning checks. Explicitly marks absent masters/rules as unknown.
+6. Indexed blue-sheet work-order pages in the PM/PBM, PS/PBS and P280 workbooks, flagged to verify release/status/date; incomplete #N/A formula rows are separately flagged.
+7. Added a transactional snapshot builder and REBUILD_KNOWLEDGE_DATABASE.bat.
+8. Changed hero image sizing from contain to cover.
+9. Added the Q26-009 timeline and process controls taught in chat as a dated, separately attributed searchable source; 300 vs 400 PCs and unscheduled H10 pressing stay explicit review flags.
+10. Indexed daily section sheets by their sheet-tab dates and preserved Plan-2026 section close/location columns for WO search.
+
+REVIEW FINDINGS EMBEDDED IN GLOSSARY / EVIDENCE
+- Bond MRP main sheet is October 2026; shows on-hand through 30 Sep, issue average, PO on order, MRP/demand, safety stock and weekly Plan/Actual.
+- Source formula for displayed Inven-MRP Deficit is On Hand minus MRP; its formula does not subtract outstanding PO or safety stock. Do not read this as an approved purchase recommendation.
+- Source lot-size/release amounts conflict on some Bond codes (for example the B0101 note arithmetic and release amount). Confirm with the material planner before changing purchase/release quantities.
+- October Cover_S&OP includes filled rows and is stronger current order evidence than incomplete blue-sheet formula caches.
+- Product master and engineering/test reviews provide technical history. Historical recipe/route matches are suggestions; they are not a released BOM or capacity booking.
+- The Excel date cell can be stale; Plan status analysis must use the sheet name as date for the separate Daily Status import workflow.
+
+LIMITS / VALIDATION
+- Read-only row lookup and source link logic validated against B0101, B2101, PBS002-011026, 2GG120B1001SAAADAF, A1112084 and P005-110826.
+- Python syntax checks passed for hub.py and knowledge/build_knowledge_db.py.
+- The local runner does not have the Streamlit package, so no live desktop UI session was launched here. QR camera, photo permissions, network throughput and multi-operator concurrency require deployment/network/device validation.
+- Unknown vendor master, approved packaging dictionary, complete Bond recipe, live machine/mould/operator availability and unconfirmed route rules remain clearly identified for a planner; the software must not infer them.

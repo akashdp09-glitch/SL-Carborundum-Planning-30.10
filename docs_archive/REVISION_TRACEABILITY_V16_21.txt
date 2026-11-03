@@ -1,0 +1,26 @@
+V16.21 — 2026-10-02 Bangkok
+
+User requirements: Production WIP upload in one location, dashboard showing Production WIP only, fix datetime UnboundLocalError. Includes preceding saved-plan/navigation fixes.
+
+Confirmed issues
+Home stored original filenames but WIP render expected hardcoded Mixing_September/Forming_September/etc names. Comparison function read bundled folder instead of active central uploads. Daily had its own section upload controls. render imported datetime locally near its end, causing earlier datetime use to fail.
+
+Changed files
+hub.py: Home-only multi-file Production WIP upload, section assignment, active source selector; other WIP uploader removed; identical repeated upload bytes do not overwrite source files each rerun. Version V16.21.
+apps/daily/production_wip_sources.py: shared central resolver, original-name/section tags, ambiguity holds, inactive source exclusion, no bundled fallback.
+apps/daily/production_wip_control.py: reads same Home-uploaded sources, removes second upload panel and datetime shadowing; adds dashboard Production snapshot accessor; dedicated comparison reads same active sources.
+apps/daily/daily_planner_app.py: dashboard Production-only graph/table/total with sources; TV WIP uses Production tonnes. Includes V16.20 cache restoration and callback fix.
+Patch includes packaging_standard_source.py required by V16.19 corrections.
+
+Verification
+All changed Python files compiled successfully.
+Source resolver tests: original Thai Mixing filename recognized, dashboard summary 1.5 tonnes from two controlled source categories; duplicate active Mixing files held; inactive previous file excluded; no bundled folder read.
+Static function checks: no local datetime import inside render, no file_uploader inside WIP render.
+V16.20 restoration/callback tests remain documented in REVISION_TRACEABILITY_V16_20.txt.
+Full Windows/Streamlit/browser run unavailable here; controlled resolver/aggregation tests ran with a test summary reader, not the user's complete production workbook dataset.
+
+File locations
+Central WIP: <SL_SHARED_ROOT>/PRODUCTION_WIP
+Original properties and source selection: <SL_SHARED_ROOT>/source_registry.json
+Source archives: <SL_SHARED_ROOT>/SOURCE_COPIES
+Saved calculation: <SL_SHARED_ROOT>/CACHE/daily_result.pkl

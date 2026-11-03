@@ -1,0 +1,26 @@
+V16.19 — 2026-10-02, Asia/Bangkok
+
+Source analyzed: original file 1.มาตรฐานการบรรจุ-1.xlsx (53,538,258 bytes), retrieved from the user's uploaded file record.
+Sheets: Cover, มาตรฐานการบรรจุ, รูปภาพแนบ, งานตกแผน.
+Standard header: row 3. Valid product rows read: 567.
+The source workbook is not changed or bundled in this release.
+
+Confirmed cause
+Home had a Thai-sheet reader; Daily Planner searched English Packaging standard and Usage sheets absent in the user's workbook. Daily Planner therefore could not apply the uploaded Thai master. Upload cards also displayed the canonical renamed destination filename rather than original source properties.
+
+Changes
+hub.py: original filename/source folder/upload/revision properties in upload cards; optional original source fields; history-preserving corrections for existing registry entries; timestamps use Bangkok; no inferred historical upload timestamp; shared packing reader; conflicting packing definitions held for review.
+apps/daily/packaging_standard_source.py: shared cached Thai/English reader; detects Thai header, skips non-product rows, resets inaccurate workbook dimensions; exact original filename resolution in known stores, rejects ambiguous copies.
+apps/daily/daily_planner_app.py: reads same Thai standard; exact product-code matching; ceil(pack quantity / pcs per box), approved component quantities per box; unresolved/invalid/conflicting definitions identified; loaded source row count shown; original source properties in sidebar; corrected exact-match metrics.
+
+Tests completed
+Python compilation passed for all changed Python files.
+Actual supplied workbook: loaded 567 product rows in 0.338 seconds; cached read 0.0003 seconds in this environment (not a Windows production benchmark).
+Actual first product: 2GG100V0802FAAACAG, 6 pcs/box, outer carton สบจ0008 qty1. A 13-piece packing plan produced 3 boxes and 3 outer cartons.
+Unknown product test: explicit PRODUCT CODE NOT FOUND IN LOADED STANDARD; no invented standard.
+Upload provenance test: original Thai filename, user-entered Z:\Planning\PUI_BD test folder, revision, Bangkok upload time, and archived original retained separately. That path was synthetic test input, not an assertion of the user's actual packaging source folder.
+
+Limits
+Full live Streamlit/browser/mobile run unavailable in this execution environment. Function-level tests executed against the actual source workbook; compilation passed.
+Browser upload does not disclose original local/network path or OS last-modified time. User-provided source path/revision is marked as user provided; workbook internal modified metadata is a separate field.
+No historical source folder/time is invented if absent. Enter actual properties to correct old records.

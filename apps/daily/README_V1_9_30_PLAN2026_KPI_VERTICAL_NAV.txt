@@ -1,0 +1,12 @@
+V1.9.30 — 18 Sep 2026
+- Latest Plan2026 is authoritative and Daily Planner can run without a Firing Planner output; existing downstream WIP is planned from Plan2026.
+- WO closed = Packing Status EU CLOSED OR Overall WO Closed FC CLOSED.
+- Real left-sidebar bilingual vertical navigation replaces horizontal tab navigation.
+- Test Work selector: Product Code starting 1 or 4 only; 1 default TEST, 4 manual; due FROM/TO; due dates display date only.
+- Daily Status: selected FROM/TO; category-stacked Plan vs Actual with one total per stack; category-stacked Plan with controlled Capacity line.
+- Delivery Risk stacks show total labels; all processes retained.
+- Backorder OPEN/CLOSED comparison uses product-category stacks with total labels.
+- Problem/Action shows original factory text and editable fields; no forced pseudo-translation.
+- Section Performance KPI reads exact important sheets, forward-fills merged section/category labels, and uses date range.
+- Monthly KPI files can be auto-discovered from folders such as 9.xx; bundled supplied files remain fallback.
+- Capacity overload remains explicitly flagged; >100% is not treated as normal capacity and OT/recovery evidence is required.

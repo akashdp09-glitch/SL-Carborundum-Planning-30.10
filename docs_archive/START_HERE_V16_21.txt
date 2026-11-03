@@ -1,0 +1,16 @@
+V16.21 — ONE PRODUCTION WIP UPLOAD + PRODUCTION-ONLY DASHBOARD
+2026-10-02 Bangkok
+
+Stop app, back up code, and extract the patch into the matching locations under your existing V16.18/V16.19/V16.20 folder. Preserve CENTRAL_DATA and SERVER_STORAGE_CONFIG.bat.
+Restart. Create Daily Plan once after upgrading to store settings for plan restoration, then navigate normally. Saved Plan ID/time identify the same calculation.
+
+Production WIP
+Upload separate section files together on Home only. Select the section for each file when necessary. Daily Planner and reports read the same CENTRAL_DATA/PRODUCTION_WIP files; there is no second WIP upload panel.
+Existing original filenames are detected using registry section tags and Thai/English filename terms. If multiple files represent the same section, Home -> Select active Production WIP files lets you choose the approved file without deleting old files. Unknown/ambiguous sources are reported, not silently combined.
+Daily dashboard shows Production WIP only, by section/category. HTML TV WIP also uses Production records in tonnes. Planning-vs-Production comparison remains in its dedicated review view.
+Production WIP sources may represent different reporting dates. Confirm the cut-off dates before using a combined factory total. Missing/unreadable sections are reported and are not filled with zero.
+
+Error corrections
+- Removed local datetime import that caused UnboundLocalError in WIP render.
+- Included V16.20 widget callback fix for daily_quick_access_v13 and saved-plan settings restoration.
+- Identical repeated uploads are not rewritten on every Home rerun, preserving upload timestamps and avoiding unnecessary plan invalidation.

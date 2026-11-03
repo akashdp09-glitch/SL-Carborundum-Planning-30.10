@@ -1,0 +1,21 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.12 TRACEABILITY
+Prepared 2026-09-30 Asia/Bangkok
+
+BUILD INPUTS
+Base software is the user's V16.8 ZIP with V16.10/V16.11 revisions. V16.12 updates hub.py, apps/daily/daily_planner_app.py and mobile release documentation. Complete source workbook names, upload location, file properties, date logic, results and missing inputs are in ANALYSIS_REFERENCE_INPUTS_V16_12.md. Analysis references were read from `/workspace/scratch/1b539f183d18/upload/`; app import time is recorded only when an operator imports a file and is distinct from Excel's internal modified date.
+
+CHANGES
+- Multi-file Daily Status uploader retains separate section books, parses dated tabs, uses tab names as source dates, records file/sheet/row evidence, quantities, import timestamp, hash, archive paths and separate monthly revisions. Same section/month replacement archives the older upload to avoid double counting.
+- Two separate KPI workbook inputs with provenance. When tab and report title months conflict, report title drives KPI period and discrepancy remains visible.
+- Plan due-date analysis compares original due C and revised due E against actual warehouse date EV; summary graphs, WO details and source row trace. Section completion is inferred from first tab where cumulative meets required quantity or balance <= 0; section due dates are absent, so section on-time is marked proxy.
+- Home source register shows original/stored path, import time, workbook modified time, byte count, hash, user/context, archive path and active status when available, with CSV export.
+- Existing IP-independent WO QR, QR label generator and mobile scan/image evidence paths retained.
+
+DEFAULT STORAGE (UI shows resolved server paths)
+`CENTRAL_DATA/COMPANY_DATA/` planning sources; `DAILY_STATUS/` and `/history/` department files; `KPI/` separate KPI sources; `SOURCE_COPIES/` source archive; `REPORTS/` reports and `/QR_TEMP/` QR images; `QR_REGISTRY.json`; `PHOTOS/QR_SCANS/YYYY/MM/DD/` scan images; `PHOTOS/MOBILE_AUDITS/` audit images; `DATABASE/sl_planning.db` database. Server variables SL_SHARED_ROOT, SL_REPORT_ROOT, SL_PHOTO_ROOT, SL_DB_PATH and SL_SOURCE_COPY_ROOT can change the paths.
+
+VERIFICATION AND LIMITS
+- Python syntax compilation passed for hub.py and apps/daily/daily_planner_app.py.
+- Daily Status analysis: 3,757 valid WO rows, 225 invalid/missing WO IDs excluded, zero read errors, approximately 2.5 sec.
+- Plan result: 61.6% on initial due (1,337/2,172) and 79.1% on revised due (1,672/2,114), using only rows with actual and valid due dates.
+- No production phone, server network, or high-volume load test was available. Camera live access depends on handset browser security and permission; photo fallback exists. Validate on the actual factory setup before operational reliance; compile/analysis does not prove thousands/day throughput.

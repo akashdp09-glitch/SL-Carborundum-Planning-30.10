@@ -1,5 +1,12 @@
 # Development status and verification
 
+## 2026-11-03 — restored source and RC29.52 partial review package
+
+- Downloaded and CRC-checked Vol1/Vol2, restored the missing modules without overwriting existing analysis history. Four overlong mojibake document names were retained under stable names; source filename mapping is included with the reconstructed documents.
+- Added the owner's three-manager-KPI screen (15/10/15 maximum marks), additive append-only DB evidence, reasoned corrections, retry protection, monthly history/trends and standard CSV import/export. Retired nine-measure screen is separate; old evidence remains untouched. Awarded HR scores are not invented.
+- Restored the supplied hub UUID import and fixed Source Manager's KPI consistency path. Focused validation: 39 passed, 1 skipped; Streamlit manager save/rerun showed persisted synthetic 120/100 and backlog 35 as 120.00%.
+- Full suite interrupted; uploaded engine controlled-change checks still fail and the firing-anchor test has a helper-contract mismatch. No failing engine hash was rewritten. Package is explicitly review-only; planning optimisation, full UI changes, actual-stage/Recovery fixes and the complete illustrated manual remain unfinished. See `docs/RC29_52_REVIEW_NOTES.md`.
+
 ## 2026-11-03 — manager ratio and maximum marks confirmed
 
 - Owner confirmed KPI 2 = closed WOs / opened WOs x 100 for the same period, showing backlog closures separately. Preserve ratios above 100% with an explanation; do not silently cap the achievement percentage.

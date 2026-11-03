@@ -1,0 +1,12 @@
+SL PPC Daily Planner V1.9.19
+- Plan2026 is final authority for due date, category, order qty, actual/status/closure.
+- Validation tab moved to final tab.
+- A/B synchronization is Forming-only and capacity-split across working days when required; avoids artificial 300-400% spikes caused by date consolidation.
+- Over 100% controlled capacity is explicitly OT/capacity-recovery exception, not normal capacity.
+- Mixing capacity evidence includes ton/day and MO/day where CAP-โม่ is available.
+- Daily Status management analysis uses English-normalized Problem/Action fields, section/category/date bar views, and major problem/action graphs.
+- Product code starting 1 or 4 = TEST / not for sale; starting 4 forced to M for test-risk analysis.
+- Production number PM = continuous monthly Vitrified (Make-to-stock); PBM = continuous monthly Resin (Make-to-stock); PS/PBS remain monthly made-to-order per supplied Thai reference image.
+- Operational MPS = month x category x process schedule x controlled capacity x risk.
+- All Plotly exports configured JPEG; matplotlib graph downloads are JPEG.
+- Stacked charts show one whole-stack total only; stock/material-stock stacks are label-free per management request.

@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block content %}
+<h1>MRP</h1><div class="muted">Basic requirement view from imported Work Order material requirements. Stock/purchase inputs are intentionally not fabricated in this MVP.</div>
+<section class="panel"><table><thead><tr><th>Month</th><th>Material</th><th>Required Qty</th><th>WO Count</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ r.month }}</td><td>{{ r.material_code }}</td><td>{{ '%.2f'|format(r.required_qty) }}</td><td>{{ r.wo_count }}</td></tr>{% endfor %}</tbody></table></section>
+{% endblock %}

@@ -1,0 +1,7 @@
+V16.26 (built 2026-10-03) = V16.25 + FIX for Production WIP page crash
+  ValueError: too many values to unpack (expected 2, got 4)  at apps/daily/production_wip_control.py line 131.
+Cause: the source fingerprint is a tuple of 4-item tuples (section, path, size, modified time) but line 131 unpacked it as (k, v).
+Fix: line 131 now converts each fingerprint entry with str(). Same pattern searched across the whole project: no other occurrence.
+Everything else as in V16.25 (Planning Suite, F1 help, multi-file Daily Status upload, selftest).
+QUICK PATCH WITHOUT REINSTALL: replace apps\daily\production_wip_control.py in your current folder with the one provided, restart the app.
+Tested: py_compile + undefined-name scan + the fingerprint expression on sample values. NOT run inside Streamlit.

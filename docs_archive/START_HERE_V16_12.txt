@@ -1,0 +1,20 @@
+SL CARBORUNDUM SMART FACTORY CENTER — V16.12
+Prepared 2026-09-30 (Asia/Bangkok)
+
+Start the Windows server with apps/mobile/start_server.bat. Use the desktop hub for planning.
+Daily Status: Daily Planner → 📡 Daily Status; upload the six separate section workbooks together using its multi-file sidebar control.
+KPI: Daily Planner → 🎯 Section Performance KPI; upload section KPI and warehouse delivery KPI separately.
+Home → Uploaded Files & Traceability shows original name, saved path, import time, workbook modified time, size, hash, archive path and active status when available.
+Mobile: use Scan QR, QR Generator and Files & Traceability. WO QR payload is SLWO:<WO ID> and has no IP address. Generate printable labels in QR Generator. Phone camera live scan requires browser permission/security support; photo capture/scan is the fallback.
+
+Default shared storage (software folder/CENTRAL_DATA, unless server environment overrides):
+- COMPANY_DATA/ — planning/source books
+- DAILY_STATUS/ and DAILY_STATUS/history/ — separate section uploads and superseded copies
+- KPI/ — separate KPI sources
+- SOURCE_COPIES/ — source archives
+- REPORTS/ and REPORTS/QR_TEMP/ — generated reports and QR images
+- QR_REGISTRY.json — desktop QR labels
+- PHOTOS/QR_SCANS/YYYY/MM/DD/ — QR scan image evidence
+- PHOTOS/MOBILE_AUDITS/ — physical audit images
+- DATABASE/sl_planning.db — shared database
+See ANALYSIS_REFERENCE_INPUTS_V16_12.md and REVISION_TRACEABILITY_V16_12.txt for source inventory, metrics, provenance and limits.

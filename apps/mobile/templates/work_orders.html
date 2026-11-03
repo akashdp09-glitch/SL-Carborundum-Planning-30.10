@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head"><div><h1>Work Orders</h1><div class="muted">Search by WO, Production Code, Order, Product or Customer</div></div><form class="search" method="get"><input name="search" value="{{ search }}" placeholder="Search..."><button class="button">Search</button></form></div>
+<section class="panel"><table><thead><tr><th>WO</th><th>Production Code</th><th>Product</th><th>Qty</th><th>Produced</th><th>WIP Process</th><th>Status</th><th>Due</th><th>Last Scan</th></tr></thead><tbody>
+{% for s in rows %}<tr><td><a href="/work-orders/{{ s.wo.wo_id }}">{{ s.wo.wo_id }}</a></td><td>{{ s.wo.production_code }}</td><td>{{ s.wo.product_code }}</td><td>{{ '%.0f'|format(s.wo.qty) }}</td><td>{{ '%.0f'|format(s.produced) }}</td><td>{{ s.current_process or '—' }}</td><td><span class="status {{ s.status|lower }}">{{ status_labels.get(s.status,s.status) }}</span></td><td>{{ s.wo.due_date or '—' }}</td><td>{{ s.last_event.event_time if s.last_event else '—' }}</td></tr>{% endfor %}
+</tbody></table></section>
+{% endblock %}

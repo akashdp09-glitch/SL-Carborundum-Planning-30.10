@@ -1,0 +1,165 @@
+{
+ "approval": {
+  "recorded": "2026-10-04",
+  "approved_by": "Factory owner (user instruction, turn 4 of the SL Carborundum Planning project)",
+  "statement": "I approve the supplied technical documents, capacity standards, process instructions and my explicit requirements as factory rules.",
+  "scope": "Applies to planning, validation, analysis and bilingual help. Dated stock, WIP, production plans and forecasts are dated operational evidence, not permanent constants.",
+  "on_conflict": "Show the exact conflicting entries and ask only for the specific decision needed. Never silently choose or invent a rule."
+ },
+ "rules": [
+  {
+   "id": "CAP-1",
+   "th": "คงหน่วยต้นทางและฐานเวลาของทุกทรัพยากร; ค่าความสามารถที่ไม่มีฐานเวลาไม่พอสำหรับการวางแผน",
+   "en": "Preserve the source unit and time basis of every resource. A capacity value without a time basis cannot be scheduled.",
+   "implemented_in": "suite/capacity.py (CapRecord.time_basis, schedulable flag)",
+   "test": "suite/test_capacity.py::test_unstated_time_basis_is_never_schedulable"
+  },
+  {
+   "id": "CAP-2",
+   "th": "กำลังการผลิตงานผสมนับเป็นจำนวนโม่ต่อวันเท่านั้น (เจ้าของยืนยัน 2026-10-04); จำนวนโม่ไม่ถูกแปลงเป็นแบทช์ กก. หรือตัน",
+   "en": "Mixing capacity is the number of mills per day only (owner, 2026-10-04). A mill count is not converted into batches, kg or tonnes; tonnes/month and kg/day on the mixing sheet are reference values.",
+   "implemented_in": "suite/capacity.py (_read_mixing: mills/day schedulable, other mixing figures reference only)",
+   "test": "suite/test_capacity.py::test_mixing_is_scheduled_in_mills_per_day_only"
+  },
+  {
+   "id": "CAP-3",
+   "th": "แปลงตันเป็นกิโลกรัมด้วยค่าแปลงที่บันทึกไว้เท่านั้น",
+   "en": "Tonnes to kg only with the documented conversion (1 t = 1,000 kg, metric tonne). The workbook does not print the definition of 'ตัน'; the metric reading is recorded as an assumption awaiting owner confirmation.",
+   "implemented_in": "suite/capacity.py (TONNE_TO_KG, TONNE_CONVERSION_NOTE)",
+   "test": "suite/test_capacity.py::test_conversions"
+  },
+  {
+   "id": "CAP-4",
+   "th": "แปลงชิ้นเป็นน้ำหนักได้เมื่อมีน้ำหนักเฉพาะชิ้นงานและขั้นตอนตรงกัน",
+   "en": "Pieces to weight only with a supported part-specific weight at the matching process stage.",
+   "implemented_in": "suite/capacity.py (pieces_to_kg raises MissingConversion)",
+   "test": "suite/test_capacity.py::test_conversions"
+  },
+  {
+   "id": "CAP-5",
+   "th": "ห้ามรวมตัน ชิ้น และจำนวนโม่เป็นยอดเดียว",
+   "en": "Never add tons, pieces and mill counts into one capacity total; utilisation is computed separately per compatible unit.",
+   "implemented_in": "suite/capacity.py (utilisation)",
+   "test": "suite/test_capacity.py::test_utilisation_does_not_mix_unit_kinds"
+  },
+  {
+   "id": "CAP-6",
+   "th": "ข้อมูลไม่ครบ: ระบุช่องว่าง ให้ฉากทัศน์ชั่วคราว และห้ามระบุว่าแผนทำได้จริงที่ยืนยันแล้ว",
+   "en": "When conversion or cycle information is missing: identify the gap, give a provisional scenario where useful, and do not label the plan confirmed feasible.",
+   "implemented_in": "suite/capacity.py (gaps), suite/newpart_planner.py (verdict)",
+   "test": "suite/test_newpart_planner.py"
+  },
+  {
+   "id": "CLOSE-1",
+   "th": "ใบสั่งปิดเมื่อสถานะแพ็ค (EU) ปิด หรือ ปิดของผลิต (FC) ปิด/ยกเลิก",
+   "en": "Whole order closed = Packing Status (EU) closed OR production closure (FC) closed/cancelled. Documented in apps/daily/README_V1_9_30_PLAN2026_KPI_VERTICAL_NAV.txt and retained by F12V.",
+   "implemented_in": "suite/closure_rules.py; hub.py _strict_status_by_wo; suite/plan_reader.py",
+   "test": "suite/test_closure_rules.py"
+  },
+  {
+   "id": "CLOSE-2",
+   "th": "การปิดฝ่ายเตรียม/ผสม/ขึ้นรูป/เผา/เจียร ไม่ใช่การปิดใบสั่ง",
+   "en": "Preparation, Mixing, Forming, Firing and Grinding closures are section completion only and never close the order.",
+   "implemented_in": "suite/closure_rules.py; hub.py (removed Preparation/FB from closure)",
+   "test": "suite/test_closure_rules.py::test_preparation_closure_never_closes_the_order"
+  },
+  {
+   "id": "DATE-1",
+   "th": "ใช้วันที่ปัจจุบัน Asia/Bangkok แบบไดนามิก ห้ามสืบทอดวันที่เก่าจากใบสั่งก่อนหน้า",
+   "en": "Use the current Asia/Bangkok date dynamically; never inherit scheduled dates from a previous order.",
+   "implemented_in": "suite/common.py bkk_today; suite/newpart_planner.py",
+   "test": "suite/test_closure_rules.py::test_backorder_uses_the_passed_date_not_stored_dates"
+  },
+  {
+   "id": "DATA-1",
+   "th": "สต็อก WIP แผนการผลิต และพยากรณ์เป็นหลักฐานเชิงปฏิบัติการลงวันที่ ไม่ใช่ค่าคงที่",
+   "en": "Dated stock, WIP, production plans and forecasts are dated operational evidence, not permanent constants. Every export stamps its as-of date and sources.",
+   "implemented_in": "suite/source_manager.py (revisions, timestamps)",
+   "test": "suite/test_source_manager.py"
+  },
+  {
+   "id": "SRC-1",
+   "th": "นำเข้าแต่ละแหล่งข้อมูลครั้งเดียวและใช้ร่วมกันทุกโมดูล",
+   "en": "Import each source once and reuse it in all modules; keep originals and revisions; two KPI sources and a Daily Status per section.",
+   "implemented_in": "suite/source_manager.py",
+   "test": "suite/test_source_manager.py"
+  },
+  {
+   "id": "KNOW-1",
+   "th": "ห้ามอ้างว่าเข้าใจเอกสารครบเพียงเพราะดึงข้อความได้; OCR ที่ไม่แน่ใจต้องทบทวน",
+   "en": "Do not claim a document is fully understood because text was extracted; uncertain OCR/interpretation is marked for review; missing sources are recorded, not invented.",
+   "implemented_in": "knowledge/ (extraction register), suite/help_f1.py",
+   "test": "suite/test_help_f1.py"
+  },
+  {
+   "id": "MOB-1",
+   "th": "ข้อสังเกตจากการตรวจนับแยกจากรายการผลิต",
+   "en": "Audit observations are kept separate from production transactions; duplicate-safe retries; reconciliation history preserved.",
+   "implemented_in": "apps/mobile/audit_v2.py",
+   "test": "apps/mobile/tests/test_audit_v2.py"
+  },
+  {
+   "id": "PERM-1",
+   "th": "ทุกบทบาทที่ล็อกอินบันทึก แก้ไข และเชื่อมข้อมูลตรวจนับได้ ทุกการกระทำเก็บผู้ใช้ เวลา และเหตุผล ไม่มีการลบหรือเขียนทับแบบเงียบ",
+   "en": "Every logged-in role may record, correct and link audit data (owner, 2026-10-04). Nothing is deleted or silently overwritten: user, time and reason are stored and edits keep old and new values.",
+   "implemented_in": "apps/mobile/audit_v2.py (PERMISSION_DERIVATION, record_edit_history)",
+   "test": "apps/mobile/tests/test_audit_v2.py::test_every_role_can_record_and_edit_with_trace"
+  },
+  {
+   "id": "CONFLICT-1",
+   "th": "เมื่อแหล่งที่อนุมัติขัดแย้งกัน แสดงรายการที่ขัดแย้งและถามเฉพาะการตัดสินใจที่จำเป็น",
+   "en": "If approved sources conflict, show the exact conflicting entries and ask only for the specific decision needed.",
+   "implemented_in": "suite/capacity.py (conflicts), suite/source_manager.py",
+   "test": "suite/test_capacity.py::test_conflicts_list_exact_cells"
+  },
+  {
+   "id": "CAP-7",
+   "th": "กำลังการผลิตขึ้นรูปใช้อัตราต่อชั่วโมง (คอลัมน์ E) ในแถว 28, 33, 38, 40-43; ยอดรวม 3 ชม. เป็นค่าอ้างอิง",
+   "en": "Forming: on sheet rows 28, 33, 38 and 40-43 the hourly rate (column E) is the approved figure; the 3-hour totals are reference only (owner, 2026-10-04).",
+   "implemented_in": "suite/capacity.py (_read_forming, FORMING_RATE_ROWS)",
+   "test": "suite/test_capacity.py::test_forming_hourly_rate_is_authoritative_on_owner_rows"
+  },
+  {
+   "id": "CAP-8",
+   "th": "เครื่องที่ไม่ทำงานตอนนี้ (เซลล์ D7-12, D15, D19, D25-26, D32 ของชีต CAP ขึ้นรูป) ไม่นับเป็นกำลังการผลิต ผู้ใช้แก้ไขรายการได้และมีประวัติ",
+   "en": "Forming machine cells D7-12, D15, D19, D25-26, D32 are not working now and are excluded from capacity; users can change the list and every change is recorded (owner, 2026-10-04).",
+   "implemented_in": "suite/capacity.py (load_capacity out_of_service_cells), suite/user_settings.py",
+   "test": "suite/test_capacity.py::test_machines_marked_not_working_are_excluded_and_editable"
+  },
+  {
+   "id": "CAP-9",
+   "th": "เตาเรซิ่นใช้กับกลุ่ม PB เท่านั้น เวลาเดินเตา 2 วัน (ชีต Lead Time ระบุ 3 วัน แสดงทั้งสองค่า)",
+   "en": "Resin firing applies to the PB category only, running time 2 days. The workbook says 3 days (Lead Time!F7, Cap เตา!H7:H8); the planner shows 2 days as optimistic and 3 days as conservative until the owner says which applies.",
+   "implemented_in": "suite/capacity.py (_read_lead, kiln_throughput), suite/newpart_planner.py (_firing)",
+   "test": "suite/test_capacity.py::test_resin_firing_lead_time_is_pb_only_with_owner_run_time"
+  },
+  {
+   "id": "CAL-1",
+   "th": "วันอาทิตย์ไม่ทำงาน และเลือกวันหยุดได้ รายการวันหยุดที่บันทึกมีผู้ใช้ เวลา และเหตุผล",
+   "en": "Sunday is non-working; holidays can be selected, and the saved holiday list records user, time and reason (owner, 2026-10-04).",
+   "implemented_in": "suite/newpart_planner.py (Calendar), suite/calendar_ui.py, suite/user_settings.py",
+   "test": "suite/test_newpart_planner.py::test_sunday_is_not_a_working_day_and_holidays_can_be_selected"
+  },
+  {
+   "id": "DATA-2",
+   "th": "พยากรณ์ถูกหักด้วยออเดอร์จริงของสินค้าและเดือนเดียวกัน (เจ้าของยืนยัน)",
+   "en": "Forecast is netted against firm orders of the same product and month (confirmed by the owner, 2026-10-04).",
+   "implemented_in": "suite/newpart_planner.py (net_demand)",
+   "test": "suite/test_newpart_planner.py::test_forecast_is_netted_by_firm_orders"
+  },
+  {
+   "id": "PHOTO-1",
+   "th": "ชื่อไฟล์รูปบอกรายละเอียด: ใบสั่งผลิตหรือรหัสชั่วคราว สถานที่ และวันที่-เวลา; ไม่ย่อรูปฝั่งผู้ใช้",
+   "en": "Photo file names carry the work order (or temporary ID), the location and the date-time; photos are stored at original size (owner, 2026-10-04).",
+   "implemented_in": "apps/mobile/audit_v2.py (_photo_stem)",
+   "test": "apps/mobile/tests/test_audit_v2.py::test_photo_file_name_carries_work_order_location_and_date"
+  },
+  {
+   "id": "QTY-1",
+   "th": "ไม่จำกัดจำนวนสูงสุดของการกรอก แต่ปฏิเสธค่าที่ไม่ใช่ตัวเลข ค่าอนันต์ และค่าติดลบ",
+   "en": "No upper limit on entered quantities (owner, 2026-10-04); non-numeric, infinite and negative values are still refused.",
+   "implemented_in": "apps/mobile/audit_v2.py (_validate_quantity)",
+   "test": "apps/mobile/tests/test_concurrency_and_uploads.py"
+  }
+ ]
+}

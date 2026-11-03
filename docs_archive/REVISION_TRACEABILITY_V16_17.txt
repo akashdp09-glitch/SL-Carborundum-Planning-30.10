@@ -1,0 +1,40 @@
+V16.17 REVISION TRACEABILITY — 2026-10-02 (Asia/Bangkok)
+
+INPUT WORKBOOK STUDIED
+- Original uploaded filename: P280526(1).xlsx
+- Session path: /workspace/scratch/1b539f183d18/upload/P280526(1).xlsx
+- SHA-256: 16dbc1ca48c23c37f555aac59c1be997038264b84a4c132e70fe0fc478e1b357
+- Structure: 57 sheets: drawing register, MAT, SD, ใบorder, GROUPING, Cover Detial, and blue P001–P050 work order forms.
+- Cover Detial headers A:DA are kept in the original sequence. P001–P008 are populated valid orders; later rows/sheets include placeholders and are not treated as valid orders.
+- Current date is taken from Asia/Bangkok runtime at draft creation, not from the workbook label.
+- Supporting GROUPING packaging values are source-backed suggestions and require confirmation.
+
+CHANGES
+1. hub.py
+   - New Native P280 work-order draft builder on the RP → Work Order → Cover Sheet → Plan 2026 page.
+   - Accepts multiple typed request rows plus optional pasted RP/email text. Missing fields remain visibly missing; quantity can be absent for draft-only requests.
+   - Uploads the approved P280 source into the controlled source store, archives a dated original copy, and shows original/stored filenames, time, Excel modified time when available, SHA-256 and exact server paths. Browser uploads cannot expose the original PC folder.
+   - Reads the next sequence from valid order rows only; rejects duplicate order numbers, never overwrites beyond P050, sets new IDs to Pnnn-DDMMYY in current Bangkok time, and updates the matching Pnnn blue sheet.
+   - Uses exact SD product-code matches only; unique customer-ID history and unique SD specification are reviewable suggestions. Does not infer a recipe or release.
+   - Adds SL_ORDER_STATUS and PACKAGING_REVIEW sheets. Exact GROUPING matches show brand/inner/outer box/pack qty/packing code, requiring planner confirmation.
+   - Preserves original Cover Detial formula-result caches and adds cached values for new Cover Detial identifiers/key fields without replacing formulas; requests Excel recalculation on opening.
+   - Generates QR PNGs with payload SLWO:Pnnn-DDMMYY (no IP/server URL), a traceability CSV and optional original request text in the output packet.
+   - Generated outputs: CENTRAL_DATA/REPORTS/WORK_ORDER_DRAFTS. Active P280: CENTRAL_DATA/COMPANY_DATA/P280526-LATEST.xlsx. Source archives: CENTRAL_DATA/SOURCE_COPIES.
+2. apps/mobile/app.py
+   - Reads SL_ORDER_STATUS metadata so imported drafts stay DRAFT rather than becoming RELEASED.
+   - Allows missing-quantity rows only when explicitly marked DRAFT; normal/released rows still require positive quantity.
+   - The mobile QR parser accepts SLWO codes and legacy URL labels. Mobile app version set to 1.7.
+3. START_HERE_V16_17.txt
+   - Documents setup, source upload, generated file locations, scanning and limits.
+
+VERIFICATION
+- Python compile check passed for hub.py, apps/mobile/app.py and apps/daily/daily_planner_app.py.
+- P280 creation smoke test on a disposable copy confirmed P009-021026 (current Bangkok date), preserved Cover Detial formula and historical cached data, populated cached WO/order/qty/product fields for mobile import, and retained DRAFT status.
+- QR payload convention matches the mobile app's SLWO:<id> parser. QR image generation uses the package-pinned qrcode[pil] dependency.
+- Full Windows/Excel/mobile-device run, camera behavior, concurrent multiuser operation and high-volume scanning were not executable here.
+
+LIMITS / NEXT CONTROLLED STEPS
+- The P280 source is intentionally not bundled; upload the current approved file after first install or when it changes.
+- This release creates a native WO draft and packaging review. It does not release the WO, book capacity, recalculate material demand against live stock, assign machines/operators, or publish into Plan 2026.
+- Product/material formula cells rely on Excel recalculation. The Cover Detial summary retains cached historical results and new identifier/key-field values for mobile import.
+- Arbitrary email text is preserved as evidence but not semantically auto-parsed. Request values are entered/reviewed explicitly to prevent invented order data.

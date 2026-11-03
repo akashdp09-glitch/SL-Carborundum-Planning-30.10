@@ -1,0 +1,49 @@
+SL PPC DAILY PLANNER V1.6.0 - VALIDATION REPORT
+Source Plan used: Plan 2026-2-Update-030926.xlsx
+Planning start used: 09-Sep-2026
+Firing test source: FIRING_PLAN_OUTPUT_V1_8_TEST.xlsx (development regression source only)
+Capacity source: CAPACITY_DATABASE.xlsx
+
+WIP REGRESSION AGAINST SL_PPC_EXCEL_PPC_SYSTEM_BASE SEMANTICS
+Open Demand / Preparation Required : 313,757 pcs
+Ready for Mixing                  : 39,444 pcs
+Ready for Forming                 : 344,840 pcs
+Ready for Firing                  : 135,605 pcs
+Ready for Grinding/Cutting        : 151,060 pcs
+Ready for Packing                 : 24,465 pcs
+Result: matched the established base-workbook queue totals used for regression.
+
+START-DATE REGRESSION, 30-DAY TEST
+Earliest planned date:
+Preparation          09-Sep-2026
+Mixing               09-Sep-2026
+Forming              09-Sep-2026
+Firing               09-Sep-2026
+Grinding/Cutting     09-Sep-2026
+Cleaning             09-Sep-2026
+Packing              09-Sep-2026
+QC                    14-Sep-2026 in this test because QC rows were generated from NEW firing completion; existing downstream WIP is not delayed by this QC route.
+
+DELIVERY CONTROL PROFILE COUNT
+9 source profiles transcribed into Lead Time Master.
+Examples of DAILY offsets:
+Vitrified General Dry: Prep->Mix 2 WD; Mix->Form 1 WD; Form->Fire readiness 4 WD.
+Vitrified Wet Dry: Prep->Mix 2 WD; Mix->Form 1 WD; Form->Fire readiness 6 WD.
+Vitrified Fine Mesh: Prep->Mix 3 WD; Mix->Form 1 WD; Form->Fire readiness 6 WD.
+Resinoid Fine Mesh: Prep->Mix 2 WD; Mix->Form 2 WD; Form->Fire readiness 1 WD.
+All 9 exact source rows remain visible in the Lead Time Master sheet for user cross-check.
+
+SPEED REGRESSION IN DEVELOPMENT CONTAINER
+Plan sync: ~7.77 s
+Capacity read: ~3.61 s
+1-day scheduling core: ~3.04 s
+7-day scheduling core: ~3.26 s
+30-day scheduling core: ~4.21 s
+Full 30-day detailed build: ~17.29 s
+Optimization changed repeated grinding-master scanning implementation only; matching score/selection rule was preserved.
+
+STOCK PARSER REGRESSION
+Parser was also checked against a prior SL material-stock style workbook containing Thai stock columns and successfully read non-zero material balances and their units. The user must upload the current controlled Stock on Hand file for current MRP; old/stale stock is not embedded in this package.
+
+RELEASE BOUNDARY
+The planner does not claim that every input is correct. It exposes source/lead-time/capacity/stock evidence so Planning can cross-check before release.

@@ -1,0 +1,98 @@
+{
+  "ppc_desktop_core_v1_9.py": {
+    "baseline_sha256": "3b388b4bdb0dc881dddba58c75ea8180f638459443d041217b46b9a281b22b6c",
+    "accepted_sha256": "7e7422e543ea3f6d4a65b1ba158432cc3b440be29115b75a3e01e673b0343aba",
+    "reason": "Declared in the legacy CONTROLLED_CHANGES.json name list; per-file reason not recorded in the supplied documents.",
+    "evidence": "legacy declaration (V16.x release notes)",
+    "reviewed": false,
+    "recorded": "2026-10-04"
+  },
+  "traceable_views.py": {
+    "baseline_sha256": "a8492982190fc238e5abe2100a8affef5ca0104b228ac3263b52141901d7e3f1",
+    "accepted_sha256": "6ac55b0d969d728274b9ef6346d8f3c4325e9e2e49c7ef51a567bce8ab5ee644",
+    "reason": "Declared in the legacy CONTROLLED_CHANGES.json name list; per-file reason not recorded in the supplied documents.",
+    "evidence": "legacy declaration (V16.x release notes)",
+    "reviewed": false,
+    "recorded": "2026-10-04"
+  },
+  "production_wip_control.py": {
+    "baseline_sha256": "76629a162151b47c66b87532da6c326fe10c9cbbc73d0806095dd771c07b922e",
+    "accepted_sha256": "c12a709f883058106f8cc6394c19fbf7dd3c9e131fa3be6eb3b8672525e8d0f1",
+    "reason": "Use second worksheet section summary's reported open-WO and GW kg fields as Production WIP source of record; retain Total minus Closed only as a discrepancy check.",
+    "evidence": "suite/test_production_wip_control.py::ProductionWipControlTests.test_full_path_is_used_and_current_snapshot_is_readable",
+    "reviewed": false,
+    "recorded": "2026-10-24"
+  },
+  "daily_job_control.py": {
+    "baseline_sha256": "dd9e821b9ced198c3b56bd6ee71a8421f958b87fffa494840ad5d27084976b43",
+    "accepted_sha256": "387cd72ee35cd761b4ee39ca6e480cac4cfc855479be907ae53728adee8ba76c",
+    "reason": "Cache monthly Open/Close workbook parsing by file metadata; infer each source month and use the current Phan Thong local month only when source month is absent.",
+    "evidence": "suite/test_month_register.py",
+    "reviewed": false,
+    "recorded": "2026-10-06"
+  },
+  "daily_md_report.py": {
+    "baseline_sha256": "1add6a960e4b33065fcf3cbe8f3ee1c0eca98a42d1874d924b07cb15f9c1ae2e",
+    "accepted_sha256": "4d4b3545f1db39781ca74083cd52bb50ad43da6dfa4c1cb4d41a4e15cbba70e4",
+    "reason": "Pre-existing RC29.44 carried-forward change; not modified for this WIP/capacity release, current hash is pinned pending review.",
+    "evidence": "DEVELOPMENT_STATUS.md",
+    "reviewed": false,
+    "recorded": "2026-10-22"
+  },
+  "meeting_presentation.py": {
+    "baseline_sha256": "bcbb7879e7990cf677b89f8661dffba96c23988592660fa72959b9f3553a97e2",
+    "accepted_sha256": "2eb7fde3cf76ee64ec74c91cf7090ed9e7bce6afe6e50ec6ff036fc0dd04916e",
+    "reason": "Declared in the legacy CONTROLLED_CHANGES.json name list; per-file reason not recorded in the supplied documents.",
+    "evidence": "legacy declaration (V16.x release notes)",
+    "reviewed": false,
+    "recorded": "2026-10-04"
+  },
+  "daily_planner_app.py": {
+    "baseline_sha256": "685a8210142f51b63f75e84946ecb3e7a557dfac71ae9dea0badd789a842c9c2",
+    "accepted_sha256": "7860cb3d1c81ac501fb9345f2dba204f71233e2f08744585633fda33f8760648",
+    "reason": "Promote Capacity vs Plan vs Actual in navigation; unify Daily WIP with the central report; show category-stacked Plan-2026 WIP totals; preserve monthly KPI revisions and provenance; display Thai customer name with English in smaller text.",
+    "evidence": "suite/test_kpi_history.py::test_latest_revision_replaces_same_month_and_preserves_older_months",
+    "reviewed": true,
+    "recorded": "2026-10-27"
+  },
+  "daily_linear_engine_v1_1.py": {
+    "baseline_sha256": "1060bf3a3cf86ccb8a5e41c97dd9a0fba084947f4c92c18812969daa1679706f",
+    "accepted_sha256": "ed44ac2109d31612f3a897a277ef55b73db2592c9c1b40112a6b0bb2ca4960da",
+    "reason": "V16.23: pdate used pd.to_datetime on Excel serials (risk dates near 1970); now uses date_and_wo_rules.parse_date; normalised A/B layer identity lookup; docs_archive/REVISION_TRACEABILITY_V16_23.txt. Matches V23_BUILD_MANIFEST.json hash.",
+    "evidence": "tests/release/test_controlled_changes.py::test_linear_engine_uses_the_safe_parser",
+    "reviewed": true,
+    "recorded": "2026-10-04"
+  },
+  "sl_ppc_fast_store_v4_6.py": {
+    "baseline_sha256": "ebf03ed507b7449c111501a2669a2863723bfafdca43d8323d8580086d7fd484",
+    "accepted_sha256": "b3ab79b201da34ea8ef785300d86850c88c13e0fd35032a39f2c2b79c21315de",
+    "reason": "V16.23: explicit date decoding at data-layer deserialisation (no NaT, no 1970 dates); docs_archive/REVISION_TRACEABILITY_V16_23.txt. Matches V23_BUILD_MANIFEST.json hash.",
+    "evidence": "tests/release/test_controlled_changes.py::test_fast_store_deserialises_dates_without_nat",
+    "reviewed": true,
+    "recorded": "2026-10-04"
+  },
+  "firing_engine_desktop_v2.py": {
+    "baseline_sha256": "dd8dc05e7c673ad37b80b1962266523cbe7c2efe517c3e5b386f5b15ade65100",
+    "accepted_sha256": "ffe7e6e82b9addac68a05fee31a4a2c66a9c9deb36b7e28aca5496b6be5e5bdb",
+    "reason": "V16.24 plotly guard replaced: the earlier 'go = px = None' fallback would raise AttributeError on first chart. plotly is a required dependency (INSTALL_REQUIREMENTS.bat), so a missing install now raises ImportError with a clear message. Baseline equals V23_BUILD_MANIFEST.json hash, i.e. the only change since V16.23 is this guard.",
+    "evidence": "tests/release/test_controlled_changes.py::test_missing_plotly_fails_with_clear_message",
+    "reviewed": true,
+    "recorded": "2026-10-04"
+  },
+  "lead_time_control_v1.py": {
+    "baseline_sha256": "96fe29753e01ca27b84270c6e6606359564862252d18acf6c454694881c0f8ce",
+    "accepted_sha256": "82c821fa115b0f0237cd401d0b708ae562a84c1512482d7fc555016d319d94a0",
+    "reason": "Match the Oven/drying row to CAPACITY_DATABASE.xlsx / Lead Time row 6 (S2, T3, P3, R2, M1, PB none) and apply the 4-day drying + 2-day pre-firing check only to Q26-009 reference WO P005-110826.",
+    "evidence": "suite/test_drying_time_rules.py::test_category_oven_times_match_capacity_workbook_lead_time_row_6",
+    "reviewed": true,
+    "recorded": "2026-10-06"
+  },
+  "sl_mps_mrp_engine_v2_4.py": {
+    "baseline_sha256": "27596a586b3a8e9f2e31b284ffe919fed5c120c89a2de9aae5cbfb52f471722f",
+    "accepted_sha256": "381b377807b127bd52498598b95168c503fcbdcddfb9d77dffe109997ad042b7",
+    "reason": "Pre-existing RC29.44 carried-forward change; not modified for this WIP/capacity release, current hash is pinned pending review.",
+    "evidence": "DEVELOPMENT_STATUS.md",
+    "reviewed": false,
+    "recorded": "2026-10-22"
+  }
+}

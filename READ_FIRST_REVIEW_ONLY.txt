@@ -1,0 +1,10 @@
+RC29.52 REVIEW CANDIDATE - NOT FOR LIVE FACTORY REPLACEMENT
+
+Included: reconstructed application, three-manager-KPI entry/history/CSV, source-consistency and mobile-index fixes.
+Unfinished: full firing/daily optimisation, actual-stage and Recovery correction, loading geometry, complete UI redesign and illustrated manual.
+Daily/Firing engine acceptance checks still fail in the uploaded source.
+Read docs/RC29_52_REVIEW_NOTES.md before testing.
+Extract into a NEW folder. Keep your existing program and CENTRAL_DATA unchanged.
+
+ฉบับสำหรับตรวจสอบเท่านั้น ห้ามทับโปรแกรมและ CENTRAL_DATA เดิม
+งานปรับเครื่องวางแผนและหน้าจอทั้งหมดยังไม่เสร็จ โปรดอ่านข้อจำกัดก่อนทดสอบ

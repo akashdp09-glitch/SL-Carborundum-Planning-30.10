@@ -1,0 +1,43 @@
+{% extends 'base.html' %}{% block content %}
+<div class="mobile-shell">
+  <div class="mobile-head"><div><a href="/operator">← Part Tracking</a><div class="mobile-title">{{ snap.wo.production_code or snap.wo.wo_id }}</div></div><a class="button" href="/mobile/scan">📷 Scan</a></div>
+  <section class="panel mobile-wo-card">
+    <div class="mobile-status {{ snap.status|lower }}">PLAN-2026: {{ snap.wo.plan_location or "Planning" }}</div>
+    <div class="mobile-facts">
+      <div><span>Product</span><b>{{ snap.wo.product_code or '—' }}</b></div>
+      <div><span>Order Qty</span><b>{{ snap.wo.qty|round(0)|int }}</b></div>
+      <div><span>Initial Due</span><b>{{ snap.wo.initial_due_date or snap.wo.due_date or "—" }}</b></div>
+      <div><span>Revised Due</span><b>{{ snap.wo.revised_due_date or "—" }}</b></div>
+      <div><span>Sales Delivery</span><b>{{ snap.wo.sales_delivery_date or "—" }}</b></div>
+      <div><span>Mill Batches (BY)</span><b>{{ snap.wo.mill_batches if snap.wo.mill_batches is not none else "—" }}</b></div>
+      <div><span>Produced</span><b>{{ snap.produced|round(0)|int }}</b></div>
+      <div><span>Completed vs order</span><b>{% if snap.completed_percent is none %}Not measurable{% else %}{{ '%.1f'|format(snap.completed_percent) }}%{% endif %}</b></div>
+      <div><span>Accepted</span><b>{{ snap.accepted|round(0)|int }}</b></div>
+      <div><span>Rework</span><b>{{ snap.rework|round(0)|int }}</b></div>
+      <div><span>Remaining</span><b>{{ snap.remaining|round(0)|int }}</b></div>
+      <div><span>Due</span><b>{{ snap.wo.due_date or '—' }}</b></div>
+      <div><span>Current Process</span><b>{{ snap.current_process or '—' }}</b></div>
+      <div><span>Current Location</span><b>{{ snap.current_location or '—' }}</b></div>
+      <div><span>Last Event</span><b>{{ snap.last_event['event_time'] if snap.last_event else '—' }}</b></div>
+      <div><span>Source</span><b>{{ snap.last_event['source'] if snap.last_event else '—' }}</b></div>
+      <div><span>Last Physical Audit</span><b>{{ snap.last_audit['created_at'] if snap.last_audit else 'Not audited' }}</b></div>
+      <div><span>Verified Qty</span><b>{{ snap.last_audit['verified_qty'] if snap.last_audit and snap.last_audit['verified_qty'] is not none else '—' }}</b></div>
+      {% if snap.last_audit_photo %}<div><span>Audit Photo</span><b><a href="/media/mobile-audits/{{ snap.last_audit_photo['filename'] }}" target="_blank">View photo</a></b></div>{% endif %}
+    </div>
+  </section>
+  <section class="panel"><h2>Plan-2026 section status</h2><div class="summary-grid">
+    {% for sec in snap.section_status %}<div class="summary-item"><b>{{ sec.section }}</b><strong>{{ sec.status }}</strong><small>{{ sec.value or 'No source marker' }} · {{ sec.field }}</small></div>{% else %}<div class="muted">Section status not present in the loaded Plan-2026.</div>{% endfor %}
+  </div><div class="muted">Source: {{ snap.wo.source_file or '—' }} · Plan row {{ snap.wo.plan_source_row or '—' }} · Imported {{ snap.wo.imported_at or '—' }}</div></section>
+  <section class="panel"><h2>Previous, current and future process schedule</h2><div class="muted">Plan dates come from the imported Plan-2026 route. Actual dates come from saved production events; no event means actual completion is unconfirmed.</div>
+    <div class="mobile-list">{% for r in snap.process_timeline %}<div class="mobile-row"><div><b>{{ r.seq }}. {{ r.process }}</b><small>Plan: {{ r.planned_date or 'No plan date' }} · {{ r.state }}</small>{% if r.actual_start %}<small>Actual start: {{ r.actual_start }}</small>{% endif %}{% if r.actual_complete %}<small>Actual complete: {{ r.actual_complete }}</small>{% endif %}</div><div class="mobile-row-right">{% if r.event_qty is not none %}<strong>{{ r.event_qty|round(0)|int }} pcs</strong>{% endif %}</div></div>{% else %}<div class="muted">No process schedule dates were imported for this work order.</div>{% endfor %}</div>
+  </section>
+  <section class="panel" style="border:3px solid #f58220">
+    <a class="button primary operator-main-button" href="/mobile/audit/{{ snap.wo.wo_id }}">📸 AUDIT THIS PART</a>
+    <div class="muted">Record status, quantity, location and a photo. This is a physical observation; it does not change production history.</div>
+    <a href="/mobile/part/{{ snap.wo.wo_id }}">Earlier observations of this work order</a>
+  </section>
+  <section class="panel"><h2>Event History</h2><div class="mobile-list">
+    {% for e in snap.events|reverse %}<div class="mobile-row"><div><b>{{ event_labels.get(e.event_type,e.event_type) }}</b><small>{{ e.process_name or '—' }} · {{ e.location or '—' }}</small></div><div class="mobile-row-right"><strong>{{ e.qty if e.qty is not none else '' }}</strong><small>{{ e.event_time }}</small></div></div>{% else %}<div class="muted">No events recorded.</div>{% endfor %}
+  </div></section>
+</div>
+{% endblock %}

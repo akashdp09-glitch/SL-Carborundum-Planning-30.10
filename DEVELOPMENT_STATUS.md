@@ -1,5 +1,11 @@
 # Development status and verification
 
+## 2026-11-03 — manager ratio and maximum marks confirmed
+
+- Owner confirmed KPI 2 = closed WOs / opened WOs x 100 for the same period, showing backlog closures separately. Preserve ratios above 100% with an explanation; do not silently cap the achievement percentage.
+- Manager maximum marks are KPI 1 = 15, KPI 2 = 10, KPI 3 = 15, total 40, citing `Level 2.1-2.2!I13:I15`. This owner-provided mapping is distinct from the analyst's 15/15/5/5 split. Updated the review workbook and requirements.
+- The cited sheet is absent from the six accessible XLSX files; inspect its HR achievement-to-marks conversion when the source is accessible. No conversion or awarded score was invented. Application implementation remains blocked by the oversized software ZIP.
+
 ## 2026-11-03 — manager KPI mapping and HR marks clarified
 
 - Owner defined the three manager KPIs: analyst planning accuracy; planning open-versus-closed WO ratio; Production actual packed WOs versus planned WOs as a count-based percentage. Recorded the mapping without combining all six staff measures or substituting pieces for WOs.

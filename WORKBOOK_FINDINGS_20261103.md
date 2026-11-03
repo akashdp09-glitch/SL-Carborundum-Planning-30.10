@@ -58,14 +58,16 @@ The supplied staff references contain **six measures**:
 
 Owner subsequently confirmed the three Planning Manager KPIs:
 
-1. Planning accuracy, inherited from the Planning Analyst's accuracy evidence.
-2. Planning open-versus-closed work-order percentage ratio. Closed/opened for
-   a common period versus same-cohort closure is awaiting confirmation; they
-   answer different questions and must not be silently interchanged.
+1. Planning accuracy, inherited from the Planning Analyst's accuracy evidence:
+   maximum **15 marks**.
+2. **Closed WOs / opened WOs x 100 for the same period**, with backlog closures
+   separately visible: maximum **10 marks**. This is a period throughput ratio,
+   not a same-cohort closure rate. It can exceed 100% without being an error.
 3. Production's actual packed work-order count divided by planned work-order
    count, expressed as a percentage. Count WOs rather than pieces; align period,
    plan revision and cohort, and distinguish partial receipts, completed packing
-   and unplanned/backlog packing before using source records as achievement.
+   and unplanned/backlog packing before using source records as achievement:
+   maximum **15 marks**.
 
 Owner clarified Chosita M8:M11 represent **HR maximum marks**, despite the
 workbook's target header and percentage storage/format: 15, 15, 5, 5 = 40 marks.
@@ -74,9 +76,13 @@ values as evidence. Do not replace them with N8:N11's four entries of 20.
 Achievement percentages and awarded marks are separate measures; Q9:Q10's
 >=95% entries remain source scoring-band evidence, not maximum marks.
 
-Still awaiting the manager's three-way allocation of 40 marks and the HR method
-for converting achievement into awarded marks (proportional or score-band based).
-The analyst's four-way split must not be copied onto the manager's three KPIs.
+Owner confirmed the manager allocation as **15 + 10 + 15 = 40**, citing worksheet
+`Level 2.1-2.2`, cells I13, I14, I15 respectively. This is owner-provided evidence;
+the named sheet is not present in the six accessible XLSX files. The application
+ZIP remains inaccessible, so its workbook contents have not been inspected.
+The HR achievement-to-awarded-marks conversion must be read from the cited
+source when available; maximum marks alone do not specify that conversion.
+The analyst's separate four-way split remains 15 + 15 + 5 + 5 = 40.
 
 Resolved process clarification (owner, 3 November 2026): `เข้าเผา` is WIP of
 firing from the preceding drying process after forming. `จำนวนเข้าเตา` means
@@ -99,8 +105,9 @@ WO issuance actual/target = 313/313. These do not independently validate staff
 acknowledgement or manager KPI formulas. Zero-target days are N/A. Job closure
 contains 333 closed source items across category rows; they are not 333 pieces
 or necessarily 333 distinct WOs. A provisional 333/313 throughput ratio would
-be 106.39%, but it is not an approved manager score or same-cohort closure rate:
-the source groups, count units and ratio/cohort definition must first align.
+be 106.39% under the now-confirmed period-throughput definition, but it is not
+yet a verified manager result or awarded score: source groups/count units must
+first align, and the category totals do not identify backlog closures separately.
 Older backlog closures can legitimately make a period-throughput ratio exceed
 100%; preserve and explain that effect rather than silently capping the ratio.
 

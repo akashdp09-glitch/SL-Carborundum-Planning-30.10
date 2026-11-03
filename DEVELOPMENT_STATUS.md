@@ -1,5 +1,12 @@
 # Development status and verification
 
+## 2026-11-03 — supplied workbook intake and review (partial; application blocked)
+
+- Received and inspected six real workbooks; see `WORKBOOK_FINDINGS_20261103.md`. The full software ZIP exceeds the 32 MiB transfer limit and could not be downloaded. A smaller source-only ZIP is requested; the missing application modules remain unavailable.
+- Added standalone read-only evidence staging, not operational integration: six imports / 92,617 bounded rows retained in a separate evidence database. Repeated actual-file intake produced no duplicates; SQLite integrity passed; four SYNTHETIC tests passed. Original files and application data are unchanged.
+- Recovery second sheet: 707 rows / 601 distinct WOs / 62 repeated keys. Source WO labels are 305 on plan, 294 late and 2 mixed; they are not verified performance. Generated a review workbook with customer/period/source detail and explicit quantity/duplicate limitations.
+- Six staff KPI measures were found. Requested the three manager KPI mapping/weights, clarification of conflicting target versus threshold cells, and the meaning of kiln-loading versus completed curing evidence. No score, inferred production completion, speed gain, revised UI or completed user manual is claimed.
+
 ## 2026-11-03 — owner revision scope and initial inspection (blocked)
 
 - Captured the owner's planning accuracy/speed, three manager KPIs derived from staff evidence, actual-production precedence, Recovery-only sheet analysis, bilingual/icon UI, plan edit traceability, persistence, Help and illustrated Word-manual requirements in `REVISION_SCOPE_20261103.md`.

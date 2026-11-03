@@ -1,5 +1,10 @@
 # Development status and verification
 
+## 2026-11-03 — owner clarified firing WIP and loading semantics
+
+- `เข้าเผา` is firing WIP from the preceding drying process after forming; `จำนวนเข้าเตา` means quantity loaded into the firing kiln. Neither establishes firing completion. Recorded the distinction in the revision scope and workbook findings; confirmed firing output remains separate (`เตาจ่าย`).
+- Planning must distinguish waiting WIP, reserved existing kiln loads and confirmed output, preventing repeat allocation and double counting. This records the required behavior; engine implementation remains blocked by the unavailable application ZIP. Only KPI-definition questions remain unresolved from the workbook review.
+
 ## 2026-11-03 — supplied workbook intake and review (partial; application blocked)
 
 - Received and inspected six real workbooks; see `WORKBOOK_FINDINGS_20261103.md`. The full software ZIP exceeds the 32 MiB transfer limit and could not be downloaded. A smaller source-only ZIP is requested; the missing application modules remain unavailable.

@@ -25,13 +25,13 @@ Expected file: `Plan 2026-2-Update-271026.xlsx` (not available in the current wo
 | --- | --- |
 | `pack` | Packing completed |
 | `เจียร` | Grinding or cutting completed; inspect route/columns to distinguish |
-| `เข้าเผา` | Curing completed, per owner's instruction |
+| `เข้าเผา` | WIP of firing from the preceding drying process after forming; owner clarified 3 November 2026. `จำนวนเข้าเตา` is quantity loaded into the firing kiln, not proof of completed firing. |
 | `เตาจ่าย` | Firing completed |
 | `ขึ้นรูปจ่าย` | Forming completed |
 | `ผสมจ่าย` | Mixing completed |
 | `เตรียมจ่าย` | Preparation completed |
 
-These are actual-production evidence and take precedence over planned status in `แผนการเผา`. Do not schedule completed quantities again. A partial completion removes only the confirmed completed quantity at its matching stage; it does not close the whole WO. Inspect WO keys, quantities, transaction dates, reversals and duplicate records before reconciliation. Show freshness and conflicts. Apply the existing whole-order closure rules separately.
+These are actual-production evidence and take precedence over planned status in `แผนการเผา`. Do not schedule completed quantities again. A partial completion removes only the confirmed completed quantity at its matching stage; it does not close the whole WO. `เข้าเผา` identifies firing WIP; distinguish awaiting kiln loading from quantities already loaded/in process. Reserve an evidenced existing kiln load rather than allocating those same pieces to another load. Neither WIP nor loaded quantity is completed firing: use confirmed firing-output evidence (`เตาจ่าย`) for that transition. Do not add loaded quantities and firing output as separate stock. Inspect WO keys, quantities, transaction dates, reversals and duplicate records before reconciliation. Show freshness and conflicts. Apply the existing whole-order closure rules separately.
 
 ## Verified source findings
 

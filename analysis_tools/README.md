@@ -53,4 +53,6 @@ No operational migration is introduced. To stop using this tool, stop invoking
 it; the application and original workbook files are unchanged. Preserve or back
 up the evidence DB and source files before any manual cleanup. Integrating these
 records into the real Source Manager requires its missing implementation and
-the owner's unresolved KPI/process definitions.
+the owner's unresolved KPI definitions. The owner clarified that `เข้าเผา`
+is firing WIP after the preceding drying process following forming, and
+`จำนวนเข้าเตา` is kiln-loaded quantity; neither proves firing completion.

@@ -63,9 +63,13 @@ Open owner decisions were requested asynchronously:
 2. Chosita monthly M8:M11 contain 0.15, 0.15, 0.05, 0.05 under annual target,
    while Q9:Q10 say >=95% and N8:N11 each contain weight 20. Confirm whether
    M means targets or contribution weights; do not silently resolve this conflict.
-3. `เข้าเผา` was described by the owner as curing completed, but R4 is quantity
-   loaded into kiln, with separate loading and program-end dates. Confirm whether
-   this proves completion or only loading/in-process. Keep the distinction visible.
+Resolved process clarification (owner, 3 November 2026): `เข้าเผา` is WIP of
+firing from the preceding drying process after forming. `จำนวนเข้าเตา` means
+quantity loaded into the firing kiln. Neither is proof of completed firing.
+Separate awaiting-loading WIP, already-loaded/in-process pieces, and confirmed
+firing output (`เตาจ่าย`). Keep existing evidenced loads reserved, without
+allocating their pieces again or adding loaded and output quantities as stock.
+The outstanding questions above concern KPI definitions only.
 
 Chosita DATA KPI__daily!AM8:AP8 = 0.8222, 0.86, 0, 0.82. AQ8 averages
 the daily cells, producing 62.555%. This is the supplied formula's result, not
@@ -109,4 +113,5 @@ This is **staging**, not an operational Source Manager import. No old KPI record
 live data, workbook contents, application logic or release checksums were changed.
 Integration, planner fixes, UI changes, performance measurements and the final
 illustrated Thai/English Word manual remain blocked by the source transfer and
-the identified business-definition decisions.
+the outstanding KPI-definition decisions. The firing-WIP/loading meaning has
+been clarified by the owner as recorded above.

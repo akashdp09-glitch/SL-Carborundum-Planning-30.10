@@ -389,8 +389,8 @@ _CONTEXT_SOURCE_SLOTS={
     'pack':['PLAN_2026','PACKAGING_STANDARD'],
     'newplan':['PLAN_2026','NEW_REQUEST_REFERENCE','SALES_FORECAST','STOCK_ON_HAND','CAPACITY_DATABASE'],
     'audit':['PLAN_2026'],'audits':['PLAN_2026'],'report':['PLAN_2026'],'floor':['PLAN_2026'],
-    'kpi':['KPI_PLANNING_REFERENCE','KPI_PLANNING_DAILY_EXECUTION','KPI_PLANNING_JOB_CLOSURE','KPI_SECTION_PLAN_VS_ACTUAL','KPI_DELIVERY_WAREHOUSE'],
-    'daily_kpi':['KPI_PLANNING_REFERENCE','KPI_SECTION_PLAN_VS_ACTUAL','KPI_DELIVERY_WAREHOUSE'],
+    'kpi':[],  # Retained revised KPI originals are managed on the department page.
+    'daily_kpi':[],
     'wip':['PLAN_2026'],
 }
 
@@ -402,7 +402,7 @@ def _slot_published_path(slot_id):
     return (SHARED_ROOT/target if target.startswith('KPI/') else DATA/target).resolve()
 
 def _render_context_source_updates(page):
-    slots=_CONTEXT_SOURCE_SLOTS.get(page,[])
+    slots=[sid for sid in _CONTEXT_SOURCE_SLOTS.get(page,[]) if not SM_SLOTS[sid].knowledge_only]
     if not slots:return
     states=[];missing=[]
     for sid in slots:
@@ -1399,7 +1399,7 @@ def plan2026_wo_detail(plan_path, query, raw_df=None):
 _TREE=[('▾ HOME & REFERENCE',[('🏠 Home / Main Page','control'),('📚 Code & Part Knowledge','knowledge')]),
        ('▾ PLANNING',[('📅 Daily Production Plan','daily'),('🔥 Firing / Kiln Plan','firing'),('🗓️ MPS / Future Plan','mps'),('🆕 New Part Plan','newplan'),('📦 Stock-on-Hand Material Status','material'),('🧪 Material MRP','mrp'),('⚖️ Capacity / Recovery','capacity'),('⚖️ Capacity vs Plan vs Actual','capacity_actual'),('📦 Packaging Plan','pack'),('🧰 Planning Suite','suite')]),
        ('▾ PRODUCTION & PART TRACKING',[('📋 Update WO Section Status','floor'),('⚡ Mobile Part Audit / QR','audit'),('📋 Mobile Audit Register','audits')]),
-       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Manager KPI / KPI ผู้จัดการ','kpi'),('🎯 Department KPI Workbook Analysis','daily_kpi'),('💰 Cost & Planning KPI Analysis','cost'),('🚨 Backorder / Delivery Risk','back'),('🧯 Weekly Recovery Action Plan','daily_recovery'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
+       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Department KPI / KPI แผนก','kpi'),('🏭 Production Evidence Analysis','production_analysis'),('💰 Cost & Planning KPI Analysis','cost'),('🚨 Backorder / Delivery Risk','back'),('🧯 Weekly Recovery Action Plan','daily_recovery'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
        ('▾ DATA & CONTROL',[('📥 Upload / Replace Source Files','src'),('🔎 Source Traceability','src')])]
 _goto_terms={
  'daily':'download plan excel export daily production schedule แผนรายวัน ดาวน์โหลดแผน',
@@ -1408,7 +1408,7 @@ _goto_terms={
  'daily_status':'daily status analysis section workbook แผนกสถานะรายวัน',
  'wip':'wip work in progress production planning งานระหว่างทำ',
  'recovery_review':'production recovery plan backorder recovery commitments reason behind plan production status recovery vs plan',
- 'kpi':'monthly planning kpi scorecard ตัวชี้วัดรายเดือน',
+ 'kpi':'department monthly planning kpi scorecard ตัวชี้วัดรายเดือน',
  'daily_kpi':'department kpi workbook two files warehouse delivery',
  'cost':'cost costing material cost planning KPI ต้นทุน',
  'floor':'scan wo update section status barcode qr',
@@ -1515,13 +1515,14 @@ try:
 except Exception as _f1e:
     st.sidebar.caption(f'F1 help unavailable: {_f1e}')
 _page=st.query_params.get('page','control')
+if _page == 'daily_kpi': _page = 'kpi'  # retired hub route uses current department definitions
 _PAGE_TITLES={
  'control':'Home / หน้าหลัก','daily':'Daily Production Plan / แผนผลิตรายวัน','material':'Stock-on-Hand Material Status / สถานะวัตถุดิบคงคลัง','firing':'Firing / Kiln Plan / แผนเผา',
  'floor':'WO Section Status / สถานะใบสั่งผลิตรายแผนก','audit':'Part Tracking & Audit / ติดตามและตรวจสอบชิ้นงาน',
  'report':'Audit Report / รายงานตรวจสอบ','audits':'Mobile Audit Register / ทะเบียนตรวจสอบมือถือ',
  'daily_closed':'Daily Open / Closed / เปิด-ปิดรายวัน','daily_status':'Daily Status Analysis / วิเคราะห์สถานะรายวัน','capacity_actual':'Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง',
  'daily_kpi':'Department KPI Analysis / วิเคราะห์ KPI แผนก','daily_recovery':'Weekly Recovery Plan / แผนกู้คืนรายสัปดาห์','recovery_review':'Production Recovery Plan vs Plan-2026 / แผนกู้คืนฝ่ายผลิตเทียบ Plan-2026',
- 'wip':'WIP: Planning vs Production / งานระหว่างทำ','kpi':'Planning KPI Scorecard / KPI วางแผน',
+ 'wip':'WIP: Planning vs Production / งานระหว่างทำ','kpi':'Department KPI / KPI แผนก','production_analysis':'Production Evidence Analysis',
  'cost':'Cost & Planning KPI / ต้นทุนและ KPI','back':'Backorder & Delivery Risk / งานค้างและความเสี่ยงส่งมอบ',
  'mps':'MPS / แผนการผลิตหลัก','mrp':'Material MRP / วัตถุดิบ','pack':'Packaging Plan / แผนบรรจุภัณฑ์',
  'capacity':'Capacity & Recovery / กำลังผลิตและแผนฟื้นฟู','newplan':'New Part Plan / แผนชิ้นงานใหม่',
@@ -1534,7 +1535,7 @@ if _page == 'control':
     _home_photo_layer=(f"url('data:image/jpeg;base64,{_home_photo_b64}')" if _home_photo_b64 else 'linear-gradient(90deg,#12395b,#36749b)')
     st.markdown(f'''<section role="img" aria-label="SL Carborundum branded product banner" style="overflow:hidden;height:126px;margin:0 0 7px;padding:0;border-radius:14px;background-color:#12395b;background-image:{_home_photo_layer};background-size:cover;background-position:center 48%;box-shadow:0 4px 12px rgba(18,57,91,.12)"></section>''',unsafe_allow_html=True)
 st.markdown(f"<div style='padding:6px 10px;margin:2px 0 8px;border-left:4px solid #e76613;background:#f7f9fc;border-radius:7px;color:#12395b'><small>YOU ARE HERE / ตำแหน่งปัจจุบัน</small>　<b>{_current_title}</b></div>",unsafe_allow_html=True)
-if _page in ('daily_wip','daily_closed','daily_status','daily_kpi','daily_recovery','kpi','wip','capacity_actual'): _nav='more'
+if _page in ('daily_wip','daily_closed','daily_status','daily_kpi','daily_recovery','kpi','wip','capacity_actual','production_analysis'): _nav='more'
 elif _page in ('audit','report','audits','floor'): _nav='audit'
 elif _page in ('back','mps','material','mrp','pack','capacity','newplan','history','knowledge','suite','more','wip','kpi','recovery_review'): _nav='more'
 elif _page in ('control','daily','firing','src'): _nav=_page
@@ -2620,6 +2621,10 @@ if _page == 'wip':
 if _page == 'kpi':
     from suite.planning_kpi import render as _render_planning_kpi
     _render_planning_kpi(st, DB, can_edit=hub_can_edit(), user=st.session_state.get('sl_user','Unknown'), language=lang, source_manager=SM)
+
+if _page == 'production_analysis':
+    from suite.production_analysis_page import render as _render_production_analysis
+    _render_production_analysis(st, DB, can_edit=hub_can_edit(), user=st.session_state.get('sl_user','Unknown'))
 
 if _page == 'cost':
     from suite.cost_kpi import render as _render_cost_kpi

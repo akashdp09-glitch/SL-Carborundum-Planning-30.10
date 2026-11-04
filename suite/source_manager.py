@@ -68,12 +68,12 @@ SLOTS: dict = {s.slot_id: s for s in [
     Slot("COST_REPLACEMENT", "Costing source - Replacement / reject costing", "COSTING/Replacement-Cost-LATEST.xlsx", ("hub", "suite"), note="Reconciled with Plan FH only as a diagnostic."),
     Slot("KPI_SECTION_PLAN_VS_ACTUAL", "KPI source 1 - section plan vs actual", "KPI/Section-Performance-KPI-LATEST.xlsx", ("daily", "hub", "shared"), note="Same file the Daily Planner reads."),
     Slot("KPI_DELIVERY_WAREHOUSE", "KPI source 2 - delivery / warehouse receipt", "KPI/Warehouse-Delivery-KPI-LATEST.xlsx", ("daily", "hub", "shared"), note="Same file the Daily Planner reads."),
-    Slot("KPI_PLANNING_REFERENCE", "Planning KPI definitions and monthly evidence template", "KPI/Planning-KPI-Evidence-LATEST.xlsx", ("hub", "suite"), note="Planning measures only: KPI-PL-01 to KPI-PL-09. Separate from production KPI workbooks."),
-    Slot("KPI_PLANNING_DAILY_EXECUTION", "Planning KPI monthly daily execution evidence", "KPI/Planning-KPI-Daily-Execution-LATEST.xlsx", ("hub", "suite"), note="Owner-supplied monthly material readiness and work-order issuance evidence."),
-    Slot("KPI_PLANNING_JOB_CLOSURE", "Planning KPI monthly job closure evidence", "KPI/Planning-KPI-Job-Closure-LATEST.xlsx", ("hub", "suite"), note="Owner-supplied monthly closed-job evidence; operational evidence only unless a controlled KPI target exists."),
-    Slot("KPI_EMPLOYEE_REFERENCE", "Employee KPI / appraisal reference workbook", "KPI/Employee-KPI-Reference-LATEST.xlsx", ("hub", "suite"), note="Owner-supplied appraisal/KPI competency reference; used for analysis and reference, not automatically scored."),
+    Slot("KPI_PLANNING_REFERENCE", "Retired nine-measure Planning KPI reference", "KPI/Planning-KPI-Evidence-LATEST.xlsx", ("hub", "suite"), note="Historical only. Use Department KPI retained evidence for the owner-confirmed three measures.", knowledge_only=True),
+    Slot("KPI_PLANNING_DAILY_EXECUTION", "Legacy Planning KPI execution slot — archived", "KPI/Planning-KPI-Daily-Execution-LATEST.xlsx", ("hub", "suite"), note="Import revised opening/issuance evidence once on Department KPI; originals persist there.", knowledge_only=True),
+    Slot("KPI_PLANNING_JOB_CLOSURE", "Legacy Planning KPI closure slot — archived", "KPI/Planning-KPI-Job-Closure-LATEST.xlsx", ("hub", "suite"), note="Use the revised separate closure workbook on Department KPI.", knowledge_only=True),
+    Slot("KPI_EMPLOYEE_REFERENCE", "Legacy employee appraisal reference — archived", "KPI/Employee-KPI-Reference-LATEST.xlsx", ("hub", "suite"), note="Historical reference only; revised staff KPI evidence is retained on Department KPI.", knowledge_only=True),
     *[Slot(f"DAILY_STATUS_{s.upper()}", f"Daily Status - {s}", None, ("daily", "hub", "suite"), section=s, note="Published to DAILY_STATUS/<Section>__<period>__LATEST.xlsx, the folder the Daily Planner reads.") for s in SECTIONS],
-    Slot("SEPT_OPEN_CLOSED", "Monthly Open/Close Job register (October-2026.xls, revised every day)", "Job-Register-LATEST.xlsx", ("hub", "daily", "shared"), SR.OPEN_JOB),
+    Slot("SEPT_OPEN_CLOSED", "Retired combined Open/Close Job format", "Job-Register-LATEST.xlsx", ("hub", "daily", "shared"), SR.OPEN_JOB, knowledge_only=True),
     Slot("PROCESS_CLOSE", "Process-wise closing (all sections)", "Process-Close-LATEST.xlsx", ("hub", "daily", "shared"),
          note="One process-close workbook uploaded on Home; Daily and reports read this same file. No format is invented."),
     *[Slot(f"PROCESS_CLOSE_{s.upper()}", f"Process-wise closing - {s}", None, ("hub", "daily", "shared"), section=s,
@@ -162,7 +162,7 @@ class SourceManager:
         if bundled.exists() and not self.active("CAPACITY_DATABASE"):
             self.import_bytes("CAPACITY_DATABASE", bundled.name, bundled.read_bytes(), "system", note="Bundled with the release (initial revision)")
         planning_kpi = REPO_ROOT / "knowledge" / "Planning_KPI_Reference_Q4_2026.xlsx"
-        if planning_kpi.exists() and not self.active("KPI_PLANNING_REFERENCE"):
+        if not SLOTS["KPI_PLANNING_REFERENCE"].knowledge_only and planning_kpi.exists() and not self.active("KPI_PLANNING_REFERENCE"):
             self.import_bytes("KPI_PLANNING_REFERENCE", planning_kpi.name, planning_kpi.read_bytes(), "system", note="Owner-supplied Planning KPI reference; result cells remain blank until evidence is recorded")
 
     def _con(self):
@@ -199,7 +199,7 @@ class SourceManager:
             return ImportResult("REJECTED", slot_id, f"Unknown slot {slot_id}")
         if slot.knowledge_only:
             return ImportResult("REJECTED", slot_id,
-                                "Product register and training files stay in Knowledge / F1. Operators do not upload this file.")
+                                "This source is archived/reference-only. Use Department KPI for revised KPI evidence; training references stay in Knowledge / F1.")
         from .month_register import is_xls, prepare_upload_bytes
         stored_name = Path(original_name).name
         if is_xls(original_name):
@@ -381,7 +381,7 @@ class SourceManager:
             ("KPI_PLANNING_DAILY_EXECUTION", "*in*out*.xlsx"),
             ("KPI_PLANNING_JOB_CLOSURE", "*closure*.xlsx"),
         ):
-            if not self.active(slot_id):
+            if not SLOTS[slot_id].knowledge_only and not self.active(slot_id):
                 matches = sorted(bundled_kpi.glob(pattern), key=lambda x: x.stat().st_mtime)
                 if matches:
                     out.append(self._adopt(slot_id, matches[-1], user, note="bundled owner-supplied Planning KPI evidence"))

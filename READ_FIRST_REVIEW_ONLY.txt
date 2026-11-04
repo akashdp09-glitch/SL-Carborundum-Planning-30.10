@@ -1,10 +1,13 @@
-RC29.52 REVIEW CANDIDATE - NOT FOR LIVE FACTORY REPLACEMENT
+RC29.53 REVIEW CANDIDATE — DEPARTMENT KPI AND PRODUCTION EVIDENCE
 
-Included: reconstructed application, three-manager-KPI entry/history/CSV, source-consistency and mobile-index fixes.
-Unfinished: full firing/daily optimisation, actual-stage and Recovery correction, loading geometry, complete UI redesign and illustrated manual.
-Daily/Firing engine acceptance checks still fail in the uploaded source.
-Read docs/RC29_52_REVIEW_NOTES.md before testing.
-Extract into a NEW folder. Keep your existing program and CENTRAL_DATA unchanged.
+Reports > Department KPI: automatic retained-source calculations, revised KPI order 15/10/15.
+Reports > Production Evidence Analysis: detailed English tables, charts, tonnes, category/section/customer/size/week/month views, QC/WIP and quality audit.
 
-ฉบับสำหรับตรวจสอบเท่านั้น ห้ามทับโปรแกรมและ CENTRAL_DATA เดิม
-งานปรับเครื่องวางแผนและหน้าจอทั้งหมดยังไม่เสร็จ โปรดอ่านข้อจำกัดก่อนทดสอบ
+Read docs/RC29_53_PRODUCTION_ANALYSIS.md, docs/PRODUCTION_EVIDENCE_IMPORT_GUIDE.md and the bilingual Word guide.
+Private evidence databases are separate from this code ZIP. Retain the shared data folder; a new computer must transfer its private evidence store or import owned originals once. Do not upload obsolete combined opening/closure formats.
+
+Inherited Daily/Firing engine acceptance checks remain unresolved; this is not completion of the earlier full planner/UI redesign or factory validation. Extract to a NEW program folder and keep the factory installation/CENTRAL_DATA unchanged.
+
+ฉบับตรวจสอบ RC29.53: KPI แผนกและวิเคราะห์ฝ่ายผลิตภาษาอังกฤษ แสดงน้ำหนักเป็นตัน
+เก็บ CENTRAL_DATA เดิมไว้ ฐานข้อมูลส่วนตัวไม่รวมใน ZIP โปรแกรม โปรดอ่านคู่มือนำเข้าข้อมูล
+งานปรับเครื่องวางแผนและหน้าจอทั้งหมดจากข้อกำหนดเดิมยังไม่เสร็จ

@@ -1,5 +1,11 @@
 # Remaining limitations (concise)
 
+**RC29.53 (4 November 2026):** Department KPI persistence and the new English
+production-analysis page supersede the RC29.52 manual-only workflow. Read
+`RC29_53_PRODUCTION_ANALYSIS.md` and the current `RC53_*_TESTS.txt` first. Private
+evidence data remains separate from the code ZIP; inherited engine acceptance
+failures and on-device checks below remain unresolved.
+
 **Current RC29.52 review candidate:** see `RC29_52_REVIEW_NOTES.md` first.
 The uploaded engine integrity checks currently fail; historical pass statements
 below describe older builds. This candidate is not ready for factory deployment.

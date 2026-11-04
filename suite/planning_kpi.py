@@ -503,8 +503,8 @@ def _render(st, db_path, *, can_edit=False, user="Unknown", language="English", 
 def render(st, db_path, *, can_edit=False, user="Unknown", language="English", source_manager=None):
     # The owner's three-manager-KPI scheme supersedes the old nine-measure screen.
     # Old evidence remains untouched and separate; do not apply new definitions to it.
-    from .manager_kpi import render as render_manager
-    return render_manager(st, db_path, can_edit=can_edit, user=user, language=language)
+    from .production_analysis_page import render_department
+    return render_department(st, db_path, can_edit=can_edit, user=user, language=language)
 
 
 def render_legacy(st, db_path, *, can_edit=False, user="Unknown", language="English", source_manager=None):

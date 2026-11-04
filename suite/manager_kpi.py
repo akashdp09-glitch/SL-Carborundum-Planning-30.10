@@ -19,20 +19,20 @@ import pandas as pd
 
 from .common import bkk_now
 
-VERSION = "2026-11-03-owner-manager-15-10-15"
+VERSION = "2026-11-04-owner-department-packing-kpi2-15-10-15"
 METRICS = {
     "KPI-PL-01": ("Planning accuracy / ความถูกต้องของแผน", 15,
                   "Correct plan records ÷ inspected records; use Planning Analyst evidence / ใช้หลักฐานนักวิเคราะห์"),
-    "KPI-PL-02": ("Closed vs opened WOs / ใบงานปิดเทียบเปิด", 10,
-                  "Closed WOs ÷ opened WOs × 100, same period; show backlog closures separately / แสดงใบงานค้างที่ปิดแยกต่างหาก"),
-    "KPI-PL-03": ("Packed vs planned WOs / ใบงานแพ็คจริงเทียบแผน", 15,
+    "KPI-PL-02": ("Packed vs planned WOs / ใบงานแพ็คจริงเทียบแผน", 10,
                   "Actually packed WOs ÷ planned WOs × 100; same period and plan revision / ใช้ช่วงเวลาและรุ่นแผนเดียวกัน"),
+    "KPI-PL-03": ("Closed vs opened WOs / ใบงานปิดเทียบเปิด", 15,
+                  "Closed WOs ÷ opened WOs × 100, same period; show backlog closures separately / แสดงใบงานค้างที่ปิดแยกต่างหาก"),
 }
 
 
 def validate(month, code, numerator, denominator, backlog, evidence, reason):
     if code not in METRICS:
-        raise ValueError("Choose one of the three manager KPIs / เลือก KPI ผู้จัดการ")
+        raise ValueError("Choose one of the three department KPIs / เลือก KPI แผนก")
     if not re.fullmatch(r"\d{4}-\d{2}", str(month)):
         raise ValueError("Month must be YYYY-MM / เดือนต้องเป็น YYYY-MM")
     date.fromisoformat(str(month) + "-01")
@@ -43,8 +43,8 @@ def validate(month, code, numerator, denominator, backlog, evidence, reason):
         raise ValueError("Correct records cannot exceed inspected records / จำนวนถูกต้องเกินจำนวนตรวจไม่ได้")
     if code != "KPI-PL-01" and any(x != int(x) for x in (n, d, b)):
         raise ValueError("WO counts must be whole numbers / จำนวนใบงานต้องเป็นจำนวนเต็ม")
-    if b > n or (code != "KPI-PL-02" and b != 0):
-        raise ValueError("Backlog closures apply to KPI 2 and cannot exceed closed WOs / ตรวจจำนวนใบงานค้างที่ปิด")
+    if b > n or (code != "KPI-PL-03" and b != 0):
+        raise ValueError("Backlog closures apply to KPI 3 and cannot exceed closed WOs / ตรวจจำนวนใบงานค้างที่ปิด")
     if not str(evidence).strip() or not str(reason).strip():
         raise ValueError("Evidence and reason are required / ต้องระบุหลักฐานและเหตุผล")
     return n / d * 100
@@ -130,7 +130,7 @@ def submission_id_for(state, fingerprint):
 
 
 def render(st, db_path, *, can_edit=False, user="Unknown", **_):
-    st.header("🎯 Planning Manager KPI / KPI ผู้จัดการวางแผน")
+    st.subheader("Manual department KPI evidence / หลักฐาน KPI แผนก")
     st.caption("Maximum marks / คะแนนเต็ม: 15 + 10 + 15 = 40 · HR awarded marks require the approved scoring bands / ยังไม่คำนวณคะแนน HR หากไม่มีเกณฑ์")
     period = st.text_input("Month / เดือน (YYYY-MM)", bkk_now().strftime("%Y-%m"), key="manager_kpi_month")
     hist = history(db_path)
@@ -147,7 +147,7 @@ def render(st, db_path, *, can_edit=False, user="Unknown", **_):
             left, right = st.columns(2)
             n = left.number_input("Actual / correct / closed WOs / ตัวตั้ง", min_value=0.0, key="manager_kpi_n")
             d = right.number_input("Inspected / opened / planned WOs / ตัวหาร", min_value=0.0, key="manager_kpi_d")
-            b = st.number_input("KPI 2 backlog closures / ใบงานค้างที่ปิด (KPI 2)", min_value=0.0, step=1.0, key="manager_kpi_b")
+            b = st.number_input("KPI 3 backlog closures / ใบงานค้างที่ปิด (KPI 3)", min_value=0.0, step=1.0, key="manager_kpi_b")
             evidence = st.text_input("Source, sheet, rows and period / หลักฐาน ชีต แถว ช่วงเวลา", key="manager_kpi_evidence")
             reason = st.text_input("Entry / correction reason / เหตุผลบันทึกหรือแก้ไข", key="manager_kpi_reason")
             submitted = st.form_submit_button("💾 Save / บันทึก", type="primary")
@@ -164,7 +164,7 @@ def render(st, db_path, *, can_edit=False, user="Unknown", **_):
                 st.error(str(exc))
         with st.expander("📤 Import CSV / นำเข้า CSV"):
             template = "month,code,numerator,denominator,backlog,evidence,reason\n"
-            st.download_button("⬇ Blank template / แม่แบบ", template, "manager_kpi_template.csv", "text/csv")
+            st.download_button("⬇ Blank template / แม่แบบ", template, "department_kpi_template.csv", "text/csv")
             uploaded = st.file_uploader("Completed template / แม่แบบที่กรอกแล้ว", type=["csv"], key="manager_kpi_csv")
             if uploaded and st.button("Import / นำเข้า", key="manager_kpi_import"):
                 try:
@@ -183,4 +183,4 @@ def render(st, db_path, *, can_edit=False, user="Unknown", **_):
             st.dataframe(display, hide_index=True, use_container_width=True)
             # Escape spreadsheet formula prefixes in user-entered text before CSV export.
             export = display.map(lambda v: "'" + v if isinstance(v, str) and v.startswith(("=", "+", "-", "@")) else v)
-            st.download_button("⬇ Evidence CSV / ดาวน์โหลดหลักฐาน", export.to_csv(index=False).encode("utf-8-sig"), "manager_kpi_history.csv", "text/csv")
+            st.download_button("⬇ Evidence CSV / ดาวน์โหลดหลักฐาน", export.to_csv(index=False).encode("utf-8-sig"), "department_kpi_history.csv", "text/csv")

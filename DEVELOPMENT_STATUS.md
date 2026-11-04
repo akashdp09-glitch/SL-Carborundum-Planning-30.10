@@ -1,5 +1,14 @@
 # Development status and verification
 
+## 2026-11-04 — RC29.53 retained Department KPI and English production analysis
+
+- Owner confirmed short year 69 means Buddhist 2569/2026; the 28 affected preparation rows are corrected with raw values and rule provenance retained.
+- Owner confirmed department/manager same scheme, swapping KPI 2/3: accuracy 15; planned vs actual packed WOs 10; closed/opened WOs 15. Report sheets are approved plans; Pack จ่าย alone is final actual; forming Report grams convert to metric tonnes.
+- Added transactional retained originals, SHA/config/parser revisions, normalised source rows and monthly calculation snapshots in a separate persistent evidence SQLite file. Five supplied originals are imported into this instance's default shared store; all operational data remains excluded from the code ZIP. Retired nine-measure/combined upload slots no longer prompt for files.
+- Added separate English Production Evidence Analysis destination, ten analytical views, section/category/week/month/customer/size tables and graphs, QC/WIP translations, source-row inspection, coverage/quality checks and a self-contained offline HTML report. All analytical weights are tonnes; ambiguous scales remain flagged/unknown.
+- Actual source: 21 sheets, 124,245 retained bounded rows. October packing: 518 actual / 594 planned distinct WOs = 87.2054%, with matched/unplanned/unfulfilled sets shown. Automatic analyst and separate opening/closure calculations retain their evidence/method limitations; no HR marks invented.
+- Current tests and source methods are documented in `docs/RC29_53_PRODUCTION_ANALYSIS.md` and `RC53_*_TESTS.txt`. No Daily/Firing controlled hashes were rewritten; inherited planner acceptance failures remain. This is a review candidate, with the earlier broader planning/UI work still unfinished.
+
 ## 2026-11-03 — restored source and RC29.52 partial review package
 
 - Downloaded and CRC-checked Vol1/Vol2, restored the missing modules without overwriting existing analysis history. Four overlong mojibake document names were retained under stable names; source filename mapping is included with the reconstructed documents.

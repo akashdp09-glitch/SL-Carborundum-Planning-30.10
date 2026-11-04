@@ -1,3 +1,9 @@
+# RC29.53 review — Department KPI and Production Evidence
+
+Read [the current production-analysis notes](docs/RC29_53_PRODUCTION_ANALYSIS.md) and [data import/retention guide](docs/PRODUCTION_EVIDENCE_IMPORT_GUIDE.md) first. Department and manager share the same KPI scheme. The separate English production-analysis page displays all normalised weights in metric tonnes. This remains a review candidate with inherited planner acceptance failures.
+
+Historical project introduction:
+
 # SL Carborundum Planning Center — V16.29-rc29
 
 Start with [START_HERE_V16_29_RC29.txt](START_HERE_V16_29_RC29.txt). RC29 process timing and test limits are in [docs/RC29_CHANGELOG.md](docs/RC29_CHANGELOG.md); local D: paths are in [docs/STORAGE_GUIDE.md](docs/STORAGE_GUIDE.md).

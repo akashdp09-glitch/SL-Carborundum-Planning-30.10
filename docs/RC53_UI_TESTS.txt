@@ -1,0 +1,11 @@
+PASS view: Overview
+PASS view: Plans vs actual
+PASS view: Sections
+PASS view: Product categories
+PASS view: Weeks and months
+PASS view: Customers
+PASS view: Part sizes
+PASS view: QC and WIP
+PASS view: Data quality
+PASS view: Source audit
+PASS department UI, excludes future date, calculates packing counts

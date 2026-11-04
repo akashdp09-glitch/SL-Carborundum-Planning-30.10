@@ -26,6 +26,10 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parents[2]
 
 EXCLUDE_GLOBS = [
+    "downloads/*",  # downloadable prior releases must never be nested into the next package
+    "knowledge/Planning_KPI_Reference_Q4_2026.xlsx",
+    "knowledge/kpi/Planning_KPI_Measurement_Evidence_REVISED.xlsx",
+    "docs/RC29_52_Quick_Guide_Thai_English.docx",  # historical guide uses superseded KPI numbering
     "RELEASE_MANIFEST.json",  # generated below; do not archive a stale manifest or hash itself
     "knowledge/kpi/inputs/*", "seed_data/*", "P280526.csv",
     "apps/daily/DIAMOND_AUG2026_ISSUE.xlsx", "apps/daily/DIAMOND_CURRENT_PLAN_160926.xlsx",
@@ -93,8 +97,8 @@ def main():
         "product": "SL Carborundum Planning Center", "version": version, "base_version": "V16.28",
         "commit": commit, "branch": branch, "dirty": dirty,
         "built_at_bangkok": dt.datetime.now(ZoneInfo("Asia/Bangkok")).isoformat(timespec="seconds"),
-        "status": "RELEASE CANDIDATE - verified only with synthetic data on a Linux cloud VM; not factory-validated; not for production use until the on-phone and on-site checklists are signed off.",
-        "python_tested": "CPython 3.12.3 (Linux). Windows install not exercised in the cloud.",
+        "status": "REVIEW CANDIDATE - synthetic regression checks and supplied-workbook analysis; inherited planner acceptance checks remain unresolved; not factory-validated.",
+        "python_tested": "CPython 3.12.14 (Linux). Windows install not exercised in the cloud.",
         "dependencies": "requirements-runtime.txt (exact versions)",
         "knowledge_database": "knowledge/knowledge_base.sqlite is NOT included (live data, large). Restore it from the existing installation, or rebuild; see docs/KNOWLEDGE_DATABASE.md.",
         "live_data_included": False,

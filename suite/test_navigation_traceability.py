@@ -22,13 +22,14 @@ def test_report_and_section_status_entry_are_separate_and_events_are_visible():
     assert "All saved section-status event history" in hub
     assert "event_id" in floor and "source_ref" in floor and "source_row" in floor
     assert "quantity_unknown" in floor
-    assert "This action records a section event only; it does not close the whole order." in floor
+    assert "This records a section event only; it does not close the whole work order." in floor
 
 
-def test_daily_status_and_monthly_planning_kpi_routes_are_distinct():
+def test_department_kpi_and_production_evidence_routes_are_distinct():
     hub = (REPO_ROOT / "hub.py").read_text(encoding="utf-8")
-    assert "('🎯 Monthly Planning KPI Scorecard','kpi')" in hub
-    assert "('🎯 Department KPI Workbook Analysis','daily_kpi')" in hub
+    assert "('🎯 Department KPI / KPI แผนก','kpi')" in hub
+    assert "('🏭 Production Evidence Analysis','production_analysis')" in hub
+    assert "if _page == 'daily_kpi': _page = 'kpi'" in hub
     kpi = (REPO_ROOT / "suite" / "planning_kpi.py").read_text(encoding="utf-8")
     assert "Source evidence / หลักฐานแหล่งข้อมูล" in kpi
     assert "MAX(id) id FROM planning_kpi_evidence" in kpi

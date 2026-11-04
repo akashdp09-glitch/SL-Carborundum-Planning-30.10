@@ -1,5 +1,11 @@
 # Test results
 
+**RC29.53 (4 November 2026):** see `RC53_FOCUSED_TESTS.txt`, `RC53_MOBILE_TESTS.txt`,
+`RC53_UI_TESTS.txt`, `RC53_HUB_TESTS.txt` and `RC53_ENGINE_CHECKS.txt`. Those current
+results supersede historical runs below. Actual-workbook analysis and test
+conditions are in `RC29_53_PRODUCTION_ANALYSIS.md`. Synthetic regression checks
+are distinct from factory/device acceptance; no engine checksum was altered.
+
 **RC29.52 review candidate (3 November 2026):** 39 focused tests passed, 1 skipped;
 the new manager screen passed a rendered save/rerun check. Full suite validation
 did not complete and uploaded engine acceptance checks fail. Read

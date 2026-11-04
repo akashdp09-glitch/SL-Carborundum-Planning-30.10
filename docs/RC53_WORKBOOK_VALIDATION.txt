@@ -1,0 +1,11 @@
+KPI_Sirinun_monthly.xlsx UNCHANGED 0.0012 seconds
+KPI_Chosita_completed.xlsx UNCHANGED 0.0009 seconds
+October_in out.xlsx UNCHANGED 0.0003 seconds
+October-2026_job closure.xlsx UNCHANGED 0.0003 seconds
+สถานะการผลิต 2026-4 88.xlsx UNCHANGED 0.0329 seconds
+NORMALISED ROWS 124245 LOAD SECONDS 3.029
+Confirmed date correction: 28 preparation rows, raw year 69 retained; interpreted 2026
+Forming W3=67725g -> .067725 tonnes; X3=215g -> .000215 tonnes/pc
+October department values [{"Code":"KPI-PL-01","Maximum_marks":15,"Achievement_percent":62.555,"Numerator":null,"Denominator":null},{"Code":"KPI-PL-02","Maximum_marks":10,"Achievement_percent":87.2053872054,"Numerator":518.0,"Denominator":594.0},{"Code":"KPI-PL-03","Maximum_marks":15,"Achievement_percent":106.3897763578,"Numerator":333.0,"Denominator":313.0}]
+Five original BLOB hashes verified; SQLite integrity OK; operational DB untouched
+Offline English report bytes 20528617 seconds 12.886

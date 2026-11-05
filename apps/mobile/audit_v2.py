@@ -640,7 +640,9 @@ def find_candidates(value: str, limit: int = 10) -> list[dict]:
                 if str(sys_root) not in __import__("sys").path:
                     __import__("sys").path.insert(0, str(sys_root))
                 from suite.wo_lookup import candidate_rows
-                out += candidate_rows(code, db_file=getattr(core, "DB_PATH", None), limit=limit)
+                fallback=candidate_rows(code, db_file=getattr(core, "DB_PATH", None), limit=limit)
+                # A scan resolves an identity, never the first partial text suggestion.
+                out += [r for r in fallback if core.norm_wo(r.get("wo_id"))==key or core.norm_wo(r.get("title"))==key]
             except Exception:
                 pass
         return out

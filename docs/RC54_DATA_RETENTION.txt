@@ -1,0 +1,5 @@
+Read-only check of the existing private production evidence store, 5 November 2026:
+5 distinct original workbook hashes retained.
+124245 rows in the latest normalized production evidence revision.
+SQLite quick_check: ok.
+No private database/workbook or live photos staged for the code release.

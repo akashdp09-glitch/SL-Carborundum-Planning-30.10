@@ -14,11 +14,12 @@ def build_process_timeline(route, events, today: date):
         key = process_key(event['process_name'])
         if not key:
             continue
-        row = actual.setdefault(key, {'actual_start': '', 'actual_complete': '', 'event_qty': None})
+        row = actual.setdefault(key, {'actual_start': '', 'actual_complete': '', 'actual_partial': '', 'event_qty': None})
         if event['event_type'] in ('RECEIVE', 'START', 'RESUME', 'MOVE') and not row['actual_start']:
             row['actual_start'] = event['event_time'] or ''
         if event['event_type'] in ('PARTIAL_COMPLETE', 'COMPLETE'):
-            row['actual_complete'] = event['event_time'] or row['actual_complete']
+            if event['event_type']=='COMPLETE':row['actual_complete'] = event['event_time'] or row['actual_complete']
+            else:row['actual_partial']=event['event_time'] or row['actual_partial']
             if event['qty'] is not None:
                 row['event_qty'] = float(event['qty'])
 
@@ -32,6 +33,8 @@ def build_process_timeline(route, events, today: date):
         ev = actual.get(process_key(route_row['process_name']), {})
         if ev.get('actual_complete'):
             state = 'ACTUAL COMPLETE'
+        elif ev.get('actual_partial'):
+            state = 'ACTUAL PARTIAL'
         elif ev.get('actual_start'):
             state = 'ACTUAL STARTED'
         elif planned_day and planned_day < today:
@@ -58,6 +61,8 @@ def completion_percent(order_qty, events):
         return None
     values = []
     for event in events:
+        if process_key(dict(event).get('process_name')) not in {'PACKING','PACK','บรรจุ'}:
+            continue
         if event['event_type'] not in ('PARTIAL_COMPLETE', 'COMPLETE') or event['qty'] is None:
             continue
         try:

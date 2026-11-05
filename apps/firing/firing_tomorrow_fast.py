@@ -639,6 +639,13 @@ if fr is not None:
             if isinstance(_d1,pd.DataFrame) and not _d1.empty:
                 st.markdown('**Day-1 explanation / ทำไมไม่เริ่มเผาในวันที่เลือก** - loads moved later than the selected start date:')
                 st.dataframe(_d1,use_container_width=True,hide_index=True)
+    _dry=fr.get('drying_check')
+    if isinstance(_dry,pd.DataFrame) and not _dry.empty:
+        _held=int(_dry['Timing status'].eq('HOLD').sum())
+        st.warning(f'Drying / curing review: {_held} held WO-load rows. No load is execution-approved until drying evidence and drier resources are confirmed. / ตรวจสอบการอบก่อนปล่อยแผน')
+        with st.expander('🌬️ Drying readiness / ความพร้อมการอบ',expanded=bool(_held)):
+            st.dataframe(_dry,use_container_width=True,hide_index=True)
+            st.download_button('⬇ Download doubtful loads / ดาวน์โหลดโหลดที่ต้องตรวจสอบ',_dry.to_csv(index=False).encode('utf-8-sig'),'Firing_Drying_Review.csv','text/csv',key='drying_review_csv')
     prepared=fr.get('prepared',pd.DataFrame()).copy()
     if not prepared.empty and 'Due Date' in prepared.columns:
         _dd=pd.to_datetime(prepared['Due Date'],errors='coerce').dt.date

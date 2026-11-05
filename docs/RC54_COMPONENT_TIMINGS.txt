@@ -1,0 +1,9 @@
+2026-11-05 01:38:58.673 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-05 01:38:58.675 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-05 01:38:58.676 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-05 01:38:58.676 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+Synthetic SQLite test: 10,000 WOs, one process, warm local filesystem, no network or scanner hardware
+Indexed normalized exact lookup: median ms 0.029 p95 ms 0.039 100 requests
+Previous full-table Python lookup: median ms 37.031 20 requests
+Supplied bundled capacity workbook: first parse seconds 3.0776 cached copy median seconds 0.0022 10 repeats
+Cache is content-addressed; callers receive independent mutable tables. These are component timings, not a complete firing-plan benchmark or factory guarantee.

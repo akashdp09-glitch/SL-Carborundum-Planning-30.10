@@ -1,13 +1,13 @@
-RC29.53 REVIEW CANDIDATE — DEPARTMENT KPI AND PRODUCTION EVIDENCE
+SL CARBORUNDUM RC29.54 — REVIEW CANDIDATE, 5 NOVEMBER 2026
 
-Reports > Department KPI: automatic retained-source calculations, revised KPI order 15/10/15.
-Reports > Production Evidence Analysis: detailed English tables, charts, tonnes, category/section/customer/size/week/month views, QC/WIP and quality audit.
+Read docs/RC29_54_SCANNER_AND_PLANNING.md and the illustrated Thai/English Word guide.
+Includes visible task directory, B2D21 wired USB keyboard scan, shared section status/audit/history, production and section accounts, safe retries, active-capacity lead-time/drying checks and retained confirmations.
 
-Read docs/RC29_53_PRODUCTION_ANALYSIS.md, docs/PRODUCTION_EVIDENCE_IMPORT_GUIDE.md and the bilingual Word guide.
-Private evidence databases are separate from this code ZIP. Retain the shared data folder; a new computer must transfer its private evidence store or import owned originals once. Do not upload obsolete combined opening/closure formats.
+Keep your existing CENTRAL_DATA / configured shared root. Do not overwrite it with a blank data folder. Private databases/workbooks are NOT in this ZIP. Back up before updating; extract code separately and keep the shared-data location configured.
 
-Inherited Daily/Firing engine acceptance checks remain unresolved; this is not completion of the earlier full planner/UI redesign or factory validation. Extract to a NEW program folder and keep the factory installation/CENTRAL_DATA unchanged.
+New default accounts are listed in user details.txt. Existing saved passwords/inactive flags remain unchanged. Desktop and mobile share one account database.
 
-ฉบับตรวจสอบ RC29.53: KPI แผนกและวิเคราะห์ฝ่ายผลิตภาษาอังกฤษ แสดงน้ำหนักเป็นตัน
-เก็บ CENTRAL_DATA เดิมไว้ ฐานข้อมูลส่วนตัวไม่รวมใน ZIP โปรแกรม โปรดอ่านคู่มือนำเข้าข้อมูล
-งานปรับเครื่องวางแผนและหน้าจอทั้งหมดจากข้อกำหนดเดิมยังไม่เสร็จ
+88 focused tests passed; 97 mobile tests passed (1 skipped); 25 final planning-evidence tests passed; 9 Chromium checks passed. Broader suite: 297 passed, 8 skipped, 14 failures reproduced on unchanged RC29.53.
+Daily integrity passes with pending reviews. Firing integrity still fails on three untouched supplied files. The supplied cloud validation script is missing.
+
+Do not issue a HOLD/provisional load as an approved executable plan. Rated drier capacity and staffing are not established. Physical B2D21 scanner, printer, real camera/GPS, factory Wi-Fi, Windows startup and full kiln geometry/scheduling acceptance remain on-site tests.

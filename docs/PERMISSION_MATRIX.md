@@ -1,11 +1,17 @@
-# RC29.5 part-tracking access
+# Shared account and tracking permissions — RC29.54
 
-Every signed-in role can search, scan and submit part-tracking audits across sections. Login is required; records retain the user and server timestamp. Submitted observations are immutable. To correct one, submit a new observation and explain the correction in Notes. Anonymous submissions are blocked.
+The owner's recorded decision OD-8 allows identified signed-in users to capture, correct and link tracking evidence across sections. Server authentication is required; screen size is not an authorization boundary. An anonymous hub visitor is read-only.
 
-| Action | Signed-in users | Not signed in |
-|---|---:|---:|
-| Search / scan work orders | Yes | No |
-| Submit WIP status, quantity, location and photos | Yes | No |
-| Edit a submitted observation | No; submit a correction as a new record | No |
+| Action | Signed-in users | Anonymous |
+|---|---|---|
+| Exact scan/search and inspect permitted records | Yes | No mobile access |
+| Section OPEN/CLOSED, WIP audit and photos | Yes, actor/time/source retained | No |
+| Production events | Yes, active station, explicit quantities and reason checks | No |
+| Confirm actual drying readiness | Yes on desktop, source/reason required | No |
+| Correct/link an audit record | Existing reasoned edit/link flow, with retained history | No |
+| See user account register | Yes on desktop; no password/hash disclosure | No |
+| Administrative terminal/import operations | Existing server role checks remain | No |
 
-Planning links an unidentified temporary record to a work order through the reconciliation controls.
+New missing accounts: production, preparation, mixing, forming, firing, grinding, cutting, packing, qc, warehouse, dispatch. Section accounts have production role and a matching entry default, but may explicitly choose another section. Existing credentials and inactive flags are preserved. Defaults for new accounts only are in `user details.txt`.
+
+Section completion does not close the whole WO. Physical observations do not add production. Final workbook KPI actual output remains `Pack จ่าย` only.

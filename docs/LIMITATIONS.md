@@ -1,5 +1,11 @@
 # Remaining limitations (concise)
 
+## RC29.54 current review limits — 5 November 2026
+
+See `RC29_54_SCANNER_AND_PLANNING.md` for changes and exact evidence. B2D21 support is tested as USB keyboard text, not on the physical device. Firing still has three inherited integrity failures (`sl_daily_engine_v3_22_from_v17.py`, `fast_stage4_v15.py`, `firing_engine_desktop_v2.py`). Daily hash/syntax checks pass with pending code reviews. Fourteen broader inherited tests fail on both this version and unchanged RC29.53; they were not hidden. The cloud validation script is absent from the supplied tree.
+
+Drying day basis is not explicit in the workbook; the existing working-day interpretation remains provisional except for the sourced exact-WO calendar exception. No rated drier capacity/staffing is supplied. Actual drying confirmations are invalidated for planning after a revised WO import and retained in history. Complete geometric kiln/furniture validation, on-site scanner/printing, real phone camera/GPS, factory Wi-Fi and Windows startup remain unverified. Component lookup/capacity timings are not an end-to-end firing benchmark.
+
 **RC29.53 (4 November 2026):** Department KPI persistence and the new English
 production-analysis page supersede the RC29.52 manual-only workflow. Read
 `RC29_53_PRODUCTION_ANALYSIS.md` and the current `RC53_*_TESTS.txt` first. Private

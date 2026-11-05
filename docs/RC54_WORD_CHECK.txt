@@ -1,0 +1,2 @@
+Thai/English Word guide: all OOXML documents and relationships parsed; ZIP CRC valid; six embedded synthetic screenshots.
+Opened and rendered through LibreOffice to an A4 PDF for inspection; 9 rendered pages. Mobile screenshot and text inspected; all ten guide sections present in extracted PDF text. PDF preview was used for verification; Word file is the deliverable.

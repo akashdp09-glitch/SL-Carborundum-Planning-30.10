@@ -9,6 +9,29 @@ import firing_engine_desktop_v2 as fire
 import sl_daily_engine_v3_22_from_v17 as dailyeng
 import sl_mps_mrp_engine_v2_4 as longeng
 
+# Legacy geometry helpers use module-level settings/furniture. Serialize runs so
+# two planner sessions cannot overwrite one another's settings mid-calculation.
+import threading
+from functools import wraps
+_FIRING_RUN_LOCK=threading.RLock()
+def _serial_firing(function):
+    @wraps(function)
+    def run(*args,**kwargs):
+        with _FIRING_RUN_LOCK:return function(*args,**kwargs)
+    return run
+
+# Cache content, not mutable planning results. Every caller receives independent tables.
+_CAPACITY_CACHE={}
+def _read_capacity_cached(capacity_path):
+    import hashlib, io, copy
+    data=Path(capacity_path).read_bytes()
+    key=hashlib.sha256(data).hexdigest()
+    if key not in _CAPACITY_CACHE:
+        parsed=dailyeng.read_capacity(io.BytesIO(data))
+        if len(_CAPACITY_CACHE)>=3: _CAPACITY_CACHE.pop(next(iter(_CAPACITY_CACHE)))
+        _CAPACITY_CACHE[key]=parsed
+    return copy.deepcopy(_CAPACITY_CACHE[key])
+
 def safe_date(v):
     if v is None: return None
     try:
@@ -273,8 +296,7 @@ def _cleaning_schedule(master,firing,start,end):
 
 def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capacity=1200,packing_people=1):
     plan=plan_to_daily(plan_df)
-    with open(capacity_path,"rb") as f:
-        mix,form,kiln,grind,pack,evidence=dailyeng.read_capacity(f)
+    mix,form,kiln,grind,pack,evidence=_read_capacity_cached(capacity_path)
     anch=firing_anchor(fr)
     if anch.empty:raise ValueError("Create Firing Plan first / กรุณาสร้างแผนเผาก่อน")
     master=dailyeng.merge_master(plan,anch,planning_start)
@@ -285,6 +307,8 @@ def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capac
     mixing,im=dailyeng.schedule_mixing(master,planning_start,end,mix,prep,0.0)
     forming,ifo=dailyeng.schedule_forming(master,planning_start,end,form,mixing,0.0)
     firing,ifi=dailyeng.schedule_firing(master,forming,kiln)
+    from suite.drying_gate import apply_upstream_drying
+    firing=apply_upstream_drying(firing,master,forming,capacity_path)
 
     routes=master.apply(postfire_route,axis=1)
     grind_master=master[routes=="GRINDING / เจียร"].copy()
@@ -544,8 +568,7 @@ def _upstream_capacity_plan(plan_df, capacity_path, planning_start, fr, horizon_
     asks the Daily engine whether each firing WO can be supplied in sequence.
     """
     plan=plan_to_daily(plan_df)
-    with open(capacity_path,"rb") as f:
-        mix,form,kiln,grind,pack,evidence=dailyeng.read_capacity(f)
+    mix,form,kiln,grind,pack,evidence=_read_capacity_cached(capacity_path)
     anch=firing_anchor(fr)
     if anch.empty:
         return {"Preparation":pd.DataFrame(),"Mixing":pd.DataFrame(),"Forming":pd.DataFrame(),
@@ -563,6 +586,8 @@ def _upstream_capacity_plan(plan_df, capacity_path, planning_start, fr, horizon_
     mixing,im=dailyeng.schedule_mixing(master,planning_start,last_date,mix,prep,0.0)
     forming,ifo=dailyeng.schedule_forming(master,planning_start,last_date,form,mixing,0.0)
     firing_check,ifi=dailyeng.schedule_firing(master,forming,kiln)
+    from suite.drying_gate import apply_upstream_drying
+    firing_check=apply_upstream_drying(firing_check,master,forming,capacity_path)
     issues=[x for x in [ip,im,ifo,ifi] if x is not None and not x.empty]
     allup=[]
     for sec,x in [("Preparation",prep),("Mixing",mixing),("Forming",forming)]:
@@ -787,8 +812,7 @@ def run_firing_fast(plan_df, capacity_path, planning_start, target=.80,maxv=.95,
 def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capacity=1200,
                    packing_people=1,hard_pull=True,balance_target=.90):
     plan=plan_to_daily(plan_df)
-    with open(capacity_path,"rb") as f:
-        mix,form,kiln,grind,pack,evidence=dailyeng.read_capacity(f)
+    mix,form,kiln,grind,pack,evidence=_read_capacity_cached(capacity_path)
     anch=firing_anchor(fr)
     if anch.empty:raise ValueError("Create Firing Plan first / กรุณาสร้างแผนเผาก่อน")
     master=dailyeng.merge_master(plan,anch,planning_start)
@@ -801,6 +825,8 @@ def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capac
     mixing,im=dailyeng.schedule_mixing(master,planning_start,end,mix,prep,0.0)
     forming,ifo=dailyeng.schedule_forming(master,planning_start,end,form,mixing,0.0)
     firing,ifi=dailyeng.schedule_firing(master,forming,kiln)
+    from suite.drying_gate import apply_upstream_drying
+    firing=apply_upstream_drying(firing,master,forming,capacity_path)
 
     routes=master.apply(postfire_route,axis=1)
     grind_master=master[routes=="GRINDING / เจียร"].copy()
@@ -839,7 +865,7 @@ def save_firing(fr,path):
         for name,key in [
             ("Firing Loads","loads"),("Operator Print","details"),("Floor Pattern Data","floor"),
             ("Upstream Hard Pull","upstream_plan"),("Upstream Issues","upstream_issues"),
-            ("Workload Balance","workload_balance"),
+            ("Workload Balance","workload_balance"),("Drying Readiness","drying_check"),("Release Summary","release_summary"),
             ("Plan Control","plan_control"),("Previous Plan Audit","previous_plan_cutover_audit"),("Plan2026 Status","plan2026_status_snapshot"),
             ("PL Mgr Validation","pm_validation"),("Exceptions","exceptions"),("Kiln Master","kiln_editor"),
             ("Plate Furniture","plate_master"),("I-block Furniture","iblock_master")]:
@@ -979,8 +1005,7 @@ def _proc_capacity_to_qty(section, wo_row, cap_tables, day):
     return 0
 
 def _load_capacity_tables(capacity_path):
-    with open(capacity_path,"rb") as f:
-        mix,form,kiln,grind,pack,evidence=dailyeng.read_capacity(f)
+    mix,form,kiln,grind,pack,evidence=_read_capacity_cached(capacity_path)
     return (mix,form,kiln,grind,pack,evidence)
 
 def _wo_effective_actuals(r):
@@ -1401,8 +1426,7 @@ def _rebalance_section_to_capacity(df, section, target_util=.90):
 def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capacity=1200,
                    packing_people=1,hard_pull=True,balance_target=.90):
     plan=plan_to_daily(plan_df)
-    with open(capacity_path,"rb") as f:
-        mix,form,kiln,grind,pack,evidence=dailyeng.read_capacity(f)
+    mix,form,kiln,grind,pack,evidence=_read_capacity_cached(capacity_path)
     anch=firing_anchor(fr)
     if anch.empty:raise ValueError("Create Firing Plan first / กรุณาสร้างแผนเผาก่อน")
     master=dailyeng.merge_master(plan,anch,planning_start)
@@ -1418,6 +1442,8 @@ def run_daily_fast(plan_df,capacity_path,planning_start,fr,horizon=30,prep_capac
     mixing,im=dailyeng.schedule_mixing(master,planning_start,end,mix,prep,0.0)
     forming,ifo=dailyeng.schedule_forming(master,planning_start,end,form,mixing,0.0)
     firing,ifi=dailyeng.schedule_firing(master,forming,kiln)
+    from suite.drying_gate import apply_upstream_drying
+    firing=apply_upstream_drying(firing,master,forming,capacity_path)
 
     routes=master.apply(postfire_route,axis=1)
     grind_master=master[routes=="GRINDING / เจียร"].copy()
@@ -1792,11 +1818,15 @@ def apply_plan2026_kiln_calendar(kiln_editor,calendar_df,planning_start):
     return ked
 
 _run_firing_v45=run_firing_fast
+@_serial_firing
 def run_firing_fast(plan_df,capacity_path,planning_start,target=.80,maxv=.95,partial=False,
                     urgent_partial=True,starts=2,strict_forming=True,kiln_editor=None,
                     plate_master=None,iblock_master=None,hard_pull=True,pull_horizon_days=30,
                     balance_target=.90,validate_upstream=True,prep_capacity=1200.0,
                     plan2026_path=None):
+    from suite.drying_confirmations import apply as _dry_confirmations
+    from suite.central_paths import db_path as _shared_db_path
+    plan_df=_dry_confirmations(plan_df,_shared_db_path())
     settings=fire.Settings(planning_start=planning_start,target_volume=target,max_volume=maxv,
                            allow_partial=partial,allow_urgent_partial=urgent_partial,
                            vitrified_starts_per_day=int(starts))
@@ -1806,6 +1836,16 @@ def run_firing_fast(plan_df,capacity_path,planning_start,target=.80,maxv=.95,par
     fr=_run_firing_v45(plan_df,capacity_path,planning_start,target,maxv,partial,urgent_partial,
                        starts,strict_forming,ked,plate_master,iblock_master,hard_pull,
                        pull_horizon_days,balance_target,validate_upstream,prep_capacity)
+    from suite.drying_gate import evaluate_drying
+    drying=evaluate_drying(fr.get("details"),plan_df,fr.get("upstream_plan"),capacity_path,planning_start)
+    fr["drying_check"]=drying
+    if not drying.empty:
+        held=set(drying.loc[drying["Timing status"].eq("HOLD"),"Load ID"].astype(str))
+        for key in ("loads","details"):
+            table=fr.get(key)
+            if isinstance(table,pd.DataFrame) and "Load ID" in table:
+                table["Drying release"]=["HOLD — confirm drying evidence" if str(x) in held else "REVIEW — drying timing; verify resources" for x in table["Load ID"]]
+        fr["release_summary"]=pd.DataFrame([{"Status":"HOLD" if held else "PROVISIONAL", "Reason":"Drying timing from capacity master; oven capacity/staffing unverified", "Held loads":len(held)}])
     fr["kiln_calendar"]=cal
     fr["kiln_editor"]=ked
     if "decision_rules" in fr and isinstance(fr["decision_rules"],pd.DataFrame):

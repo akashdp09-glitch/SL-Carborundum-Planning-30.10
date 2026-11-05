@@ -20,7 +20,15 @@ def test_completion_percent_requires_a_recorded_quantity_event():
     assert completion_percent(100, []) is None
     events = [
         {'event_type': 'START', 'qty': None},
-        {'event_type': 'PARTIAL_COMPLETE', 'qty': 35},
+        {'event_type': 'PARTIAL_COMPLETE', 'qty': 35, 'process_name':'Packing'},
     ]
     assert completion_percent(100, events) == 35.0
     assert completion_percent(0, events) is None
+
+
+def test_partial_section_event_does_not_mark_route_or_whole_order_complete():
+    route=[{'seq':1,'process_name':'Forming','planned_date':'2026-10-30'}]
+    events=[{'process_name':'Forming','event_type':'PARTIAL_COMPLETE','qty':35,'event_time':'2026-10-30 09:00:00'}]
+    assert completion_percent(100,events) is None
+    row=build_process_timeline(route,events,date(2026,10,30))[0]
+    assert row['state']=='ACTUAL PARTIAL' and row['actual_complete']==''

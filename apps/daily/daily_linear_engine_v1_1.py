@@ -610,6 +610,16 @@ def build_daily(plan, firing, mix, form, kiln, grind, pack, start, horizon=30, p
     mix_ready={wo:wip[wo]['WIP Mixing'] for wo in wip}
     form_ready={wo:wip[wo]['WIP Forming'] for wo in wip}
     fire_ready={wo:wip[wo]['WIP Firing'] for wo in wip}
+    # Firing WIP includes drying/in-process, not proof that drying is complete.
+    for wo in fire_ready:
+        r=pmap[wo];profile=lt.applied_offsets(r)
+        if profile['Curing/Oven Gate WD']<=0:continue
+        done=pdate(r.get('Confirmed Drying Complete Date'))
+        qty=num(r.get('Confirmed Drying Qty'),0) if done and done<=start else 0
+        held=max(fire_ready[wo]-qty,0)
+        fire_ready[wo]=min(fire_ready[wo],qty)
+        if held>0:issues.append({'Work Order':wo,'Section / กระบวนการ':'Drying / Curing','Qty':held,'Reason':'Firing WIP is not confirmed dried; record actual drying completion and ready quantity in All functions → Confirm drying readiness'})
+
     post_ready={wo:wip[wo]['WIP Grinding / Cutting'] for wo in wip}
     pack_ready={wo:wip[wo]['WIP Packing'] for wo in wip}
 
@@ -743,7 +753,7 @@ def build_daily(plan, firing, mix, form, kiln, grind, pack, start, horizon=30, p
             if take<=0:continue
             form_ready[wo]-=take; used_form[(day,mc)]=used_form.get((day,mc),0)+take; used_mold[(day,mold)]=1
             addrow(day,'Forming',r,take,kgpc,cap,cap*kgpc/1000,'CAP ขึ้นรูป: category + spec/size + machine + mold lock','Existing/arrived Forming WIP from Plan2026 flow','','FORM:'+mc,{'Machine':mc,'Eligible Machines':mr.get('Machine',''),'Master Spec Match':mr.get('Spec Pattern',''),'Match Score':score,'Capacity pcs/day':cap,'Machine Load After WO':used_form[(day,mc)]})
-            _lt=lt.applied_offsets(r); nd=next_workday(day,int(_lt['Forming→Firing WD'])); arrivals_fire.setdefault(nd,{})[wo]=arrivals_fire.setdefault(nd,{}).get(wo,0)+take
+            _lt=lt.applied_offsets(r); nd=lt.forming_release_date(day,r); arrivals_fire.setdefault(nd,{})[wo]=arrivals_fire.setdefault(nd,{}).get(wo,0)+take
 
         # ---------------- FIRING: exact firing plan; verify upstream physical availability ----------------
         for fr in fire_by_day.get(day,[]):
@@ -767,7 +777,7 @@ def build_daily(plan, firing, mix, form, kiln, grind, pack, start, horizon=30, p
             if kiln is not None and not kiln.empty:
                 rule=de.firing_program_rule(fr.get('Program'),fr.get('Kiln'),kiln)
                 if rule is not None:maxkg=num(rule.get('Max kg/load'));run_days=num(rule.get('Running Days'))
-            status='RELEASE' if executable+1e-9>=q else 'HOLD - UPSTREAM NOT READY'
+            status=('PROVISIONAL - VERIFY DRYING RESOURCES' if lt.applied_offsets(r)['Curing/Oven Gate WD']>0 else 'RELEASE') if executable+1e-9>=q else 'HOLD - UPSTREAM / DRYING NOT READY'
             addrow(day,'Firing',r,q,kgpc,q,maxkg/1000 if maxkg else q*kgpc/1000,'Firing Planner + Cap เตา','Exact uploaded Firing Plan; checked against Plan2026/forming-ready WIP',anchor,'FIRE:'+anchor,{'Kiln':fr.get('Kiln',''),'Program':fr.get('Program',''),'Running Days':run_days,'Program Finish Date':fc,'Program Max kg':maxkg,'Executable Qty':executable,'Release Status':status})
             if executable<q:
                 issues.append({'Work Order':wo,'Section / กระบวนการ':'Firing','Qty':q-executable,'Reason':f'Firing anchor {q:g} pcs but only {ready:g} pcs physically ready by {day}; DO NOT RELEASE shortage'})

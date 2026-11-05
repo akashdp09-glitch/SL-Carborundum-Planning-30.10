@@ -31,7 +31,7 @@
   <section class="panel"><h2>Previous, current and future process schedule</h2><div class="muted">Plan dates come from the imported Plan-2026 route. Actual dates come from saved production events; no event means actual completion is unconfirmed.</div>
     <div class="mobile-list">{% for r in snap.process_timeline %}<div class="mobile-row"><div><b>{{ r.seq }}. {{ r.process }}</b><small>Plan: {{ r.planned_date or 'No plan date' }} · {{ r.state }}</small>{% if r.actual_start %}<small>Actual start: {{ r.actual_start }}</small>{% endif %}{% if r.actual_complete %}<small>Actual complete: {{ r.actual_complete }}</small>{% endif %}</div><div class="mobile-row-right">{% if r.event_qty is not none %}<strong>{{ r.event_qty|round(0)|int }} pcs</strong>{% endif %}</div></div>{% else %}<div class="muted">No process schedule dates were imported for this work order.</div>{% endfor %}</div>
   </section>
-  <section class="panel" style="border:3px solid #f58220">
+  <section class="panel" style="border:3px solid #f58220"><a class="button" href="/scan?wo={{ snap.wo.wo_id|urlencode }}">📋 Section OPEN / CLOSED · เปิด/ปิดแผนก</a>
     <a class="button primary operator-main-button" href="/mobile/audit/{{ snap.wo.wo_id }}">📸 AUDIT THIS PART</a>
     <div class="muted">Record status, quantity, location and a photo. This is a physical observation; it does not change production history.</div>
     <a href="/mobile/part/{{ snap.wo.wo_id }}">Earlier observations of this work order</a>

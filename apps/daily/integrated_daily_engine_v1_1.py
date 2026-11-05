@@ -288,6 +288,10 @@ def build_detailed(plan_path,firing_path,cap_path,start,horizon,prep_kg=1200.0,p
     firing=firing_override.copy() if isinstance(firing_override,pd.DataFrame) else oldeng.load_firing_excel(firing_path)
     with open(cap_path,'rb') as f:
         mix,form,kiln,grind,pack,evidence=de.read_capacity(f)
+    from suite.lead_time_source import attach as _active_lead_times
+    from suite.drying_confirmations import apply as _dry_confirmations
+    from suite.central_paths import db_path as _shared_db_path
+    plan=_dry_confirmations(_active_lead_times(plan,cap_path),_shared_db_path())
     core=oldeng.build_daily(plan,firing,mix,form,kiln,grind,pack,start,int(horizon),float(prep_kg),int(packing_people),previous_firing=previous_firing,normal_hours=float(normal_hours))
     allp=core['all']; allp,pair_audit=cr.synchronize_ab_layers(allp); core['all']=allp; ot=cr.ot_suggestion(allp,normal_hours); plans={}
     # Keep confirmed post-firing routes separate end-to-end. Do not merge
@@ -304,7 +308,7 @@ def build_detailed(plan_path,firing_path,cap_path,start,horizon,prep_kg=1200.0,p
         lt_cap=kiln[cols].copy() if cols else pd.DataFrame()
         if not lt_cap.empty:
             lt_cap['Rule Used']='Issued Firing Plan + Cap เตา; never shorter than controlled kiln/program duration'
-    return {'plan_source':plan,'master':plan,'plans':plans,'all':allp,'issues':issues,'capacity_summary':caps,'delivery_risk':risk,'capacity_evidence':evidence,'lead_time_master':lt.master_table(),'lead_time_applied':lt.applied_table(plan),'lead_time_capacity':lt_cap,
+    return {'plan_source':plan,'master':plan,'plans':plans,'all':allp,'issues':issues,'capacity_summary':caps,'delivery_risk':risk,'capacity_evidence':evidence,'lead_time_master':lt.master_table(cap_path),'lead_time_applied':lt.applied_table(plan),'lead_time_capacity':lt_cap,
             'firing_source':firing,'capacity_raw':{'Mixing':mix,'Forming':form,'Kiln':kiln,'Grinding':grind,'Packing':pack},'actual_rows':pd.DataFrame(),'order_events':pd.DataFrame(),'ab_pair_audit':pair_audit,'ot_suggestion':ot,'normal_hours':normal_hours}
 
 def wip_category(wip):

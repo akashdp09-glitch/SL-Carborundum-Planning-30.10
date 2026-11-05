@@ -1,5 +1,14 @@
 # Development status and verification
 
+## 2026-11-05 — RC29.54 scanner, function visibility and drying handoff review
+
+- Added the bilingual task directory and account/QR/drying destinations; preserved existing tools. Canonical USB screen replaces the old operator form, with exact indexed identities, bounded lookup, shared section history, production events, safe retries and per-user browser drafts. Desktop floor entry defers the full Plan analysis.
+- Added missing production/section accounts without resetting existing hashes/inactive flags; section defaults are explicit and cross-section work remains attributed. Section completion/partial production no longer becomes final packed output/full route completion.
+- Both planners use active-source lead times and shared, append-only actual drying confirmations. Unknown drying is held, quantity-limited evidence is used once per load allocation, exact-WO calendar exception stays scoped, and missing drier capacity remains unverified. Firing exposes downloadable review evidence and caches parsed capacity independently; global legacy Firing settings are protected by a process lock.
+- Validation: 88 focused tests passed; 97 mobile passed / 1 skipped; 25 final planning/release-evidence tests passed; 9 Chromium workflow checks passed. Broader suite: 297 passed / 8 skipped / 14 failures; the same 14 failures reproduce on unchanged RC29.53 (33 other tests passed in comparison). No old tests were removed to conceal them. Component timing and exact conditions are in `docs/RC29_54_SCANNER_AND_PLANNING.md`.
+- Five changed pinned planner files are recorded through the controlled-change tool with reason/evidence and pending-review flags. Daily integrity now passes with pending reviews; Firing still fails on three untouched supplied files. Missing cloud validation script is reported. No engine baseline/checker was disabled or handwritten hash accepted.
+- Added the illustrated Thai/English Word guide, synthetic screenshots, a CSV function inventory, permission/storage/rollback notes and exact logs. Private DB/workbooks remain outside the code ZIP. Hardware scanner, real camera/GPS/Wi-Fi/printing/Windows and full physical scheduling acceptance remain on-site work.
+
 ## 2026-11-04 — RC29.53 retained Department KPI and English production analysis
 
 - Owner confirmed short year 69 means Buddhist 2569/2026; the 28 affected preparation rows are corrected with raw values and rule provenance retained.

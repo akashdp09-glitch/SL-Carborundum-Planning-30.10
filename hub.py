@@ -1428,6 +1428,10 @@ _goto_terms={
 _goto_rows=[]
 for _g0,_its0 in _TREE:
     for _lb0,_pg0 in _its0:_goto_rows.append((_lb0.strip(),_pg0,_goto_terms.get(_pg0,'')))
+from suite.task_catalog import TASKS as _catalog_tasks
+_known_targets={r[1] for r in _goto_rows}
+for _group,_route,_icon,_th,_en,_detail in _catalog_tasks:
+    if _route not in _known_targets:_goto_rows.append((_icon+' '+_th+' / '+_en,_route,_detail));_known_targets.add(_route)
 _goto_rows += [('📤 Upload Daily Status files / อัปโหลดสถานะรายวัน','src',''),('📤 Upload Plan-2026 & other source files','src',''),('⬇️ Download Complete Daily Plan','daily_download','download plan excel export'),('📦 Material Status / Stock on Hand','daily_material','stock inventory raw material availability shortage balance วัตถุดิบ สถานะวัตถุดิบ คงคลัง')]
 _search=st.sidebar.text_input('🔎 Search any function / ค้นหาฟังก์ชัน',key='function_search',placeholder='KPI, WIP, scan, download, เปิด/ปิด…')
 if _search.strip():
@@ -1474,7 +1478,7 @@ else: st.sidebar.error('ACTIVE PLAN: NOT LOADED')
 # Files & Traceability also hosts the Plan-2026 QR label filters. Load the same
 # analyzed active plan there so section choices and open/closed eligibility are
 # based on the current shared workbook, not an empty local `master` variable.
-_NEED_PLAN={'back','mps','mrp','pack','audit','wip','report','audits','newplan','floor','src','recovery_review'}
+_NEED_PLAN={'back','mps','mrp','pack','audit','wip','report','audits','newplan','src','recovery_review'}
 def _ensure_plan_model():
     global raw,master,op,bo
     if master is not None or not plan:
@@ -1517,6 +1521,8 @@ except Exception as _f1e:
 _page=st.query_params.get('page','control')
 if _page == 'daily_kpi': _page = 'kpi'  # retired hub route uses current department definitions
 _PAGE_TITLES={
+ 'labels':'QR labels / สร้างป้าย QR',
+ 'drying':'Confirm drying readiness / ยืนยันการอบแห้ง','accounts':'Shared accounts / บัญชีผู้ใช้',
  'control':'Home / หน้าหลัก','daily':'Daily Production Plan / แผนผลิตรายวัน','material':'Stock-on-Hand Material Status / สถานะวัตถุดิบคงคลัง','firing':'Firing / Kiln Plan / แผนเผา',
  'floor':'WO Section Status / สถานะใบสั่งผลิตรายแผนก','audit':'Part Tracking & Audit / ติดตามและตรวจสอบชิ้นงาน',
  'report':'Audit Report / รายงานตรวจสอบ','audits':'Mobile Audit Register / ทะเบียนตรวจสอบมือถือ',
@@ -1537,7 +1543,7 @@ if _page == 'control':
 st.markdown(f"<div style='padding:6px 10px;margin:2px 0 8px;border-left:4px solid #e76613;background:#f7f9fc;border-radius:7px;color:#12395b'><small>YOU ARE HERE / ตำแหน่งปัจจุบัน</small>　<b>{_current_title}</b></div>",unsafe_allow_html=True)
 if _page in ('daily_wip','daily_closed','daily_status','daily_kpi','daily_recovery','kpi','wip','capacity_actual','production_analysis'): _nav='more'
 elif _page in ('audit','report','audits','floor'): _nav='audit'
-elif _page in ('back','mps','material','mrp','pack','capacity','newplan','history','knowledge','suite','more','wip','kpi','recovery_review'): _nav='more'
+elif _page in ('back','mps','material','mrp','pack','capacity','newplan','history','knowledge','suite','more','wip','kpi','recovery_review','drying','accounts','labels'): _nav='more'
 elif _page in ('control','daily','firing','src'): _nav=_page
 else: _nav='control'; _page='control'
 _pill_en={'control':'🏠 Home','daily':'📅 Daily','firing':'🔥 Firing','audit':'⚡ Track / QR','src':'📥 Files','more':'📊 Reports & Tools'}
@@ -1557,8 +1563,9 @@ st.markdown('<div class="sl-pills">'+''.join(
     for k in ('control','daily','firing','audit','src','more')
 )+'</div>',unsafe_allow_html=True)
 st.markdown(f"<div class='sl-quick-title'>{'เปิดใช้ด่วน' if lang=='ไทย' else 'Quick access'}</div>",unsafe_allow_html=True)
-_fastlinks=[('📅','แผนรายวัน' if lang=='ไทย' else 'Daily plan','daily',''),('📦','สถานะวัตถุดิบ' if lang=='ไทย' else 'Material status','material',''),('⬇','ดาวน์โหลดแผน' if lang=='ไทย' else 'Download plan','daily','download'),('⚖️','กำลังผลิต vs แผน vs ผลจริง' if lang=='ไทย' else 'Capacity vs Plan vs Actual','capacity_actual',''),('📋','เปิด/ปิดรายวัน' if lang=='ไทย' else 'Daily status','daily_closed',''),('🏭','WIP','wip',''),('🚨','งานค้างส่ง' if lang=='ไทย' else 'Backorders','back',''),('🧯','แผนปฏิบัติการรายสัปดาห์' if lang=='ไทย' else 'Weekly recovery actions','daily_recovery',''),('📄','แผนกู้คืนฝ่ายผลิต' if lang=='ไทย' else 'Production Recovery Plan','recovery_review',''),('🎯','KPI','kpi',''),('⚡','ตรวจสอบชิ้นงาน' if lang=='ไทย' else 'Part audit','audit',''),('📊','รายงานตรวจสอบ' if lang=='ไทย' else 'Audit report','report','')]
+_fastlinks=[('🔫','สแกน เปิด/ปิด / Scan status','floor',''),('📸','ตรวจ WIP / WIP audit','audit',''),('📅','แผนรายวัน / Daily','daily',''),('🔥','แผนเผา / Firing','firing',''),('🧭','ทุกฟังก์ชัน / All functions','more','')]
 st.markdown('<nav class="sl-quicklinks" aria-label="Quick access">'+''.join(f"<a href='{_hub_page_href(_pg,_focus)}' target='_self'><span aria-hidden='true'>{_icon}</span>{_label}</a>" for _icon,_label,_pg,_focus in _fastlinks)+'</nav>',unsafe_allow_html=True)
+st.markdown("""<style>.sl-task-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:12px 0 20px}.sl-task-card{background:#12395b;color:white!important;border-radius:16px;padding:20px;text-decoration:none!important;display:flex;flex-direction:column;gap:5px;min-height:155px;border-bottom:6px solid #e76613}.sl-task-card:focus,.sl-task-card:hover{outline:3px solid #e76613;background:#194c73}.sl-task-card span{font-size:2.5rem}.sl-task-card b{font-size:1.2rem}.sl-task-card small{color:#e1ebf2}.sl-task-card strong{font-size:1rem}@media(max-width:760px){.sl-task-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-task-card{padding:14px}}@media(max-width:420px){.sl-task-grid{grid-template-columns:1fr}}</style>""",unsafe_allow_html=True)
 _render_context_source_updates(_page)
 if _page not in ('control','src'):
     st.markdown(f"<a href='{_hub_page_href('src')}' target='_self' style='display:inline-block;font-size:.78rem;color:#0057b8;text-decoration:underline;margin:0 0 8px'>↗ Upload / replace source file used by this analysis</a>",unsafe_allow_html=True)
@@ -1585,7 +1592,8 @@ if _page in ('control',):
         st.success(f"Recovered {PHOTO_RECOVERY_STATUS['copied']} missing audit photo file(s) into the active photo folder. Original photo files were kept.")
     if PHOTO_RECOVERY_STATUS.get('missing'):
         st.warning(f"{PHOTO_RECOVERY_STATUS['missing']} audit photo file(s) are still not in the active folder. Their database references were preserved; check the former photo folder and exact paths in Files & Traceability.")
-    # One shortcut set only: compact Quick access links above.
+    from suite.task_catalog import render as _task_catalog
+    _task_catalog(st,_hub_page_href,compact=True)
     c1,c2,c3,c4=st.columns(4)
     from suite.service_launcher import probe as _svc_probe, mobile_https_up as _https_up
     if not mobile_online() and not st.session_state.get('_home_mobile_autostart_requested'):
@@ -1986,6 +1994,7 @@ if _page in ('daily','daily_wip','daily_closed','daily_status','daily_kpi','dail
 if _page == 'floor':
     st.markdown('## Shop floor / หน้างาน')
     st.caption('Type a work order, use a USB QR scanner, or take/upload a QR photo. Save OPEN/CLOSED for the selected section. Records are stored locally in CENTRAL_DATA and do not require section workbook uploads.')
+    st.link_button('🔫 B2D21 USB scanner / สแกนและดูประวัติ',_pub['http']+'/scan',use_container_width=True)
     from suite.floor_open_close import render as _floor_page
     _qr_scan_dir=Path(os.environ.get('SL_PHOTO_ROOT',str(SHARED_ROOT/'PHOTOS')))/'QR_SCANS'
     _floor_page(st, plan_path=str(plan) if plan else None, db_file=DB, data_dir=DATA, raw_df=raw,
@@ -2631,10 +2640,34 @@ if _page == 'cost':
     _render_cost_kpi(st, SM, user=st.session_state.get('sl_user','Unknown'), can_edit=hub_can_edit())
 
 if _page == 'more':
-    st.markdown('## More planning tools')
-    _tool_links=[('back','🚨 Backorder'),('mps','🗓️ MPS'),('mrp','🧪 MRP'),('pack','📦 Packaging'),('capacity','⚖️ Capacity'),('newplan','🆕 New order'),('history','🕘 History'),('knowledge','📚 Knowledge'),('suite','🧰 Planning suite')]
-    st.markdown('<div class="sl-tiles">'+''.join(f'<a href="{_hub_page_href(_p)}" target="_self">{_label}</a>' for _p,_label in _tool_links)+'</div>',unsafe_allow_html=True)
-    st.caption('These tools stay one click away. Daily, Firing, Track and Files are on the top bar so the software stays small and fast.')
+    from suite.task_catalog import render as _task_catalog
+    _task_catalog(st,_hub_page_href)
+
+if _page == 'labels':
+    st.header('▦ สร้าง QR / QR labels')
+    st.link_button('▦ One / selected / all WOs + temporary IDs / สร้างและพิมพ์ป้าย',_pub['http']+'/qr-generator',use_container_width=True)
+    st.link_button('🕘 Scan, audit and production history / ประวัติ',_pub['http']+'/audit-history',use_container_width=True)
+    st.caption('SLWO and SLTMP identities stay valid when the PC address changes. Use the application scanner for identity labels; direct-open links need a stable configured URL.')
+
+if _page == 'drying':
+    from suite.drying_confirmations import render as _drying_confirmations
+    _drying_confirmations(st,DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user',''))
+
+if _page == 'accounts':
+    st.header('👥 บัญชีผู้ใช้ / Shared user accounts')
+    if not st.session_state.get('sl_authenticated'):
+        st.info('Sign in to view the shared account register / เข้าสู่ระบบก่อน')
+    else:
+        from suite.demo_accounts import seed_users, USER_SECTIONS
+        seed_users(DB)
+        with sqlite3.connect(DB) as _users_db:
+            _users=pd.read_sql_query('SELECT username,display_name,role,active,created_at FROM users ORDER BY username',_users_db)
+        _users['Default section']=_users['username'].str.lower().map(USER_SECTIONS).fillna('Choose section / เลือกแผนก')
+        st.dataframe(_users,use_container_width=True,hide_index=True)
+        if st.session_state.get('sl_role')=='admin':
+            st.link_button('⚙️ Stations / จุดบันทึก',_pub['http']+'/admin/terminals')
+            st.link_button('📍 Locations / ตำแหน่งจัดเก็บ',_pub['http']+'/admin/locations')
+        st.caption('Desktop and mobile use this same account database. Existing passwords are preserved. New-install credentials are in user details.txt. Section defaults can be changed for cross-section work; saves retain the signed-in username.')
 
 if _page == 'recovery_review':
     st.header('📄 Production Backorder Recovery Plan / แผนกู้คืนงานค้างส่งฝ่ายผลิต')

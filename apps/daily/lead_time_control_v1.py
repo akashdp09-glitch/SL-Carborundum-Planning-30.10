@@ -71,7 +71,8 @@ def order_process_override(row):
 
 def applied_offsets(row):
     cat=normcat(row.get('Category',''))
-    d=LEAD_TIME.get(cat,LEAD_TIME['P'])
+    profile=row.get('_Capacity Lead Profile')
+    d=profile if isinstance(profile,dict) else LEAD_TIME.get(cat,LEAD_TIME['P'])
     prep_to_mix=_ceilwd(d['Preparation'])
     mix_to_form=_ceilwd(d['Mixing'])
     # Daily Planner has no separate Oven section. For categories that pass Oven,
@@ -105,15 +106,18 @@ def applied_offsets(row):
         'Source Grinding days':d['Grinding'],
         'Source QC days':d['QC'],
         'Source Grinding/Packing days':d['Grinding/Packing'],
-        'Source':'Cap แต่ละแผนก(10).xlsx / Lead Time',
+        'Source':d.get('_Source','Cap แต่ละแผนก(10).xlsx / Lead Time'),
+        'Day Basis':'Working-day convention; workbook day basis unstated; exact-WO calendar override applies where sourced',
     }
 
-def master_table():
+def master_table(capacity_path=None):
+    from suite.lead_time_source import profiles
+    source=profiles(capacity_path) if capacity_path else LEAD_TIME
     rows=[]
     for cat in CATEGORY_ORDER:
-        d=LEAD_TIME[cat]
+        d=source[cat]
         r={'Category':cat,'Category Description':CATEGORY_NAMES[cat],**d}
-        r.update(applied_offsets({'Category':cat}))
+        r.update(applied_offsets({'Category':cat,'_Capacity Lead Profile':d}))
         rows.append(r)
     return pd.DataFrame(rows)
 
@@ -124,3 +128,18 @@ def applied_table(df):
         a=applied_offsets(r)
         rows.append({'Work Order':r.get('Work Order',''),'Customer':r.get('Customer',''),'Program':r.get('Program',''),'Category Source':r.get('Category',''),'Specification':r.get('Specification',''),**a})
     return pd.DataFrame(rows).drop_duplicates(subset=['Work Order'],keep='first')
+
+
+def forming_release_date(day,row):
+    """Retain source units: exact-WO calendar exception, otherwise working offsets."""
+    from datetime import timedelta
+    override=order_process_override(row)
+    if override:
+        result=day+timedelta(days=override['drying_calendar_days']+override['pre_firing_check_calendar_days'])
+        while result.weekday()==6:result+=timedelta(days=1)
+        return result
+    result=day
+    for _ in range(applied_offsets(row)['Forming→Firing WD']):
+        result+=timedelta(days=1)
+        while result.weekday()==6:result+=timedelta(days=1)
+    return result

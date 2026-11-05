@@ -1,5 +1,15 @@
 # Test results
 
+## RC29.54 — 5 November 2026
+
+- Focused: **88 passed** (`RC54_FOCUSED_TESTS.txt`).
+- Mobile/scanner/audit/photo/concurrency: **97 passed, 1 skipped**, three dependency/deprecation warnings (`RC54_MOBILE_TESTS.txt`).
+- Final planning/release-evidence checks: **25 passed** (`RC54_PLANNING_TESTS.txt`).
+- Real Chromium synthetic checks: **9 passed** (`RC54_BROWSER_TESTS.txt`), including a committed save with deliberately lost acknowledgement and duplicate-free retry.
+- Broader suite: **297 passed, 8 skipped, 14 failed** (`RC54_BROAD_SUITE.txt`). All 14 failures reproduce on unchanged RC29.53 commit `8ac9005` in an isolated checkout: **33 passed, 14 failed** (`RC54_LEGACY_BASELINE.txt`). These are reported, not silently marked passed.
+- Daily integrity passes with pending code reviews; Firing retains three inherited failures. Cloud validation script missing (`RC54_ENGINE_CHECKS.txt`).
+- Timing conditions/results: `RC54_COMPONENT_TIMINGS.txt`. Word guide opened/rendered through LibreOffice to PDF for inspection; XML/relationships/images parse; screenshots are synthetic. No physical scanner/camera/GPS/Wi-Fi/Windows acceptance is implied.
+
 **RC29.53 (4 November 2026):** see `RC53_FOCUSED_TESTS.txt`, `RC53_MOBILE_TESTS.txt`,
 `RC53_UI_TESTS.txt`, `RC53_HUB_TESTS.txt` and `RC53_ENGINE_CHECKS.txt`. Those current
 results supersede historical runs below. Actual-workbook analysis and test

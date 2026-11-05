@@ -36,7 +36,7 @@ PLAN_COLS = (
 def norm_wo(value) -> str:
     s = urllib.parse.unquote(str(value or "")).strip()
     s = s.rstrip("/").split("/")[-1].strip()
-    s = re.sub(r"^(?:SLWO|WO)\s*[:#=-]\s*", "", s, flags=re.I)
+    s = re.sub(r"^(?:SLWO)\s*[:#=-]\s*|^WO\s*[:#=]\s*", "", s, flags=re.I)
     return re.sub(r"[^A-Z0-9]", "", s.upper())
 
 
@@ -118,11 +118,17 @@ def suggestions_from_db(db_file, query, limit: int = 12) -> pd.DataFrame:
     try:
         if not con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='work_orders'").fetchone():
             return pd.DataFrame()
-        rows = con.execute(
-            """SELECT wo_id, production_code, customer_name, customer_id, product_code, specification, qty,
-                      revised_due_date, initial_due_date, order_no, plan_source_row
-               FROM work_orders"""
-        ).fetchall()
+        from .scanner_lookup import NORMALIZED_SQL
+        nwo=NORMALIZED_SQL.format('wo_id');npc=NORMALIZED_SQL.format('production_code')
+        fields="wo_id, production_code, customer_name, customer_id, product_code, specification, qty, revised_due_date, initial_due_date, order_no, plan_source_row"
+        rows=con.execute(f"SELECT {fields} FROM work_orders WHERE {nwo}=? OR {npc}=? LIMIT ?",(q,q,max(2,limit))).fetchall()
+        if not rows:
+            escaped=qtext.replace('\\','\\\\').replace('%','\\%').replace('_','\\_')
+            pattern='%'+escaped+'%'
+            cols=['wo_id','production_code','customer_name','customer_id','product_code','specification','order_no']
+            where=' OR '.join(f"{c} LIKE ? ESCAPE '\\'" for c in cols)
+            rows=con.execute(f"SELECT {fields} FROM work_orders WHERE {nwo} LIKE ? OR {npc} LIKE ? OR {where} ORDER BY wo_id LIMIT ?",('%'+q+'%','%'+q+'%',*[pattern]*len(cols),limit)).fetchall()
+
     finally:
         con.close()
     hits = []
@@ -161,14 +167,18 @@ def find_canonical_wo(query, *, plan_path=None, db_file=None) -> Optional[str]:
     if not q:
         return None
     db_file = db_file or _db_path()
-    hits = suggestions_from_db(db_file, query, limit=1)
+    hits = suggestions_from_db(db_file, query, limit=12)
     if hits is not None and not hits.empty:
-        return str(hits.iloc[0]["Work Order"])
+        exact = hits[hits["Work Order"].map(norm_wo).eq(q)]
+        if len(exact) == 1:
+            return str(exact.iloc[0]["Work Order"])
     path = Path(plan_path) if plan_path else resolve_plan()
     if path:
-        hits = suggestions_from_plan(path, query, limit=1)
+        hits = suggestions_from_plan(path, query, limit=12)
         if hits is not None and not hits.empty:
-            return str(hits.iloc[0]["Work Order"])
+            exact = hits[hits["Work Order"].map(norm_wo).eq(q)]
+            if len(exact) == 1:
+                return str(exact.iloc[0]["Work Order"])
     return None
 
 

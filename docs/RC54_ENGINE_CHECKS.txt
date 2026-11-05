@@ -1,0 +1,14 @@
+Command: bash scripts/cloud/validate.sh
+bash: scripts/cloud/validate.sh: No such file or directory
+Exit: 127
+
+Command: /workspace/sl-carborundum-venv/bin/python apps/daily/VERIFY_RELEASE.py
+PASS: syntax OK; unchanged baseline files match; 3 reviewed controlled change(s) pinned; 10 legacy declared change(s) PENDING REVIEW (hash pinned): production_wip_control.py, traceable_views.py, lead_time_control_v1.py, daily_linear_engine_v1_1.py, sl_mps_mrp_engine_v2_4.py, daily_job_control.py, ppc_desktop_core_v1_9.py, meeting_presentation.py, daily_md_report.py, integrated_daily_engine_v1_1.py. Not a scheduling approval.
+Exit: 0
+
+Command: /workspace/sl-carborundum-venv/bin/python apps/firing/VERIFY_RELEASE.py
+FAIL:
+  - sl_daily_engine_v3_22_from_v17.py: differs from baseline and has no controlled-change entry
+  - fast_stage4_v15.py: differs from baseline and has no controlled-change entry
+  - firing_engine_desktop_v2.py: file changed after it was accepted (current 8f58656335ad != accepted bdfa7014b273); re-review required
+Exit: 1

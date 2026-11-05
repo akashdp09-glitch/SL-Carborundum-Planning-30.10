@@ -57,11 +57,11 @@
   },
   "daily_linear_engine_v1_1.py": {
     "baseline_sha256": "1060bf3a3cf86ccb8a5e41c97dd9a0fba084947f4c92c18812969daa1679706f",
-    "accepted_sha256": "ed44ac2109d31612f3a897a277ef55b73db2592c9c1b40112a6b0bb2ca4960da",
-    "reason": "V16.23: pdate used pd.to_datetime on Excel serials (risk dates near 1970); now uses date_and_wo_rules.parse_date; normalised A/B layer identity lookup; docs_archive/REVISION_TRACEABILITY_V16_23.txt. Matches V23_BUILD_MANIFEST.json hash.",
-    "evidence": "tests/release/test_controlled_changes.py::test_linear_engine_uses_the_safe_parser",
-    "reviewed": true,
-    "recorded": "2026-10-04"
+    "accepted_sha256": "58ff91426bd820a3e8c7411614a6417f709d66baed637fbc1051ca460322c1d8",
+    "reason": "RC29.54: hold unconfirmed initial firing WIP; use quantity-bounded actual drying evidence and calendar-scoped forming release. Source includes prior supplied layers; full factory review remains pending.",
+    "evidence": "tests/release/test_daily_drying_flow.py",
+    "reviewed": false,
+    "recorded": "2026-11-05"
   },
   "sl_ppc_fast_store_v4_6.py": {
     "baseline_sha256": "ebf03ed507b7449c111501a2669a2863723bfafdca43d8323d8580086d7fd484",
@@ -81,11 +81,11 @@
   },
   "lead_time_control_v1.py": {
     "baseline_sha256": "96fe29753e01ca27b84270c6e6606359564862252d18acf6c454694881c0f8ce",
-    "accepted_sha256": "82c821fa115b0f0237cd401d0b708ae562a84c1512482d7fc555016d319d94a0",
-    "reason": "Match the Oven/drying row to CAPACITY_DATABASE.xlsx / Lead Time row 6 (S2, T3, P3, R2, M1, PB none) and apply the 4-day drying + 2-day pre-firing check only to Q26-009 reference WO P005-110826.",
-    "evidence": "suite/test_drying_time_rules.py::test_category_oven_times_match_capacity_workbook_lead_time_row_6",
-    "reviewed": true,
-    "recorded": "2026-10-06"
+    "accepted_sha256": "2999117faa3c77a3184c60fe8def8f834ef8e7af8dc602182719f51f624e0416",
+    "reason": "RC29.54: accept per-row active-source profiles without mutating defaults; retain source hash/cells and apply exact-WO calendar exception. Working-day assumption remains explicit.",
+    "evidence": "tests/release/test_daily_drying_flow.py",
+    "reviewed": false,
+    "recorded": "2026-11-05"
   },
   "sl_mps_mrp_engine_v2_4.py": {
     "baseline_sha256": "27596a586b3a8e9f2e31b284ffe919fed5c120c89a2de9aae5cbfb52f471722f",
@@ -94,5 +94,13 @@
     "evidence": "DEVELOPMENT_STATUS.md",
     "reviewed": false,
     "recorded": "2026-10-22"
+  },
+  "integrated_daily_engine_v1_1.py": {
+    "baseline_sha256": "3f7210a3819f236b9c48f87d2ba08ba6d220177b971a2ed252420d681834b4ae",
+    "accepted_sha256": "3b15d1a0f5122cf037914a37e4ad24266542366c0114274893eb5580c597e5ed",
+    "reason": "RC29.54: attach current capacity-workbook lead profiles and shared drying confirmations before Daily scheduling; export the active lead source. Review candidate; no capacity approval implied.",
+    "evidence": "suite/test_drying_confirmations.py::test_active_capacity_changes_route_offsets_without_mutating_defaults",
+    "reviewed": false,
+    "recorded": "2026-11-05"
   }
 }

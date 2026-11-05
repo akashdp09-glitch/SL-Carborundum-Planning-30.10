@@ -65,3 +65,17 @@ body:before{content:'';position:fixed;inset:0;background:url('/static/products_m
 .bar-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(80px,2fr) auto;gap:9px;align-items:center;margin:10px 0;font-size:13px}.bar-track{height:14px;background:#edf1f5;border-radius:999px;overflow:hidden}.bar-track i{display:block;height:100%;min-width:2px;background:linear-gradient(90deg,#126a62,#f58220);border-radius:999px}.bar-row b{font-variant-numeric:tabular-nums}
 
 .audit-photo-row{gap:10px;align-items:center}.audit-thumb{width:68px;height:68px;object-fit:cover;border-radius:8px;border:1px solid #d5e0ec;background:#f3f6f9;flex:0 0 68px}
+
+/* RC29.54 scanner: visible selection, keyboard focus and generous touch targets. */
+#openStatus,#closedStatus,#findWO,#saveEvent,#retryEvent,#retryStatus{min-height:48px;font-size:1rem}
+#openStatus[aria-pressed="true"],#closedStatus[aria-pressed="true"]{outline:4px solid #e76613;outline-offset:2px;box-shadow:0 0 0 7px #fff}
+#chosenStatus{font-size:1.25rem;font-weight:900;color:#12395b}
+#scanInput{min-width:0;flex:1}#scanResult,#saveResult,#eventResult{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 0}
+#statusHistory p{border-bottom:1px solid #d5e0ec;padding:10px 0;overflow-wrap:anywhere}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e76613;outline-offset:2px}
+
+#jobActions,.scan-action-links{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#jobActions .button,.scan-action-links .button{display:flex;align-items:center;justify-content:center;min-height:48px;white-space:normal;line-height:1.4;flex:1 1 140px;box-sizing:border-box}
+#statusHistory article{padding:10px 0;border-bottom:1px solid #d5e0ec}#statusHistory small{display:block;color:#485768}#statusHistory details{font-size:.9rem;overflow-wrap:anywhere}
+
+.topbar{flex-wrap:wrap;gap:8px}.topbar a{color:#fff}.topbar .brand{min-width:0}.mobile-lang{margin-left:auto}

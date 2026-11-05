@@ -10,3 +10,23 @@ the existing installation; see docs/KNOWLEDGE_DATABASE.md.
 บัญชีผู้ใช้และสิทธิ์: ดู docs/PERMISSION_MATRIX.md
 เก็บโฟลเดอร์ CENTRAL_DATA เดิมไว้ ไม่เขียนทับข้อมูลโรงงาน
 แพ็กเกจนี้ไม่มีฐานข้อมูลผู้ใช้จริงหรือรหัสผ่านของโรงงาน
+
+New-install default accounts / บัญชีเริ่มต้น
+admin / admin123 — Administrator
+planning / planning123 — Planning
+supervisor / supervisor123 — Production Supervisor
+operator / operator123 — Production Operator
+management / management123 — Management
+production / production123 — Production / ฝ่ายผลิต
+preparation / preparation123 — Preparation / เตรียม
+mixing / mixing123 — Mixing / ผสม
+forming / forming123 — Forming / ขึ้นรูป
+firing / firing123 — Firing / เผา
+grinding / grinding123 — Grinding / เจียร
+cutting / cutting123 — Cutting / ตัด
+packing / packing123 — Packing / บรรจุ
+qc / qc123 — Quality / ตรวจสอบคุณภาพ
+warehouse / warehouse123 — Warehouse / คลังสินค้า
+dispatch / dispatch123 — Dispatch / จัดส่ง
+
+An existing account keeps its current password. Section logins preselect the section; cross-section work remains allowed and attributed to the signed-in username.

@@ -1,0 +1,234 @@
+.......................................s................................ [ 22%]
+........................F.............................F...FF............ [ 45%]
+......................................................F.F.F........F..F. [ 67%]
+.F.........................sssssss...............F.F.................... [ 90%]
+FF.............................                                          [100%]
+=================================== FAILURES ===================================
+____________________ test_tab_ticket_validates_and_expires _____________________
+
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_tab_ticket_validates_and_0')
+
+    def test_tab_ticket_validates_and_expires(tmp_path):
+        token=issue(tmp_path,"planner","planning",now=1000)
+        assert validate(tmp_path,token,now=1001)=={"username":"planner","role":"planning"}
+>       assert validate(tmp_path,token,now=1000+8*60*60) is None
+E       AssertionError: assert {'username': 'planner', 'role': 'planning'} is None
+E        +  where {'username': 'planner', 'role': 'planning'} = validate(PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_tab_ticket_validates_and_0'), 'eyJ1IjoicGxhbm5lciIsInIiOiJwbGFubmluZyIsImV4cCI6MjU5MzAwMH0.lic6Ng1MbQDwB4qr74m9eIYdxLUZ9jLB3kTBMWR2ZRs', now=(1000 + ((8 * 60) * 60)))
+
+suite/test_hub_auth.py:7: AssertionError
+____________________ test_hub_accepts_xls_for_job_register _____________________
+
+    def test_hub_accepts_xls_for_job_register():
+        text = Path("hub.py").read_text(encoding="utf-8")
+>       assert "home_jobs" in text
+E       assert 'home_jobs' in "from __future__ import annotations\nimport uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, u...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_month_register.py:62: AssertionError
+_______ test_source_manager_daily_replace_of_register_is_a_new_revision ________
+
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_source_manager_daily_repl0')
+
+    def test_source_manager_daily_replace_of_register_is_a_new_revision(tmp_path):
+        sm = SourceManager(tmp_path / "shared", bundled_capacity=tmp_path / "none.xlsx")
+        a = tmp_path / "October-2026.xlsx"
+        b = tmp_path / "October-2026-day2.xlsx"
+        _october_xlsx(a, marker=1)
+        _october_xlsx(b, marker=2)
+        r1 = sm.import_bytes("SEPT_OPEN_CLOSED", "October-2026.xlsx", a.read_bytes(), "planner")
+>       assert r1.status == "IMPORTED" and sm.active("SEPT_OPEN_CLOSED")["original_name"] == "October-2026.xlsx"
+E       AssertionError: assert ('REJECTED' == 'IMPORTED'
+E
+E         - IMPORTED
+E         + REJECTED)
+
+suite/test_month_register.py:117: AssertionError
+__________________ test_xls_converts_and_keeps_original_name ___________________
+
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_xls_converts_and_keeps_or0')
+
+    def test_xls_converts_and_keeps_original_name(tmp_path):
+        xlwt = pytest.importorskip("xlwt")
+        pytest.importorskip("xlrd")
+        book = xlwt.Workbook()
+        for title, hdr in (("Open Job", "Input October (JOB)"), ("Close Job", "Close Job October (Item)")):
+            ws = book.add_sheet(title)
+            ws.write(0, 0, "Product")
+            ws.write(0, 2, hdr)
+            ws.write(1, 0, "Group")
+            for d in range(1, 32):
+                ws.write(1, 1 + d, d)
+            cats = ["R", "P", "S", "T", "M"]
+            for i, cat in enumerate(cats):
+                ws.write(2 + i, 0, "MTO" if i == 0 else "")
+                ws.write(2 + i, 1, cat)
+                ws.write(2 + i, 2, 3)
+            for i, cat in enumerate(cats):
+                ws.write(7 + i, 0, "MTS" if i == 0 else "")
+                ws.write(7 + i, 1, cat)
+                ws.write(7 + i, 2, 1)
+        xls_path = tmp_path / "October-2026.xls"
+        book.save(str(xls_path))
+        converted = prepare_upload_bytes("October-2026.xls", xls_path.read_bytes())
+        out = tmp_path / "out.xlsx"
+        out.write_bytes(converted)
+        names = pd.ExcelFile(out).sheet_names
+        assert "Open Job" in names and "Close Job" in names
+        sm = SourceManager(tmp_path / "shared", bundled_capacity=tmp_path / "none.xlsx")
+        r = sm.import_bytes("SEPT_OPEN_CLOSED", "October-2026.xls", xls_path.read_bytes(), "planner")
+>       assert r.ok
+E       AssertionError: assert False
+E        +  where False = ImportResult(status='REJECTED', slot_id='SEPT_OPEN_CLOSED', message='This source is archived/reference-only. Use Depar...idence; training references stay in Knowledge / F1.', revision_no=None, sha256='', affected_modules=[], sheet_roles=[]).ok
+
+suite/test_month_register.py:157: AssertionError
+_______________ test_files_page_loads_plan_for_qr_section_filter _______________
+
+    def test_files_page_loads_plan_for_qr_section_filter():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+>       assert "'src'}" in hub.split("_NEED_PLAN=", 1)[1].splitlines()[0]
+E       assert "'src'}" in "{'back','mps','mrp','pack','audit','wip','report','audits','newplan','src','recovery_review'}"
+
+suite/test_qr_page_plan_loading.py:6: AssertionError
+____________ test_backorder_and_recovery_are_direct_home_shortcuts _____________
+
+    def test_backorder_and_recovery_are_direct_home_shortcuts():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+        home = hub.split("if _page in ('control',):", 1)[1].split("if _page == 'daily':", 1)[0]
+>       assert "_hub_page_href('back')" in home
+E       assert "_hub_page_href('back')" in "\n    if DB_MIGRATION_STATUS.get('state')=='MIGRATED':\n        st.success('Previous audit database restored from the...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_rc28_local_storage_and_home_links.py:15: AssertionError
+_________ test_contextual_uploads_and_issued_qr_identity_are_preserved _________
+
+    def test_contextual_uploads_and_issued_qr_identity_are_preserved():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+        qr = Path("suite/qr_labels.py").read_text(encoding="utf-8")
+        assert "HOME_SOURCE_FILES=(\n    ('Plan-2026'" in hub
+        assert "_render_context_source_updates(_page)" in hub
+>       assert "QR identity" in hub
+E       assert 'QR identity' in "from __future__ import annotations\nimport uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, u...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_rc28_local_storage_and_home_links.py:33: AssertionError
+_______ test_weekly_recovery_action_pack_has_direct_hub_and_daily_access _______
+
+    def test_weekly_recovery_action_pack_has_direct_hub_and_daily_access():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+        daily = Path("apps/daily/daily_planner_app.py").read_text(encoding="utf-8")
+        assert "daily_recovery" in hub
+>       assert "Open Weekly Recovery Action Plan" in hub
+E       assert 'Open Weekly Recovery Action Plan' in "from __future__ import annotations\nimport uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, u...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_recovery_navigation.py:8: AssertionError
+__ test_home_banner_uses_small_bundled_factory_photo_without_external_request __
+
+    def test_home_banner_uses_small_bundled_factory_photo_without_external_request():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+        home = hub.split("if _page in ('control',):", 1)[1].split("if _page == 'daily':", 1)[0]
+>       assert 'aria-label="SL Carborundum Planning Center"' in home
+E       assert 'aria-label="SL Carborundum Planning Center"' in "\n    if DB_MIGRATION_STATUS.get('state')=='MIGRATED':\n        st.success('Previous audit database restored from the...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_recovery_navigation.py:31: AssertionError
+______ test_uploaded_files_are_not_rehashed_and_reimported_on_every_rerun ______
+
+    def test_uploaded_files_are_not_rehashed_and_reimported_on_every_rerun():
+        hub = Path("hub.py").read_text(encoding="utf-8")
+        assert "def _upload_token(upload, scope):" in hub
+        assert "if _upload_seen(upload,_scope):return None" in hub
+>       assert "if _saved_path is None:continue" in hub
+E       assert 'if _saved_path is None:continue' in "from __future__ import annotations\nimport uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, u...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_recovery_navigation.py:57: AssertionError
+_____ test_home_has_compact_all_source_upload_and_no_optional_path_prompts _____
+
+    def test_home_has_compact_all_source_upload_and_no_optional_path_prompts():
+        src = (REPO_ROOT / "hub.py").read_text(encoding="utf-8")
+        assert "All software inputs" in src
+        assert "Original source folder (optional)" not in src
+        assert "Source revision / revised date (optional)" not in src
+>       assert "page in ('daily','daily_closed','daily_status')" in src
+E       assert "page in ('daily','daily_closed','daily_status')" in "from __future__ import annotations\nimport uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, u...,st.session_state.get('sl_user',''))\n    except Exception as _se:\n        st.error(f'Planning Suite error: {_se}')\n"
+
+suite/test_start_center.py:74: AssertionError
+_____________ test_source_manager_page_has_no_slot_import_uploader _____________
+
+    def test_source_manager_page_has_no_slot_import_uploader():
+        src = (REPO_ROOT / "suite" / "source_manager_page.py").read_text(encoding="utf-8")
+        assert "Import into a slot" not in src
+        assert "file_uploader" not in src
+        assert "knowledge_only" in src
+        assert "Go to Home for Plan-2026" in src
+>       assert "already in **Knowledge / F1**" in src
+E       assert 'already in **Knowledge / F1**' in '"""Streamlit view of the shared Source Manager (thin: all logic lives in suite.source_manager)."""\nfrom __future__ i...m.events(100)\n        if ev:\n            st.dataframe(pd.DataFrame(ev), use_container_width=True, hide_index=True)\n'
+
+suite/test_start_center.py:90: AssertionError
+_________________ test_venv_dir_defaults_inside_program_folder _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f95d22a3e90>
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_venv_dir_defaults_inside_0')
+
+    def test_venv_dir_defaults_inside_program_folder(monkeypatch, tmp_path):
+        monkeypatch.setattr(W, "_is_windows", lambda: False)
+        monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "appdata"))
+        monkeypatch.delenv("SL_VENV", raising=False)
+        monkeypatch.setattr(W, "ROOT", tmp_path / "program")
+>       assert W.venv_dir() == tmp_path / "program" / "RUNTIME" / "venv"
+E       AssertionError: assert PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') == (((PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_venv_dir_defaults_inside_0') / 'program') / 'RUNTIME') / 'venv')
+E        +  where PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') = <function venv_dir at 0x7f95e5d3f740>()
+E        +    where <function venv_dir at 0x7f95e5d3f740> = W.venv_dir
+
+suite/test_windows_runtime_env.py:112: AssertionError
+__ test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists ___
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f95d22a0560>
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_venv_dir_windows_defaults0')
+
+    def test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists(monkeypatch, tmp_path):
+        monkeypatch.setattr(W, "_is_windows", lambda: True)
+        monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "appdata"))
+        monkeypatch.delenv("SL_VENV", raising=False)
+        monkeypatch.setattr(W, "ROOT", tmp_path / "program")
+>       assert W.venv_dir() == tmp_path / "program" / "RUNTIME" / "venv"
+E       AssertionError: assert PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') == (((PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc54-broad-closed/test_venv_dir_windows_defaults0') / 'program') / 'RUNTIME') / 'venv')
+E        +  where PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') = <function venv_dir at 0x7f95e5d3f740>()
+E        +    where <function venv_dir at 0x7f95e5d3f740> = W.venv_dir
+
+suite/test_windows_runtime_env.py:120: AssertionError
+=============================== warnings summary ===============================
+../sl-carborundum-venv/lib/python3.12/site-packages/starlette/testclient.py:51
+  /workspace/sl-carborundum-venv/lib/python3.12/site-packages/starlette/testclient.py:51: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+suite/test_mobile_http_open.py::test_mobile_home_redirects_to_login_not_https
+  /workspace/SL-Carborundum-Planning-30.10/apps/mobile/app.py:1251: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    @app.on_event("startup")
+
+suite/test_mobile_http_open.py::test_mobile_home_redirects_to_login_not_https
+  /workspace/sl-carborundum-venv/lib/python3.12/site-packages/fastapi/applications.py:4495: DeprecationWarning:
+          on_event is deprecated, use lifespan event handlers instead.
+
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+
+    return self.router.on_event(event_type)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED suite/test_hub_auth.py::test_tab_ticket_validates_and_expires - Assert...
+FAILED suite/test_month_register.py::test_hub_accepts_xls_for_job_register - ...
+FAILED suite/test_month_register.py::test_source_manager_daily_replace_of_register_is_a_new_revision
+FAILED suite/test_month_register.py::test_xls_converts_and_keeps_original_name
+FAILED suite/test_qr_page_plan_loading.py::test_files_page_loads_plan_for_qr_section_filter
+FAILED suite/test_rc28_local_storage_and_home_links.py::test_backorder_and_recovery_are_direct_home_shortcuts
+FAILED suite/test_rc28_local_storage_and_home_links.py::test_contextual_uploads_and_issued_qr_identity_are_preserved
+FAILED suite/test_recovery_navigation.py::test_weekly_recovery_action_pack_has_direct_hub_and_daily_access
+FAILED suite/test_recovery_navigation.py::test_home_banner_uses_small_bundled_factory_photo_without_external_request
+FAILED suite/test_recovery_navigation.py::test_uploaded_files_are_not_rehashed_and_reimported_on_every_rerun
+FAILED suite/test_start_center.py::test_home_has_compact_all_source_upload_and_no_optional_path_prompts
+FAILED suite/test_start_center.py::test_source_manager_page_has_no_slot_import_uploader
+FAILED suite/test_windows_runtime_env.py::test_venv_dir_defaults_inside_program_folder
+FAILED suite/test_windows_runtime_env.py::test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists
+14 failed, 297 passed, 8 skipped, 3 warnings in 42.08s

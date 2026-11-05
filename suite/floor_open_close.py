@@ -90,7 +90,7 @@ def save_entry(data_dir, wo: str, section: str, status: str, qty=0.0, remark="",
         "Section": section,
         "Status": status,
         "Actual Qty": None if qty_unknown else qty,
-        "Quantity Unknown": bool(qty_unknown),
+        "Quantity Unknown": bool(qty_unknown or qty is None),
         "Remark": remark,
         "User": user,
         "Event ID": str(event_id or uuid.uuid4().hex),
@@ -113,6 +113,7 @@ def save_entry(data_dir, wo: str, section: str, status: str, qty=0.0, remark="",
         if "source_ref" not in _cols: c.execute("ALTER TABLE section_status ADD COLUMN source_ref TEXT")
         if "source_row" not in _cols: c.execute("ALTER TABLE section_status ADD COLUMN source_row TEXT")
         c.execute("CREATE INDEX IF NOT EXISTS ix_section_status_time ON section_status(time)")
+        c.execute("CREATE INDEX IF NOT EXISTS ix_section_status_wo ON section_status(wo,id DESC)")
         legacy = entries_path(root)
         imported = c.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_status_import'").fetchone()
         if not imported and legacy.exists():
@@ -133,7 +134,11 @@ def save_entry(data_dir, wo: str, section: str, status: str, qty=0.0, remark="",
         if inserted.rowcount == 0:
             saved = c.execute("SELECT time,wo,section,status,actual_qty,quantity_unknown,remark,user,event_id,source_ref,source_row FROM section_status WHERE event_id=?", (row["Event ID"],)).fetchone()
             if saved:
-                row = dict(zip(COLS, saved))
+                previous = dict(zip(COLS, saved))
+                fields = ["Work Order", "Section", "Status", "Actual Qty", "Quantity Unknown", "Remark", "User"]
+                if any(previous[k] != row[k] for k in fields):
+                    raise ValueError("Submission ID already used with different data. Review the saved event before creating a new submission.")
+                row = previous
     return row
 
 
@@ -216,6 +221,8 @@ def render(st, *, plan_path: Optional[str] = None, db_file=None, data_dir, raw_d
                 found_source_row=str(_match.iloc[0].get("Plan row","")) if not _match.empty else ""
 
     c1, c2, c3 = st.columns(3)
+    from .demo_accounts import USER_SECTIONS
+    st.session_state.setdefault(f"{key}_sec", USER_SECTIONS.get(str(user).lower(),SECTIONS[0]))
     section = c1.selectbox("Section / แผนก", SECTIONS, key=f"{key}_sec")
     status = c2.radio("OPEN / CLOSED", ["OPEN", "CLOSED"], horizontal=True, key=f"{key}_st")
     qty_unknown = st.checkbox("Quantity unknown / not provided", value=False, key=f"{key}_qty_unknown")

@@ -78,6 +78,7 @@ ROLES = {
     "planning": {"label": "Planning", "permissions": {"workorder", "planning", "dashboard", "export", "audit"}},
     "supervisor": {"label": "Production Supervisor", "permissions": {"scan", "supervisor", "dashboard", "export", "audit"}},
     "operator": {"label": "Production Operator", "permissions": {"scan"}},
+    "production": {"label": "Production / ฝ่ายผลิต", "permissions": {"scan", "dashboard", "export", "audit"}},
     "management": {"label": "Management", "permissions": {"dashboard", "export", "audit"}},
     "viewer": {"label": "View Only", "permissions": {"dashboard", "export"}},
 }
@@ -106,7 +107,8 @@ STATUS_LABELS = {
     "REWORK": "Rework",
     "QC_PENDING": "QC Pending",
     "QC_ACCEPTED": "QC Accepted",
-    "COMPLETE": "Production Complete",
+    "COMPLETE": "Packed quantity complete",
+    "SECTION_COMPLETE": "Section complete / whole WO remains separate",
     "FINAL_COMPLETE": "Final Complete",
     "UNCONFIRMED": "Unconfirmed",
     "CANCELLED": "Cancelled",
@@ -426,8 +428,10 @@ def init_db() -> None:
         ("operator", "operator123", "operator", "Production Operator"),
         ("management", "management123", "management", "Management"),
     ]
+    from suite.demo_accounts import DEMO_USERS
+    defaults = list(DEMO_USERS)
     for username, password, role, display in defaults:
-        if con.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone() is None:
+        if con.execute("SELECT 1 FROM users WHERE lower(username)=lower(?)", (username,)).fetchone() is None:
             con.execute(
                 "INSERT INTO users(username,password_hash,role,display_name,created_at) VALUES(?,?,?,?,?)",
                 (username, hash_password(password), role, display, now_iso()),
@@ -673,27 +677,14 @@ def qr_value_to_wo(value: str) -> str:
 
 
 def resolve_work_order_code(value: str):
-    code = qr_value_to_wo(value)
+    """Only one exact/normalized database identity may resolve a scan."""
+    from suite.scanner_lookup import exact_work_orders
     con = db()
     try:
-        row = con.execute("SELECT wo_id FROM work_orders WHERE wo_id=? OR production_code=? LIMIT 1", (code, code)).fetchone()
-        if row:
-            return row["wo_id"]
-        key = norm_wo(code)
-        if key:
-            # Compatibility for labels with punctuation/case differences. Exact, indexed lookup above is the hot path.
-            for row in con.execute("SELECT wo_id,production_code FROM work_orders"):
-                if norm_wo(row["wo_id"]) == key or norm_wo(row["production_code"]) == key:
-                    return row["wo_id"]
+        rows = exact_work_orders(con, qr_value_to_wo(value))
+        return rows[0]["wo_id"] if len(rows) == 1 else None
     finally:
         con.close()
-    try:
-        if str(PROGRAM_ROOT) not in sys.path:
-            sys.path.insert(0, str(PROGRAM_ROOT))
-        from suite.wo_lookup import find_canonical_wo
-        return find_canonical_wo(code, db_file=DB_PATH)
-    except Exception:
-        return None
 
 
 def record_qr_scan(user_name: str, payload: str, wo_id: Optional[str], result: str,
@@ -808,7 +799,7 @@ def get_current_snapshot(wo_id: str):
         if e["event_type"] in ("RECEIVE", "START", "MOVE", "RESUME", "PARTIAL_COMPLETE", "COMPLETE", "HOLD", "REWORK", "QC_HOLD", "QC_ACCEPT"):
             current_process = e["process_name"] or current_process
             current_location = e["location"] or current_location
-        if e["event_type"] in ("PARTIAL_COMPLETE", "COMPLETE") and e["qty"] is not None:
+        if e["event_type"] in ("PARTIAL_COMPLETE", "COMPLETE") and e["qty"] is not None and str(e["process_name"] or "").strip().upper() in {"PACKING","PACK","บรรจุ"}:
             produced = max(produced, float(e["qty"]))
         if e["event_type"] == "QC_ACCEPT" and e["qty"] is not None:
             accepted = max(accepted, float(e["qty"]))
@@ -821,6 +812,8 @@ def get_current_snapshot(wo_id: str):
         }
         if e["event_type"] in mapping:
             status = mapping[e["event_type"]]
+            if e["event_type"]=="COMPLETE" and str(e["process_name"] or "").strip().upper() not in {"PACKING","PACK","บรรจุ"}:
+                status="SECTION_COMPLETE"
     remaining = max(float(wo["qty"] or 0) - produced, 0)
     if status == "COMPLETE" and accepted >= float(wo["qty"] or 0) and wo["qty"]:
         status = "FINAL_COMPLETE"
@@ -1032,9 +1025,7 @@ def operator_page(request: Request):
     user=require_login(request)
     if not user:
         return RedirectResponse("/login?next=/operator",303)
-    kick_shared_plan_sync()
-    con=db(); terminals=con.execute("SELECT * FROM terminals WHERE active=1 ORDER BY process_name,location,terminal_code").fetchall(); con.close()
-    return HTMLResponse(render(request,"operator.html",terminals=terminals))
+    return RedirectResponse("/scan",303)
 
 
 @app.post("/api/decode-qr-photo")
@@ -1095,7 +1086,7 @@ async def qr_scan(request: Request):
     payload = await request.json()
     value = safe_text(payload.get("value"))[:2048]
     method = safe_text(payload.get("method")).upper()
-    if method not in {"LIVE_CAMERA", "MANUAL", "PHOTO"}: method = "LIVE_CAMERA"
+    if method not in {"LIVE_CAMERA", "MANUAL", "PHOTO", "USB_SCANNER"}: method = "LIVE_CAMERA"
     if not value: return {"ok":False,"error":"Empty QR value"}
     cands = audit_v2.find_candidates(value)
     if len(cands) > 1:
@@ -1370,7 +1361,11 @@ def scan_page(request: Request, station: str = ""):
     terminal = con.execute("SELECT * FROM terminals WHERE terminal_code=? AND active=1", (station,)).fetchone() if station else None
     terminals = con.execute("SELECT * FROM terminals WHERE active=1 ORDER BY terminal_code").fetchall()
     con.close()
-    return HTMLResponse(render(request, "scan.html", terminal=terminal, terminals=terminals))
+    from suite.demo_accounts import USER_SECTIONS
+    account_section=USER_SECTIONS.get(user["username"].lower())
+    default_station=terminal['terminal_code'] if terminal else next((t['terminal_code'] for t in terminals if account_section and t['process_name']==account_section),'')
+    return HTMLResponse(render(request, "scan.html", terminal=terminal, terminals=terminals,
+        default_section=account_section or "Preparation",default_station=default_station))
 
 
 @app.post("/api/scan")
@@ -1378,51 +1373,44 @@ async def api_scan(request: Request):
     user = require_login(request)
     if not user or not can(user, "scan"):
         return {"ok": False, "error": "Not authorized"}
-    payload = await request.json()
-    wo_id = safe_text(payload.get("wo_id"))
-    event_type = safe_text(payload.get("event_type")).upper()
-    terminal_code = safe_text(payload.get("terminal_code"))
-    qty = safe_float(payload.get("qty"))
-    reason = safe_text(payload.get("reason"))
-    notes = safe_text(payload.get("notes"))
-    if not wo_id or event_type not in VALID_EVENT_TYPES:
-        return {"ok": False, "error": "Invalid scan/event"}
-    con = db()
-    wo = con.execute("SELECT * FROM work_orders WHERE wo_id=?", (wo_id,)).fetchone()
-    term = con.execute("SELECT * FROM terminals WHERE terminal_code=? AND active=1", (terminal_code,)).fetchone()
-    if not wo:
-        con.close(); return {"ok": False, "error": "Work Order not found"}
-    if not term:
-        con.close(); return {"ok": False, "error": "Terminal/station not configured"}
-    # Prevent rapid duplicate identical events.
-    recent = con.execute(
-        "SELECT id FROM events WHERE wo_id=? AND event_type=? AND terminal_code=? AND user_name=? AND event_time >= ? ORDER BY id DESC LIMIT 1",
-        (wo_id, event_type, terminal_code, user["username"], (bkk_now() - timedelta(seconds=12)).isoformat(sep=" ")),
-    ).fetchone()
-    if recent:
-        con.close(); return {"ok": False, "error": "Duplicate scan ignored (within 12 seconds)"}
-    # Use terminal's configured process/location.
-    process = term["process_name"]
-    location = term["location"]
-    if event_type in ("COMPLETE", "PARTIAL_COMPLETE"):
-        if qty is None:
-            qty = float(wo["qty"])
-        if qty < 0 or qty > float(wo["qty"]):
-            con.close(); return {"ok": False, "error": "Quantity must be between 0 and Work Order quantity"}
-        if event_type == "COMPLETE" and qty < float(wo["qty"]):
-            con.close(); return {"ok": False, "error": "This quantity is not complete. Use PARTIAL for a partial quantity."}
-    if event_type == "REWORK" and (qty is None or qty <= 0):
-        con.close(); return {"ok": False, "error": "Rework quantity is required"}
-    if event_type == "STOP":
-        event_type = "HOLD"
-    con.execute(
-        "INSERT INTO events(wo_id,event_type,qty,process_name,location,terminal_code,user_name,source,reason,notes,event_time) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-        (wo_id, event_type, qty, process, location, terminal_code, user["username"], "QR_SCAN", reason, notes, now_iso()),
-    )
-    con.commit(); con.close()
-    log_audit(user["username"], "EVENT", "WORK_ORDER", wo_id, f"{event_type} qty={qty or ''} terminal={terminal_code}")
-    snap = get_current_snapshot(wo_id)
-    return {"ok": True, "status": snap["status"], "current_process": snap["current_process"], "current_location": snap["current_location"], "produced": snap["produced"], "remaining": snap["remaining"]}
+    payload=await request.json()
+    wo_id=safe_text(payload.get("wo_id"));event_type=safe_text(payload.get("event_type")).upper()
+    terminal_code=safe_text(payload.get("terminal_code"));sid=safe_text(payload.get("client_submission_id"))
+    reason=safe_text(payload.get("reason"));notes=safe_text(payload.get("notes"))
+    if not sid or len(sid)>128:return JSONResponse({"ok":False,"error":"Submission ID required for safe retry"},status_code=400)
+    if event_type not in VALID_EVENT_TYPES:return JSONResponse({"ok":False,"error":"Invalid event"},status_code=400)
+    raw=payload.get("qty")
+    try:qty=None if raw in (None,"") else float(raw)
+    except (TypeError,ValueError):return JSONResponse({"ok":False,"error":"Invalid quantity"},status_code=400)
+    if qty is not None and (not __import__('math').isfinite(qty) or qty<0):return JSONResponse({"ok":False,"error":"Invalid quantity"},status_code=400)
+    con=db()
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        wo=con.execute("SELECT * FROM work_orders WHERE wo_id=?",(wo_id,)).fetchone()
+        term=con.execute("SELECT * FROM terminals WHERE terminal_code=? AND active=1",(terminal_code,)).fetchone()
+        if not wo or not term:raise ValueError("Confirm the exact work order and an active station")
+        if event_type in {"COMPLETE","PARTIAL_COMPLETE","REWORK"} and (qty is None or qty<=0):raise ValueError("Enter the actual quantity explicitly")
+        if event_type in {"COMPLETE","PARTIAL_COMPLETE"} and qty>float(wo['qty']):raise ValueError("Quantity exceeds the work order")
+        if event_type=="COMPLETE" and qty<float(wo['qty']):raise ValueError("Use PARTIAL for less than full order quantity")
+        if event_type in {"HOLD","STOP","REWORK","QC_HOLD"} and not reason:raise ValueError("Enter the hold/rework reason")
+        signature=json.dumps([wo_id,event_type,terminal_code,qty,reason,notes,user['username']],ensure_ascii=False)
+        con.execute("CREATE TABLE IF NOT EXISTS production_submissions(request_id TEXT PRIMARY KEY,signature TEXT NOT NULL,event_id INTEGER NOT NULL)")
+        old=con.execute("SELECT signature,event_id FROM production_submissions WHERE request_id=?",(sid,)).fetchone()
+        if old:
+            if old['signature']!=signature:raise ValueError("Submission ID reused with different data")
+            event_id=old['event_id']
+        else:
+            now=now_iso()
+            cur=con.execute("INSERT INTO events(wo_id,event_type,qty,process_name,location,terminal_code,user_name,source,reason,notes,event_time) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                (wo_id,'HOLD' if event_type=='STOP' else event_type,qty,term['process_name'],term['location'],terminal_code,user['username'],'USB_OR_KEYBOARD',reason,notes,now))
+            event_id=cur.lastrowid
+            con.execute("INSERT INTO production_submissions VALUES(?,?,?)",(sid,signature,event_id))
+            con.execute("INSERT INTO audit_log(user_name,action,entity,entity_id,details,created_at) VALUES(?,?,?,?,?,?)",(user['username'],'EVENT','WORK_ORDER',wo_id,signature,now))
+        con.commit()
+    except ValueError as exc:
+        con.rollback();return JSONResponse({"ok":False,"error":str(exc)},status_code=400)
+    finally:con.close()
+    return {"ok":True,"event_id":event_id,"work_order":wo_id,"event_type":event_type,"client_submission_id":sid}
 
 
 
@@ -1833,42 +1821,47 @@ def export_control_pack(request: Request):
     log_audit(user["username"],"EXPORT","CONTROL_PACK",out.name)
     return FileResponse(out,filename=out.name)
 
-@app.get("/api/wo/{wo_id}")
+@app.get("/api/wo/{wo_id:path}")
 def api_wo(request: Request, wo_id: str):
     kick_shared_plan_sync(wait_s=1.5)
     user = require_login(request)
     if not user:
         return {"ok": False, "error": "Not logged in"}
-    # Accept upper/lower case and WO numbers with/without hyphens/spaces.
-    key=norm_wo(wo_id); con=db()
-    candidates=con.execute("SELECT wo_id FROM work_orders").fetchall(); con.close()
-    canonical=next((r["wo_id"] for r in candidates if norm_wo(r["wo_id"])==key),wo_id)
-    snap = get_current_snapshot(canonical)
-    if not snap:
-        return {"ok": False, "error": "Work Order not found"}
+    from suite.scanner_lookup import exact_work_orders
+    con=db()
+    try: rows=exact_work_orders(con,qr_value_to_wo(wo_id))
+    finally: con.close()
+    if len(rows)>1:
+        return JSONResponse({"ok":False,"error":"Several orders match. Scan the full WO identity.","code":"AMBIGUOUS"},status_code=409)
+    if not rows: return JSONResponse({"ok":False,"error":"Work Order not found"},status_code=404)
+    snap=get_current_snapshot(rows[0]["wo_id"])
     w=dict(snap["wo"])
-    # Section status values are imported from Plan-2026 source columns where available.
-    section_fields=[("Preparation","CY"),("Mixing","DH"),("Forming","DR"),("Firing","EC"),("Grinding","EL"),("Packing","FB"),("Production","FC"),("Planning","IA")]
-    sec=[]
-    plan_path=Path(os.environ.get("SL_COMPANY_DATA",str(BASE.parent.parent/"CENTRAL_DATA"/"COMPANY_DATA")))/"Plan-2026-LATEST.xlsx"
-    if plan_path.exists():
-        try:
-            wb=load_workbook(plan_path,data_only=True,read_only=True);ws=wb["แผนการเผา"] if "แผนการเผา" in wb.sheetnames else wb[wb.sheetnames[0]]
-            def ci(col):
-                n=0
-                for ch in col:n=n*26+ord(ch.upper())-64
-                return n
-            rr=None
-            for r in range(4,ws.max_row+1):
-                if norm_wo(ws.cell(r,1).value)==key:rr=r;break
-            if rr:
-                for name,col in section_fields:
-                    raw=ws.cell(rr,ci(col)).value; txt=safe_text(raw)
-                    closed=any(k in txt.lower() for k in ["ปิด","closed","close","complete","cancel","ยกเลิก"])
-                    sec.append({"section":name,"field":col,"source":txt,"state":"CLOSED" if closed else "OPEN"})
-            wb.close()
-        except Exception:pass
-    return {"ok": True, "wo": w, "status": snap["status"], "plan_status": (w.get("plan_location") or "Planning"), "plan_process": (w.get("plan_location") or "Planning"), "section_status":sec, "current_process": snap["current_process"], "current_location": snap["current_location"], "produced": snap["produced"], "accepted": snap["accepted"], "rework": snap["rework"], "remaining": snap["remaining"], "last_event": dict(snap["last_event"]) if snap["last_event"] else None, "last_audit": dict(snap["last_audit"]) if snap.get("last_audit") else None}
+    # The importer already retained these values. Never reopen Excel per scan.
+    return {"ok":True,"wo":w,"status":snap["status"],"plan_status":w.get("plan_location") or "Planning",
+        "section_status":snap["section_status"],"current_process":snap["current_process"],
+        "current_location":snap["current_location"],"produced":snap["produced"],"accepted":snap["accepted"],
+        "rework":snap["rework"],"remaining":snap["remaining"],
+        "last_event":dict(snap["last_event"]) if snap["last_event"] else None,
+        "last_audit":dict(snap["last_audit"]) if snap.get("last_audit") else None}
+
+
+@app.get("/api/section-history")
+def section_history(request: Request, wo_id: str):
+    user=require_login(request)
+    if not user:return JSONResponse({"ok":False,"error":"Sign in first"},status_code=401)
+    con=db()
+    try:
+        from suite.scanner_lookup import exact_work_orders
+        matches=exact_work_orders(con,qr_value_to_wo(wo_id))
+    finally:con.close()
+    if len(matches)!=1:return JSONResponse({"ok":False,"error":"Confirm one exact WO"},status_code=400)
+    from suite.floor_open_close import DB_NAME, COLS
+    root=Path(os.environ.get("SL_COMPANY_DATA",str(SHARED_ROOT/"COMPANY_DATA"))).resolve()
+    rows=[]
+    if (root/DB_NAME).exists():
+        with sqlite3.connect(root/DB_NAME,timeout=15) as con:
+            rows=con.execute("SELECT time,wo,section,status,actual_qty,quantity_unknown,remark,user,event_id,source_ref,source_row FROM section_status WHERE wo=? ORDER BY id DESC LIMIT 100",(matches[0]["wo_id"],)).fetchall()
+    return {"ok":True,"rows":[dict(zip(COLS,row)) for row in rows],"limit":100}
 
 
 @app.post("/api/section-status")
@@ -1882,7 +1875,9 @@ async def mobile_section_status(request: Request):
     if status not in {"OPEN","CLOSED"}:return JSONResponse({"ok":False,"error":"Status must be OPEN or CLOSED"},status_code=400)
     con=db()
     try:
-        row=con.execute("SELECT wo_id,plan_source_row FROM work_orders WHERE wo_id=? OR production_code=? LIMIT 1",(wo_id,wo_id)).fetchone()
+        from suite.scanner_lookup import exact_work_orders
+        rows=exact_work_orders(con,qr_value_to_wo(wo_id))
+        row=rows[0] if len(rows)==1 else None
     finally:con.close()
     if not row:return JSONResponse({"ok":False,"error":"Work Order not found in active Plan-2026"},status_code=404)
     from suite.floor_open_close import save_entry, SECTIONS
@@ -1890,7 +1885,8 @@ async def mobile_section_status(request: Request):
     canonical=row["wo_id"]
     section_match=next((s for s in SECTIONS if s.casefold()==section.casefold()),None)
     if not section_match:return JSONResponse({"ok":False,"error":"Choose a valid production section"},status_code=400)
-    if norm_wo(wo_id)!=norm_wo(canonical):return JSONResponse({"ok":False,"error":"Scanned work order did not match the confirmed work order"},status_code=400)
+    request_id=safe_text(payload.get("client_submission_id"))
+    if not request_id or len(request_id)>128:return JSONResponse({"ok":False,"error":"A submission ID is required for safe retry"},status_code=400)
     qty_raw=payload.get("actual_qty")
     try:qty=None if qty_raw is None or str(qty_raw).strip()=="" else float(qty_raw)
     except (TypeError,ValueError):return JSONResponse({"ok":False,"error":"Actual quantity must be numeric or blank"},status_code=400)
@@ -1898,8 +1894,8 @@ async def mobile_section_status(request: Request):
     data_root=Path(os.environ.get("SL_COMPANY_DATA",str(SHARED_ROOT/"COMPANY_DATA"))).resolve()
     try:
         saved=save_entry(data_root,canonical,section_match,status,qty,safe_text(payload.get("remark")),user["username"],canonical_wo=canonical,
-            source_ref="Mobile QR / work-order search",source_row=str(row["plan_source_row"] or ""),qty_unknown=qty is None)
-        return {"ok":True,"work_order":canonical,"section":section_match,"status":status,"saved_at":saved.get("Time"),"ledger":str(data_root/"daily_status_entries.sqlite3")}
+            event_id=request_id,source_ref=f"Shared USB / search; source={row['source_file'] or 'shared WO database'}; imported={row['imported_at'] or 'unrecorded'}",source_row=str(row["plan_source_row"] or ""),qty_unknown=qty is None)
+        return {"ok":True,"work_order":canonical,"section":section_match,"status":status,"saved_at":saved.get("Time"),"event_id":saved.get("Event ID"),"ledger":str(data_root/"daily_status_entries.sqlite3")}
     except Exception as exc:
         return JSONResponse({"ok":False,"error":str(exc)},status_code=400)
 

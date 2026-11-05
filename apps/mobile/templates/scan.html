@@ -1,24 +1,28 @@
 {% extends 'base.html' %}{% block content %}
-<div class="page-head"><div><h1>Shop Floor Scan</h1><div class="muted">USB QR scanner works like a keyboard: scan → Enter. Camera is a fallback when supported.</div></div></div>
-<div class="scanner-grid">
-<section class="panel scan-panel"><div class="station-bar"><b>Station:</b> {% if terminal %}{{ terminal.terminal_code }} · {{ terminal.process_name }} · {{ terminal.location }}{% else %}<a href="/scan?station={{ terminals[0].terminal_code if terminals else '' }}">Set a station</a>{% endif %}</div>
-<label>Scan Work Order QR</label><input id="scanInput" class="scan-input" autocomplete="off" autofocus placeholder="Scan QR here...">
-<div id="scanResult" class="scan-result hidden"></div>
-<div id="actions" class="actions hidden">
-  <button data-event="RECEIVE" class="action-button receive">📥<span>RECEIVE</span></button>
-  <button data-event="START" class="action-button start">▶<span>START</span></button>
-  <button data-event="PARTIAL_COMPLETE" class="action-button complete">◔<span>PARTIAL</span></button>
-  <button data-event="COMPLETE" class="action-button complete">✓<span>COMPLETE</span></button>
-  <button data-event="HOLD" class="action-button hold">⏸<span>HOLD</span></button>
-  <button data-event="REWORK" class="action-button rework">♻<span>REWORK</span></button>
-</div>
-<div id="qtyBox" class="qty-box hidden"><label>Quantity for Partial/Complete/Rework</label><input id="qtyInput" type="number" min="0" step="1"></div>
-<div id="reasonBox" class="reason-box hidden"><label>Reason (optional for HOLD/REWORK)</label><div class="reason-buttons"><button data-reason="Machine">🔧 Machine</button><button data-reason="Material">📦 Material</button><button data-reason="Manpower">👤 Manpower</button><button data-reason="Quality">🔍 Quality</button><button data-reason="Setup">⚙ Setup</button><button data-reason="Other">❓ Other</button></div><input id="reasonInput" placeholder="Selected reason"></div>
-<div class="camera-row"><button id="cameraBtn" class="button">📷 Camera QR (if supported)</button><video id="camera" class="camera hidden" autoplay playsinline></video></div>
+<div class="page-head"><h1>🔫 <span data-i="title">Scan / section status</span></h1><span>{{ user.display_name }} · {{ user.username }}</span></div>
+<section class="panel"><label for="scanInput" data-i="scan">1. Scan WO · B2D21 USB → Enter</label>
+<div style="display:flex;gap:8px"><input id="scanInput" class="scan-input" autocomplete="off" autofocus placeholder="SLWO:P005-110826"><button id="findWO" type="button" class="button" data-i="find">Find</button></div>
+<div id="scanResult" role="status" aria-live="polite"></div>
+<div id="jobActions" hidden><a id="auditLink" class="button primary">📸 <span data-i="audit">Physical WIP audit</span></a> <a id="detailLink" class="button">🕘 <span data-i="detail">Part / history</span></a></div>
+<div class="scan-action-links"><a href="/mobile/scan" class="button">📷 Camera / กล้อง / ကင်မရာ</a> <a href="/mobile/find" class="button">🔎 Search / ค้นหา</a> <a href="/mobile/unidentified" class="button">❓ No WO / ไม่ทราบใบสั่ง</a></div>
 </section>
-<section class="panel"><h2>How this works</h2><ol><li>Set this PC as a station once, e.g. <b>/scan?station=GR-01</b>.</li><li>Operator scans the Work Order QR.</li><li>The software identifies the job, product, quantity and current status automatically.</li><li>Operator taps one large action.</li><li>The database records time, user, terminal, process and location.</li></ol><div class="alert">No typing of customer name or specification is required.</div></section>
-</div>
-{% endblock %}
-{% block scripts %}<script>
-window.STATION = {{ terminal.terminal_code|tojson if terminal else 'null' }};
-</script><script src="/static/scan.js"></script>{% endblock %}
+<section class="panel"><h2 data-i="status">2. Save section OPEN / CLOSED</h2>
+<p class="muted" data-i="note">Section status is separate from physical audits and final packed output.</p>
+<label for="section" data-i="section">Section</label><select id="section">{% for en,th in [('Preparation','เตรียม'),('Mixing','ผสม'),('Forming','ขึ้นรูป'),('Firing','เผา'),('Grinding','เจียร'),('Cutting','ตัด'),('Packing','บรรจุ'),('QC','ตรวจสอบคุณภาพ'),('Warehouse','คลังสินค้า'),('Dispatch','จัดส่ง'),('Other','อื่น ๆ')] %}<option value="{{ en }}" {% if en==default_section %}selected{% endif %}>{{ th }} / {{ en }}</option>{% endfor %}</select>
+<p id="chosenStatus" role="status">OPEN / เปิด</p><div class="actions"><button id="openStatus" type="button" class="action-button start" aria-pressed="true">▶ OPEN / เปิด</button><button id="closedStatus" type="button" class="action-button complete" aria-pressed="false">✓ CLOSED / ปิด</button></div>
+<label for="qtyInput" data-i="qty">Actual pcs · blank = unknown</label><input id="qtyInput" type="number" min="0" step="1" inputmode="decimal">
+<label for="remark" data-i="remark">Remark / reason</label><input id="remark" maxlength="1000">
+<button id="saveStatus" type="button" class="button primary" style="width:100%;min-height:56px;margin-top:12px" data-i="save">💾 Save confirmed WO</button>
+<div id="saveResult" role="status" aria-live="polite"></div>
+<div id="pendingBox" hidden><p data-i="pending">Unconfirmed submission retained on this browser. Retry the same entry before starting another.</p><button id="retryStatus" class="button" data-i="retry">Retry saved submission</button></div>
+</section>
+<section class="panel"><details><summary style="font-size:1.2rem;font-weight:bold;min-height:48px">⚙️ Production event / เหตุการณ์ผลิต</summary>
+<p class="muted">Separate from audits and section OPEN/CLOSED. Completion quantity is cumulative for this section; only Packing represents final packed output. / แยกจากตรวจนับ ปริมาณสะสมของแผนก</p>
+<label for="eventStation">Station / จุดบันทึก</label><select id="eventStation"><option value="">Choose station / เลือกจุดบันทึก</option>{% for term in terminals %}<option value="{{ term.terminal_code }}" {% if term.terminal_code==default_station %}selected{% endif %}>{{ term.process_name }} · {{ term.location }}</option>{% endfor %}</select>
+<label for="eventType">Action / เหตุการณ์</label><select id="eventType"><option value="RECEIVE">📥 Receive / รับงาน</option><option value="START">▶ Start / เริ่ม</option><option value="PARTIAL_COMPLETE">◔ Partial / เสร็จบางส่วน</option><option value="COMPLETE">✓ Section complete / แผนกเสร็จ</option><option value="HOLD">⏸ Hold / พักงาน</option><option value="RESUME">▶ Resume / ทำต่อ</option><option value="REWORK">♻ Rework / แก้ไข</option><option value="QC_HOLD">🔍 QC hold / พักตรวจสอบ</option><option value="QC_ACCEPT">✓ QC accept / ผ่านตรวจ</option><option value="MOVE">↔ Move / เคลื่อนย้าย</option></select>
+<label for="eventQty">Actual pcs / จำนวนชิ้นจริง</label><input id="eventQty" type="number" min="0" step="1">
+<label for="eventReason">Reason / เหตุผล (required for hold/rework)</label><input id="eventReason" maxlength="1000">
+<button id="saveEvent" class="button primary">💾 Save production event / บันทึกเหตุการณ์ผลิต</button><div id="eventResult" role="status" aria-live="polite"></div><button id="retryEvent" hidden class="button">Retry retained event / ส่งรายการเดิมอีกครั้ง</button>
+</details></section>
+<section class="panel"><h2 data-i="history">3. Saved section history</h2><div id="statusHistory"></div></section>
+{% endblock %}{% block scripts %}<script>window.SCANNER_USER={{ user.username|tojson }};</script><script src="/static/scan.js?v=54"></script>{% endblock %}

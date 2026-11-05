@@ -1,3 +1,9 @@
+# SL Carborundum — RC29.54 review
+
+Bilingual function directory; B2D21 USB keyboard scanning; shared status/audit/history; production and section accounts; source-backed drying gates and persistent confirmations. Start with [the release notes](docs/RC29_54_SCANNER_AND_PLANNING.md) and [illustrated Thai/English Word guide](docs/RC29_54_User_Guide_Thai_English.docx).
+
+**Review candidate:** 88 focused and 97 mobile tests passed; the wider suite retains 14 reproduced inherited failures and Firing retains three inherited integrity failures. Hardware/Windows/factory planning acceptance remains pending. Preserve the existing shared data; the code ZIP contains no operational database or private workbooks.
+
 # RC29.53 review — Department KPI and Production Evidence
 
 Read [the current production-analysis notes](docs/RC29_53_PRODUCTION_ANALYSIS.md) and [data import/retention guide](docs/PRODUCTION_EVIDENCE_IMPORT_GUIDE.md) first. Department and manager share the same KPI scheme. The separate English production-analysis page displays all normalised weights in metric tonnes. This remains a review candidate with inherited planner acceptance failures.

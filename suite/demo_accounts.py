@@ -16,7 +16,25 @@ DEMO_USERS = (
     ("supervisor", "supervisor123", "supervisor", "Production Supervisor"),
     ("operator", "operator123", "operator", "Production Operator"),
     ("management", "management123", "management", "Management"),
+    ("production", "production123", "production", "Production / ฝ่ายผลิต"),
+    ("preparation", "preparation123", "production", "Preparation / เตรียม"),
+    ("mixing", "mixing123", "production", "Mixing / ผสม"),
+    ("forming", "forming123", "production", "Forming / ขึ้นรูป"),
+    ("firing", "firing123", "production", "Firing / เผา"),
+    ("grinding", "grinding123", "production", "Grinding / เจียร"),
+    ("cutting", "cutting123", "production", "Cutting / ตัด"),
+    ("packing", "packing123", "production", "Packing / บรรจุ"),
+    ("qc", "qc123", "production", "Quality / ตรวจสอบคุณภาพ"),
+    ("warehouse", "warehouse123", "production", "Warehouse / คลังสินค้า"),
+    ("dispatch", "dispatch123", "production", "Dispatch / จัดส่ง"),
 )
+
+# Defaults help operators; they do not silently restrict cross-section work.
+USER_SECTIONS = {name.lower(): label for name, label in (
+    ("preparation", "Preparation"), ("mixing", "Mixing"), ("forming", "Forming"),
+    ("firing", "Firing"), ("grinding", "Grinding"), ("cutting", "Cutting"),
+    ("packing", "Packing"), ("qc", "QC"), ("warehouse", "Warehouse"), ("dispatch", "Dispatch"),
+)}
 
 USER_DETAILS_FILE = "user details.txt"
 
@@ -130,7 +148,7 @@ def seed_users(db_path) -> int:
         )
         added = 0
         for username, password, role, display in DEMO_USERS:
-            if con.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone() is None:
+            if con.execute("SELECT 1 FROM users WHERE lower(username)=lower(?)", (username,)).fetchone() is None:
                 con.execute(
                     "INSERT INTO users(username,password_hash,role,display_name,active,created_at) VALUES(?,?,?,?,1,CURRENT_TIMESTAMP)",
                     (username, hash_password(password), role, display),

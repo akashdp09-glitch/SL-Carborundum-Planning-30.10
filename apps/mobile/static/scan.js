@@ -1,34 +1,32 @@
-(function(){
-const input=document.getElementById('scanInput'), result=document.getElementById('scanResult'), actions=document.getElementById('actions'), qtyBox=document.getElementById('qtyBox'), qtyInput=document.getElementById('qtyInput'), reasonBox=document.getElementById('reasonBox'), reasonInput=document.getElementById('reasonInput');
-let current=null; let station=window.STATION;
-function showResult(data){result.classList.remove('hidden'); result.innerHTML=`<b>${data.wo.production_code}</b><br><b>${data.wo.product_code}</b><br>Customer: ${data.wo.customer_name||'—'}<br>Qty: ${data.wo.qty}<br>Current: <b>${data.status}</b><br>Process: ${data.current_process||'—'}<br>Location: ${data.current_location||'—'}<br>Produced: ${data.produced} · Remaining: ${data.remaining}`; actions.classList.remove('hidden');}
-function showError(msg){result.classList.remove('hidden');result.innerHTML=`<div class="alert danger">${msg}</div>`}
-function normalizeScanCode(value){
-  const raw=(value||'').trim();
-  try {
-    const u=new URL(raw, window.location.origin);
-    const parts=u.pathname.split('/').filter(Boolean);
-    const qIndex=parts.indexOf('q');
-    if(qIndex>=0 && parts[qIndex+1]) return parts[qIndex+1];
-  } catch(e) {}
-  return raw;
-}
-async function loadWO(code){code=normalizeScanCode(code); const r=await fetch('/api/wo/'+encodeURIComponent(code)); const d=await r.json(); if(!d.ok){showError(d.error); current=null; return} current=d; showResult(d)}
-input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); const code=input.value.trim(); if(code) loadWO(code); input.value='';}});
-document.querySelectorAll('[data-reason]').forEach(b=>b.addEventListener('click',()=>{reasonInput.value=b.dataset.reason;}));
-document.querySelectorAll('[data-event]').forEach(b=>b.addEventListener('click',async()=>{
-  if(!current){showError('Scan a Work Order first');return}
-  const type=b.dataset.event;
-  if(!station){showError('This computer has no station configured. Use /scan?station=GR-01, or ask admin.');return}
-  if(['PARTIAL_COMPLETE','COMPLETE','REWORK'].includes(type)){qtyBox.classList.remove('hidden'); if(type==='COMPLETE' && current.wo.qty) qtyInput.value=current.wo.qty;}
-  else qtyBox.classList.add('hidden');
-  if(['HOLD','REWORK'].includes(type)) reasonBox.classList.remove('hidden'); else reasonBox.classList.add('hidden');
-  if(['PARTIAL_COMPLETE','COMPLETE','REWORK'].includes(type) && (!qtyInput.value || Number(qtyInput.value)<=0)){showError('Enter quantity');return}
-  const payload={wo_id:current.wo.wo_id,event_type:type,terminal_code:station,qty:qtyInput.value?Number(qtyInput.value):null,reason:reasonInput.value||'',notes:''};
-  const r=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); const d=await r.json();
-  if(!d.ok){showError(d.error);return}
-  showError(''); result.classList.remove('hidden'); result.innerHTML=`<div class="alert good">Saved: ${type}</div>`; current={...current,status:d.status,current_process:d.current_process,current_location:d.current_location,produced:d.produced,remaining:d.remaining};
-  setTimeout(()=>{input.focus();input.value='';qtyInput.value='';reasonInput.value='';},250); 
-}));
-if(input) input.focus();
+/* Shared USB/keyboard scanner workflow. Scanning never writes a production record. */
+(function(){'use strict';
+const $=id=>document.getElementById(id), input=$('scanInput');
+const words={en:{title:'Scan / section status',scan:'1. Scan WO · B2D21 USB → Enter',find:'Find',audit:'Physical WIP audit',detail:'Part / history',status:'2. Save section OPEN / CLOSED',note:'Section status is separate from physical audits and final packed output.',section:'Section',qty:'Actual pcs · blank = unknown',remark:'Remark / reason',save:'💾 Save confirmed WO',history:'3. Saved section history',pending:'Unconfirmed submission retained on this browser. Retry the same entry before starting another.',retry:'Retry saved submission',first:'Scan and confirm a WO first.',saving:'Saving…',failed:'Not confirmed. Your entry is retained; retry.',saved:'SAVED / server confirmed',unknown:'Unknown quantity',empty:'No saved section events.'},
+th:{title:'สแกน / สถานะแผนก',scan:'1. สแกนใบสั่งผลิต · B2D21 USB → Enter',find:'ค้นหา',audit:'ตรวจนับ WIP / ถ่ายภาพ',detail:'ชิ้นงาน / ประวัติ',status:'2. บันทึกเปิด / ปิดแผนก',note:'สถานะแผนกแยกจากการตรวจนับจริงและยอดบรรจุสำเร็จ',section:'แผนก',qty:'จำนวนชิ้นจริง · เว้นว่าง = ไม่ทราบ',remark:'หมายเหตุ / เหตุผล',save:'💾 บันทึกใบสั่งที่ยืนยันแล้ว',history:'3. ประวัติที่บันทึกแล้ว',pending:'ยังไม่ได้รับการยืนยัน เก็บรายการไว้ในเบราว์เซอร์แล้ว กรุณาลองส่งรายการเดิม',retry:'ส่งรายการเดิมอีกครั้ง',first:'สแกนและยืนยันใบสั่งก่อน',saving:'กำลังบันทึก…',failed:'ยังไม่ยืนยัน เก็บข้อมูลไว้แล้ว กรุณาลองอีกครั้ง',saved:'บันทึกแล้ว / เซิร์ฟเวอร์ยืนยัน',unknown:'ไม่ทราบจำนวน',empty:'ยังไม่มีประวัติแผนก'},
+my:{title:'စကင် / ဌာနအခြေအနေ',scan:'1. WO စကင် · USB → Enter',find:'ရှာရန်',audit:'WIP စစ်ဆေး / ဓာတ်ပုံ',detail:'ပစ္စည်း / မှတ်တမ်း',status:'2. ဌာန OPEN / CLOSED သိမ်းရန်',note:'ဌာနအခြေအနေ၊ စစ်ဆေးမှုနှင့် ထုပ်ပိုးပြီးပမာဏ သီးခြားဖြစ်သည်',section:'ဌာန',qty:'အရေအတွက် · အလွတ် = မသိ',remark:'မှတ်ချက် / အကြောင်းရင်း',save:'💾 အတည်ပြု WO သိမ်းရန်',history:'3. သိမ်းပြီးမှတ်တမ်း',pending:'မအတည်ပြုရသေး။ တူညီသောစာရင်းကို ပြန်ပို့ပါ',retry:'ပြန်ပို့ရန်',first:'WO ကို အရင်စကင်ပြီး အတည်ပြုပါ',saving:'သိမ်းနေသည်…',failed:'မအတည်ပြုရသေး။ ပြန်ပို့ပါ',saved:'သိမ်းပြီး / ဆာဗာအတည်ပြု',unknown:'အရေအတွက်မသိ',empty:'မှတ်တမ်းမရှိသေး'}};
+const t=k=>(words[window.SL_LANG]||words.en)[k]||words.en[k];
+function lang(){document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));}document.addEventListener('sl-language',lang);lang();
+let current=null, selected='OPEN', busy=false, generation=0;
+const key='sl-section-pending-v54:'+window.SCANNER_USER;
+let pending=null;try{pending=JSON.parse(localStorage.getItem(key)||'null');}catch(e){}
+function pendingUI(){$('pendingBox').hidden=!pending;$('saveStatus').disabled=!!pending||busy;}
+function message(id,text){$(id).textContent=text;}
+function select(v){selected=v;$('chosenStatus').textContent=v+(v==='OPEN'?' / เปิด':' / ปิด');['OPEN','CLOSED'].forEach(x=>$(x==='OPEN'?'openStatus':'closedStatus').setAttribute('aria-pressed',String(x===v)));}
+$('openStatus').onclick=()=>select('OPEN');$('closedStatus').onclick=()=>select('CLOSED');
+async function history(wo){const r=await fetch('/api/section-history?wo_id='+encodeURIComponent(wo));const d=await r.json();if(!d.ok)throw new Error(d.error);if(!current||current.wo.wo_id!==wo)return;const host=$('statusHistory');host.replaceChildren();if(!d.rows.length){host.textContent=t('empty');return;}d.rows.forEach(row=>{const el=document.createElement('article'),head=document.createElement('strong'),when=document.createElement('small'),source=document.createElement('details'),summary=document.createElement('summary'),evidence=document.createElement('div');head.textContent=[row.Section,row.Status,row['Actual Qty']??t('unknown')].join(' · ');when.textContent=row.Time+' · '+row.User;summary.textContent='🔎 Source / ที่มา';evidence.textContent=[row['Source reference'],'Row '+row['Plan row'],'ID '+row['Event ID']].join(' · ');source.append(summary,evidence);el.append(head,when);if(row.Remark){const note=document.createElement('div');note.textContent=row.Remark;el.append(note);}el.append(source);host.append(el);});}
+async function loadWO(preserve=false){const value=input.value.trim();if(!value)return;const g=++generation;current=null;$('jobActions').hidden=true;message('scanResult','…');try{const r=await fetch('/api/wo/'+encodeURIComponent(value));const d=await r.json();if(g!==generation)return;if(!r.ok||!d.ok)throw new Error(d.error||'Lookup failed');current=d;const w=d.wo;message('scanResult',[w.wo_id,w.product_code,w.specification,'QTY '+w.qty,d.plan_status].filter(Boolean).join(' · '));$('auditLink').href='/mobile/audit/'+encodeURIComponent(w.wo_id);$('detailLink').href='/mobile/part/'+encodeURIComponent(w.wo_id);$('jobActions').hidden=false;if(preserve!==true){$('qtyInput').value='';$('remark').value='';}await history(w.wo_id);}catch(e){if(g===generation)message('scanResult',e.message);}}
+input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();loadWO();}});input.addEventListener('input',()=>{generation++;current=null;$('jobActions').hidden=true;});$('findWO').onclick=()=>loadWO();
+function uuid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(16)+'-'+Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('');}
+async function submit(){if(!pending||busy)return;busy=true;pendingUI();message('saveResult',t('saving'));try{const r=await fetch('/api/section-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pending)});const d=await r.json();if(!r.ok||!d.ok){if(r.status===400){localStorage.removeItem(key);pending=null;}throw new Error(d.error||t('failed'));}message('saveResult',t('saved')+' ✓ '+d.work_order+' · '+d.section+' '+d.status+' · '+d.saved_at+' · ID '+d.event_id);localStorage.removeItem(key);pending=null;if(current)history(current.wo.wo_id).catch(()=>{});input.select();input.focus();}catch(e){message('saveResult',t('failed')+' '+e.message);}finally{busy=false;pendingUI();}}
+$('saveStatus').onclick=()=>{if(!current){message('saveResult',t('first'));return;}const raw=$('qtyInput').value;const qty=raw===''?null:Number(raw);if(qty!==null&&(!Number.isFinite(qty)||qty<0)){message('saveResult','Invalid quantity / จำนวนไม่ถูกต้อง');return;}pending={wo_id:current.wo.wo_id,section:$('section').value,status:selected,actual_qty:qty,remark:$('remark').value,client_submission_id:uuid()};try{localStorage.setItem(key,JSON.stringify(pending));}catch(e){pending=null;message('saveResult','Browser storage unavailable. Enable storage before saving.');return;}submit();};$('retryStatus').onclick=submit;
+const eventKey=key+':production';let eventPending=null,eventBusy=false;try{eventPending=JSON.parse(localStorage.getItem(eventKey)||'null');}catch(e){}
+function eventUI(){$('retryEvent').hidden=!eventPending;$('saveEvent').disabled=!!eventPending||eventBusy;}
+async function sendEvent(){if(!eventPending||eventBusy)return;eventBusy=true;eventUI();message('eventResult',t('saving'));try{const r=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(eventPending)});const d=await r.json();if(!r.ok||!d.ok){if(r.status===400){localStorage.removeItem(eventKey);eventPending=null;}throw new Error(d.error);}message('eventResult',t('saved')+' ✓ '+d.work_order+' '+d.event_type+' · ID '+d.event_id);localStorage.removeItem(eventKey);eventPending=null;}catch(e){message('eventResult',t('failed')+' '+e.message);}finally{eventBusy=false;eventUI();}}
+$('saveEvent').onclick=()=>{if(!current){message('eventResult',t('first'));return;}const raw=$('eventQty').value;eventPending={wo_id:current.wo.wo_id,event_type:$('eventType').value,terminal_code:$('eventStation').value,qty:raw===''?null:Number(raw),reason:$('eventReason').value,notes:'',client_submission_id:uuid()};try{localStorage.setItem(eventKey,JSON.stringify(eventPending));}catch(e){eventPending=null;message('eventResult','Browser storage unavailable');return;}sendEvent();};$('retryEvent').onclick=sendEvent;eventUI();
+const draftKey=key+':draft',fields=['scanInput','section','qtyInput','remark','eventStation','eventType','eventQty','eventReason'];
+function draft(){const d={selected};fields.forEach(id=>d[id]=$(id).value);try{localStorage.setItem(draftKey,JSON.stringify(d));}catch(e){}}
+let restored=null;try{restored=JSON.parse(localStorage.getItem(draftKey)||'null');}catch(e){}
+if(restored){fields.forEach(id=>{if(restored[id]!==undefined)$(id).value=restored[id];});select(restored.selected==='CLOSED'?'CLOSED':'OPEN');}
+fields.forEach(id=>{$(id).addEventListener('input',draft);$(id).addEventListener('change',draft);});['openStatus','closedStatus'].forEach(id=>$(id).addEventListener('click',draft));window.addEventListener('pagehide',draft);
+pendingUI();const initial=new URLSearchParams(location.search).get('wo');if(initial){input.value=initial;loadWO();}else if(restored&&input.value){loadWO(true);}else input.focus();
 })();

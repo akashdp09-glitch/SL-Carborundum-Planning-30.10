@@ -49,9 +49,9 @@
   },
   "daily_planner_app.py": {
     "baseline_sha256": "685a8210142f51b63f75e84946ecb3e7a557dfac71ae9dea0badd789a842c9c2",
-    "accepted_sha256": "ba96d125a9fec3e85f0e4c2a6e1c76857a07f724d4df27450786c6579c36d2a1",
-    "reason": "Reuse retained KPI and MD evidence, remove owner-retired duplicate weekly recovery shortcut and invalidate draft signatures after reasoned whole-order decisions",
-    "evidence": "suite/test_revision55.py",
+    "accepted_sha256": "bbbb091c4507f34fe71637a609901b64554d865ac2d69a0812aef27a5c469978",
+    "reason": "Fix Daily IndexError using named focus mappings, recover stale selections and support direct section plan filters without resetting results",
+    "evidence": "suite/test_revision62.py",
     "reviewed": false,
     "recorded": "2026-11-06"
   },

@@ -1191,7 +1191,7 @@ def ensure_shared_plan_sync():
             return False, "Plan-2026-LATEST.xlsx not loaded"
         shared = Path(shared)
         stamp = shared.stat().st_mtime
-        marker = DATA / "shared_plan_mtime.txt"
+        marker = DATA / "shared_plan_mtime_v62.txt"
         old = float(marker.read_text().strip()) if marker.exists() else -1
         if stamp != old:
             import_plan2026(shared, shared.name, "SYSTEM-SHARED")
@@ -1370,7 +1370,16 @@ def scan_page(request: Request, station: str = ""):
     from suite.demo_accounts import USER_SECTIONS
     account_section=USER_SECTIONS.get(user["username"].lower())
     default_station=terminal['terminal_code'] if terminal else next((t['terminal_code'] for t in terminals if account_section and t['process_name']==account_section),'')
-    return HTMLResponse(render(request, "scan.html", terminal=terminal, terminals=terminals,
+    from urllib.parse import urlencode
+    from suite.hub_auth import issue
+    root=Path(os.environ.get('SL_COMPANY_DATA',str(SHARED_ROOT/'COMPANY_DATA')))
+    hub=os.environ.get('SL_HUB_URL',str(request.url.replace(port=8510,path='/',query=''))).rstrip('/')
+    ticket=issue(root,user['username'],user['role'])
+    plans=[('🔥','แผนเผา','Firing plan','firing'),('📅','แผนรายวันและแผนก','Daily / section plans','daily'),('🏭','สถานะการผลิต','Production status','production_analysis'),('📊','WIP และ Plan 2026','Plan 2026 / WIP','wip')]
+    links=[dict(icon=i,thai=th,english=en,url=hub+'/?'+urlencode({'page':page,'auth_ticket':ticket})) for i,th,en,page in plans]
+    links.extend([dict(icon='📘',thai='ไฟล์ Plan 2026',english='Download Plan 2026 source',url='/source/plan2026'),dict(icon='📗',thai='ไฟล์สถานะการผลิต',english='Download Production status source',url='/source/production-status')])
+    sections=[dict(thai=th,english=sec,url=hub+'/?'+urlencode({'page':'daily','focus':'section','section':sec,'auth_ticket':ticket})) for sec,th in [('Preparation','เตรียม'),('Mixing','ผสม'),('Forming','ขึ้นรูป'),('Firing','เผา'),('Grinding','เจียร'),('Cutting','ตัด'),('Packing','บรรจุ')]]
+    return HTMLResponse(render(request, "scan.html", terminal=terminal, terminals=terminals,plan_links=links,section_links=sections,mobile_view=request.query_params.get('mode')=='mobile',
         default_section=account_section or "Preparation",default_station=default_station))
 
 
@@ -1584,7 +1593,7 @@ def import_plan2026(path: Path, source_name: str, user_name: str):
     con=db(); imported=updated=rejected=0; errors=[]
     try:
         ensure_wo_lookup_indexes(con)
-        status_columns=[("Preparation","CY"),("Mixing","DH"),("Forming","DR"),("Firing","EC"),("Grinding","EL"),("Packing","FB"),("Production","FC"),("Planning","IA")]
+        status_columns=[("Preparation","CY"),("Mixing","DH"),("Forming","DR"),("Firing","EC"),("Grinding","EL"),("Packing","EU"),("Production","FC"),("Planning","IA")]
         def _excel_zero_col(label):
             n=0
             for ch in label.upper():n=n*26+ord(ch)-64
@@ -1609,14 +1618,23 @@ def import_plan2026(path: Path, source_name: str, user_name: str):
             for _hn,_lab in _mil:
                 _ci=idx(_hn)
                 if _ci is not None and row[_ci] not in (None,"",0,0.0,False): plan_location=_lab;plan_marker=safe_text(row[_ci])
-            order_date=""
+            _issued=row[1] if len(row)>1 else None
+            order_date=_issued.isoformat() if isinstance(_issued,(date,datetime)) else (_issued if isinstance(_issued,str) and any(c in _issued for c in ('/','-')) else '')
             vals={k:(safe_text(row[v]) if v is not None else "") for k,v in ix.items() if k not in {"qty","orig","rev"}}
             section_status=[]
             for _sec,_col in status_columns:
                 _ci=_excel_zero_col(_col);_raw=row[_ci] if _ci<len(row) else None;_value=safe_text(_raw)
                 _low=_value.lower()
                 _closed=bool(_value and any(k in _low for k in ("ปิด","closed","close","complete","ยกเลิก","cancel")))
-                section_status.append({"section":_sec,"field":_col,"value":_value,"status":"CLOSED" if _closed else "OPEN"})
+                _closed=_closed or _low.strip() in {'fc','eu','closed','complete','completed','close','ปิด'}
+                if any(x in _low for x in ('ยังไม่','not closed','open')):_closed=False
+                from suite.plan_reader import SECTIONS
+                _mapping=SECTIONS.get(_sec,{})
+                _detail={}
+                for _field,_letter in [('planned_date',_mapping.get('plan')),('planned_qty',_mapping.get('plan_qty')),('actual_qty',_mapping.get('done')),('actual_date',_mapping.get('actual'))]:
+                    _v=row[_excel_zero_col(_letter)] if _letter and _excel_zero_col(_letter)<len(row) else None
+                    _detail[_field]=_v.isoformat() if isinstance(_v,(date,datetime)) else _v
+                section_status.append(dict(section=_sec,field=_col,value=_value,status='CLOSED' if _closed else 'OPEN',**_detail))
             section_status_json=json.dumps(section_status,ensure_ascii=False)
             exists=con.execute("SELECT 1 FROM work_orders WHERE wo_id=?",(prod,)).fetchone()
             if exists:
@@ -1827,9 +1845,30 @@ def export_control_pack(request: Request):
     log_audit(user["username"],"EXPORT","CONTROL_PACK",out.name)
     return FileResponse(out,filename=out.name)
 
+@app.get('/source/plan2026')
+def floor_plan_source(request: Request):
+    if not require_login(request):return RedirectResponse('/login',303)
+    from suite.central_paths import resolve_plan
+    path=resolve_plan()
+    if not path or not Path(path).is_file():raise HTTPException(404,'Plan 2026 source not loaded')
+    return FileResponse(path,filename='Plan-2026.xlsx')
+
+
+@app.get('/source/production-status')
+def floor_production_source(request: Request):
+    if not require_login(request):return RedirectResponse('/login',303)
+    path=DB_PATH.parent/'production_analytics.sqlite'
+    if not path.exists():raise HTTPException(404,'Production status source not loaded')
+    with sqlite3.connect(path) as con:
+        exists=con.execute("SELECT 1 FROM sqlite_master WHERE name='evidence_documents'").fetchone()
+        row=con.execute("SELECT original FROM evidence_documents WHERE role='production_status' ORDER BY revision DESC,id DESC LIMIT 1").fetchone() if exists else None
+    if not row:raise HTTPException(404,'Production status source not loaded')
+    return StreamingResponse(io.BytesIO(row[0]),media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',headers={'Content-Disposition':'attachment; filename="Production-Status.xlsx"'})
+
+
 @app.get("/api/wo/{wo_id:path}")
 def api_wo(request: Request, wo_id: str):
-    kick_shared_plan_sync(wait_s=1.5)
+    _sync=kick_shared_plan_sync(wait_s=1.5)
     user = require_login(request)
     if not user:
         return {"ok": False, "error": "Not logged in"}
@@ -1842,13 +1881,22 @@ def api_wo(request: Request, wo_id: str):
     if not rows: return JSONResponse({"ok":False,"error":"Work Order not found"},status_code=404)
     snap=get_current_snapshot(rows[0]["wo_id"])
     w=dict(snap["wo"])
-    # The importer already retained these values. Never reopen Excel per scan.
-    return {"ok":True,"wo":w,"status":snap["status"],"whole_order_decision":snap.get("whole_order_decision"),"plan_status":w.get("plan_location") or "Planning",
+    from suite.wo_evidence import production_rows
+    evidence=production_rows(DB_PATH.parent/'production_analytics.sqlite',w['wo_id'])
+    con=db()
+    route=[dict(r) for r in con.execute('SELECT process_name,planned_date FROM routes WHERE wo_id=? ORDER BY seq',(w['wo_id'],))]
+    con.close()
+    if snap.get('last_audit') and snap.get('last_audit_photo'):
+        _photo=snap['last_audit_photo']['filename']
+        _audit=dict(snap['last_audit']);_audit['photo_url']='/media/mobile-audits/'+_photo
+    else:_audit=dict(snap['last_audit']) if snap.get('last_audit') else None
+    # Read imported and indexed records, not a full workbook per scan.
+    return {'source_sync':dict(_sync or {}),'production_evidence':evidence,'route':route,"ok":True,"wo":w,"status":snap["status"],"whole_order_decision":snap.get("whole_order_decision"),"plan_status":w.get("plan_location") or "Planning",
         "section_status":snap["section_status"],"current_process":snap["current_process"],
         "current_location":snap["current_location"],"produced":snap["produced"],"accepted":snap["accepted"],
         "rework":snap["rework"],"remaining":snap["remaining"],
         "last_event":dict(snap["last_event"]) if snap["last_event"] else None,
-        "last_audit":dict(snap["last_audit"]) if snap.get("last_audit") else None}
+        "last_audit":_audit}
 
 
 @app.post("/api/order-status")

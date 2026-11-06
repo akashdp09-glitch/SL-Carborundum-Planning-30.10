@@ -34,6 +34,7 @@ EXCLUDE_GLOBS = [
     "docs/RC29_57_User_Guide_Thai_English.docx", # superseded transition controls
     "docs/RC29_60_User_Guide_Thai_English.docx", # superseded by current admin/HTML guide
     "docs/images/rc54/*", "docs/images/rc57/*", "docs/images/rc60/*", # historical screenshots remain in Git; current guide embeds its own
+    "docs/RC29_61_User_Guide_Thai_English.docx", "docs/images/rc61/*", # superseded by current privacy/desktop guide
     "RELEASE_MANIFEST.json",  # generated below; do not archive a stale manifest or hash itself
     "knowledge/kpi/inputs/*", "seed_data/*", "P280526.csv",
     "apps/daily/DIAMOND_AUG2026_ISSUE.xlsx", "apps/daily/DIAMOND_CURRENT_PLAN_160926.xlsx",

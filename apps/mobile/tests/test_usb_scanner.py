@@ -68,7 +68,7 @@ def test_section_accounts_use_shared_database_and_preselect_section(core):
     assert 'value="Mixing" selected' in text
     assert 'value="MIX-01" selected' in text
     assert c.get('/operator').headers['location']=='/scan'
-    assert 'scan.js?v=55' in text
+    assert 'scan.js?v=62' in text
 
 
 def test_parallel_status_retries_commit_once(core,operator):

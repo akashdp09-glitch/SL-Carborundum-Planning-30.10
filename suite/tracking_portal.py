@@ -33,7 +33,7 @@ def render(st,default_base,db_path,*,can_edit=False,user='',key='track'):
     if isinstance(saved,dict):saved=saved.get('value')
     base=validate_base(saved or default_base)
     st.subheader('🔎 ติดตามชิ้นงานและตรวจ WIP / Track · scan · audit')
-    actions=[('🔫','สแกนบนคอมพิวเตอร์','Desktop scanner','/scan'),('📸','ตรวจนับ WIP','Physical WIP audit','/mobile/find'),('📋','ทะเบียนและภาพถ่าย','Part register & photos','/register'),('🕘','ประวัติและรายงาน Excel','History & Excel reports','/tracking-reports'),('▦','สร้างและพิมพ์ QR','Create / print QR labels','/qr-generator'),('📷','กล้องมือถือ','Phone camera','/mobile/scan')]
+    actions=[('🔫','สแกนบนคอมพิวเตอร์','Desktop scanner','/scan'),('📸','ตรวจนับ WIP','Physical WIP audit','/mobile/find'),('📋','ทะเบียนและภาพถ่าย','Part register & photos','/register'),('🕘','ประวัติและรายงาน Excel','History & Excel reports','/tracking-reports'),('▦','สร้างและพิมพ์ QR','Create / print QR labels','/qr-generator'),('📱','ตรวจนับบนมือถือ','Mobile audit','/scan?mode=mobile')]
     cards=''.join(f'<a class="sl-track-card" target="_self" href="{html.escape(base+path,quote=True)}"><span class="icon">{icon}</span><span><b>{th}</b><small>{en}</small></span></a>' for icon,th,en,path in actions)
     st.markdown('<div class="sl-track-grid">'+cards+'</div>',unsafe_allow_html=True)
     st.code(base+'/scan',language=None)
@@ -43,7 +43,13 @@ def render(st,default_base,db_path,*,can_edit=False,user='',key='track'):
     folder=shared/'QR'/'ACCESS';folder.mkdir(parents=True,exist_ok=True);file=folder/('desktop_scan_'+hashlib.sha256(base.encode()).hexdigest()[:12]+'.png')
     if not file.exists():file.write_bytes(data)
     a.image(data,width=160,caption='QR เปิดหน้าสแกน / Open scanner')
-    b.caption('Desktop and mobile use the same central audit records. Section status, whole-order decisions and physical observations remain separate. / ข้อมูลตรวจนับร่วมกัน สถานะแผนกและทั้งใบสั่งแยกชัดเจน')
+    b.markdown('**📱 ตรวจนับมือถือ / Mobile audit**')
+    b.code(base+'/scan?mode=mobile',language=None)
+    from .qr_png import make as _mobile_qr
+    mobile_buf=io.BytesIO();_mobile_qr(base+'/scan?mode=mobile').save(mobile_buf,format='PNG')
+    mobile_file=folder/('mobile_audit_'+hashlib.sha256(base.encode()).hexdigest()[:12]+'.png')
+    if not mobile_file.exists():mobile_file.write_bytes(mobile_buf.getvalue())
+    b.image(mobile_buf.getvalue(),width=160,caption='QR มือถือ / Mobile audit')
     with st.expander('ที่อยู่เซิร์ฟเวอร์และ QR / Server address'):
         st.caption('Use the address reachable from your factory devices. A container address or an example IP is not assumed to be the factory server.')
         value=st.text_input('ที่อยู่ / Server URL',base,key=key+'_server')

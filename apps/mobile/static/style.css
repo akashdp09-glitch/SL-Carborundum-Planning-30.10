@@ -81,3 +81,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .topbar{flex-wrap:wrap;gap:8px}.topbar a{color:#fff}.topbar .brand{min-width:0}.mobile-lang{margin-left:auto}
 
 .primary-language{display:block;font-size:1.15rem;font-weight:800;line-height:1.4}.secondary-language{display:block;font-size:.76rem;font-weight:400;line-height:1.4}.choice-grid button{min-height:90px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.choice-grid button .audit-icon{font-size:2rem}.choice-grid button b{font-size:1.1rem}.choice-grid button small{font-size:.72rem}.audit-form-v2 label{font-size:1.05rem;font-weight:700}
+
+/* Desktop information and input portal; phone retains the compact audit flow. */
+.desktop-plan-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.desktop-plan-links a{background:white;border-left:6px solid #f58220;border-radius:14px;padding:18px;text-decoration:none;color:#12395b;display:flex;flex-direction:column;gap:5px}.desktop-plan-links span{font-size:46px}.desktop-plan-links b{font-size:25px}.desktop-plan-links small{font-size:13px}.scan-input{font-size:26px!important;min-height:62px}#findWO{min-width:100px;min-height:62px;font-size:23px}.primary-language{font-size:24px;font-weight:700}.secondary-language{display:block;font-size:13px;font-weight:400}.evidence-table{overflow:auto;max-height:500px;margin-bottom:18px}.evidence-table td,.evidence-table th{padding:9px;border-bottom:1px solid #dce3eb;white-space:nowrap}#woEvidence small{display:block;font-size:14px}
+@media(max-width:700px){.desktop-plan-links{display:none}.primary-language{font-size:21px}.evidence-table{max-height:300px}.scan-input{font-size:20px!important}}
+
+@media(max-width:700px){.desktop-sections{display:none}}
+
+.desktop-plan-links{grid-template-columns:repeat(3,minmax(0,1fr))}.section-links{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}.section-links a{border:1px solid #edb077;background:white;border-radius:10px;padding:10px 16px;color:#12395b;text-decoration:none}.section-links a span{font-size:25px}.section-links a b{font-size:22px;margin:0 7px}.section-links a small{font-size:12px}.desktop-sections h2 small{font-size:13px}
+
+.evidence-table th b{display:block;font-size:18px}.evidence-table th small{display:block;font-size:11px;font-weight:400}

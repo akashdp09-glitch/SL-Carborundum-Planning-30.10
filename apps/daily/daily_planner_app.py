@@ -2141,7 +2141,11 @@ if res:
     _quick_options.append('⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม')
     _quick_options.append('🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก')
     _quick_options.append('⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง')
-    _focus_to_label={'wip':_quick_options[1],'closed':_quick_options[2],'status':_quick_options[3],'kpi':_quick_options[4],'planning_kpi':_quick_options[4],'download':_quick_options[7],'recovery':_quick_options[8],'capacity':_quick_options[9],'mixing':_quick_options[6],'capacity_actual':_quick_options[10]}
+    _quick_options.append('📅 Daily plan by section / แผนรายแผนก')
+    from suite.daily_navigation import focus_labels
+    _focus_to_label=focus_labels(_quick_options)
+    if st.session_state.get('daily_quick_access_v13') not in _quick_options:
+        st.session_state['daily_quick_access_v13']=_quick_options[0]
     _requested_focus=st.query_params.get('focus','')
     if _requested_focus in _focus_to_label:
         st.session_state['daily_quick_access_v13']=_focus_to_label[_requested_focus]
@@ -2153,7 +2157,7 @@ if res:
         st.session_state['daily_quick_access_v13']=browse_label
         if 'focus' in st.query_params:del st.query_params['focus']
     _quick_choice=st.sidebar.selectbox('📌 DIRECT ACCESS / เปิดหน้าหลักโดยตรง',_quick_options,key='daily_quick_access_v13',on_change=_clear_daily_focus)
-    _quick_idx={'🏭 WIP — Planning vs Production (central page)':5,'📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน':22,'📡 Daily Status analysis / วิเคราะห์สถานะรายวัน':15,'🎯 Department KPI — retained sources / KPI แผนกจากข้อมูลกลาง':21,'⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง':23,'⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม':18,'🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก':3,'⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง':3}
+    _quick_idx={'📅 Daily plan by section / แผนรายแผนก':1,'🏭 WIP — Planning vs Production (central page)':5,'📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน':22,'📡 Daily Status analysis / วิเคราะห์สถานะรายวัน':15,'🎯 Department KPI — retained sources / KPI แผนกจากข้อมูลกลาง':21,'⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง':23,'⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม':18,'🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก':3,'⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง':3}
     if _quick_choice == _quick_options[4] and st.query_params.get('hub_kpi_url'):
         _kpi_link_label='เปิด KPI รายเดือน' if _LANG=='ไทย' else 'Open monthly KPI'
         st.markdown(f"<a href='{st.query_params.get('hub_kpi_url')}' target='_top' style='font-size:.82rem;color:#0057b8;text-decoration:underline'>↗ {_kpi_link_label}</a>",unsafe_allow_html=True)
@@ -2436,7 +2440,12 @@ if res:
             if not bad.empty: st.error('Selected planning date is NOT being silently shifted. Processes with existing WIP but zero executable plan on the selected date are explicitly shown above and must have their resource/input mismatch corrected.')
         if not allp.empty:
             cols=[c for c in ['Plan Date','Section','Work Order','Customer','Specification','Category','Due Date','Plan Qty','Plan kg','Plan ton','Post-Firing Route','QC Required','Machine','Bottleneck Machine','Kiln','Program','NCR Qty','NCR Disposition','Capacity Basis','Source / Reason'] if c in allp.columns]
-            st.dataframe(allp[cols],use_container_width=True,height=650)
+            _requested_section=st.query_params.get('section','')
+            _sections=['All sections / ทุกแผนก']+sorted(allp['Section'].dropna().astype(str).unique())
+            _default=next((i for i,x in enumerate(_sections) if _requested_section and x.startswith(_requested_section)),0)
+            _section=st.selectbox('แผนแผนก / Section plan',_sections,index=_default,key='daily_section62_'+_requested_section)
+            _section_plan=allp if _section==_sections[0] else allp[allp['Section'].eq(_section)]
+            st.dataframe(_section_plan[cols],use_container_width=True,height=650)
         # explicit start-date proof
         if not allp.empty:
             first_by=allp.groupby('Section',as_index=False)['Plan Date'].min().rename(columns={'Plan Date':'First Planned Date'})

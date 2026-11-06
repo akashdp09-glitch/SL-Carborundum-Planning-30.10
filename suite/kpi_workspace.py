@@ -77,7 +77,7 @@ def upload_center(st,db_path,can_edit,user,*,key='home',groups=('staff','counts'
     from .production_analysis_page import evidence_path
     path=evidence_path(db_path)
     st.subheader('📥 เลือกไฟล์ / Upload files')
-    labels={'staff':('👥 KPI สอย · ปุ้ย / Staff KPI','KPI_Chosita_completed · KPI_Sirinun_monthly'), 'counts':('📊 เปิด–ปิดใบสั่ง / Open–close orders','October_in out · October-2026_job closure'), 'production':('🏭 สถานะการผลิต / Production status','สถานะการผลิต 2026-4 88 · Production KPI section/category')}
+    labels={'staff':('👥 KPI สอย · ปุ้ย / Staff KPI','KPI_Chosita_completed · KPI_Sirinun_monthly · Production KPI section/category'), 'counts':('📊 เปิด–ปิดใบสั่ง / Open–close orders','October_in out · October-2026_job closure'), 'production':('🏭 สถานะการผลิต / Production status','สถานะการผลิต 2026-4 88')}
     files=[]
     columns=st.columns(len(groups))
     for col,group in zip(columns,groups):
@@ -87,6 +87,11 @@ def upload_center(st,db_path,can_edit,user,*,key='home',groups=('staff','counts'
             files.extend(chosen or [])
     if not can_edit:st.info('เข้าสู่ระบบเพื่ออัปโหลด / Sign in to upload')
     src=E.source_list(path)
+    allowed=set()
+    if 'staff' in groups:allowed.update(['analyst_kpi','staff_reference','production_kpi_section','production_kpi_category'])
+    if 'counts' in groups:allowed.update(['planning_open','planning_close'])
+    if 'production' in groups:allowed.update(['production_status'])
+    if not src.empty:src=src[src.role.isin(allowed)]
     if not src.empty:
         with st.expander('ไฟล์ที่บันทึกแล้ว / Saved files'):
             latest=src.sort_values('id',ascending=False).drop_duplicates('role')

@@ -1613,7 +1613,7 @@ if _page in ('control',):
         st.warning(f"{PHOTO_RECOVERY_STATUS['missing']} audit photo file(s) are still not in the active folder. Their database references were preserved; check the former photo folder and exact paths in Files & Traceability.")
     st.header('📂 ไฟล์และรายงาน / Files & analysis')
     from suite.kpi_workspace import upload_center as _home_kpi_uploads
-    _home_kpi_uploads(st,DB,hub_can_edit(),st.session_state.get('sl_user',''),key='home')
+    _home_kpi_uploads(st,DB,hub_can_edit(),st.session_state.get('sl_user',''),key='home',groups=('production',))
     _analysis_links=[('🏭 สถานะการผลิต 2026-4 88 / Production status','production_analysis'),('👥 KPI สอย · ปุ้ย / Staff KPI','staff_kpi'),('🎯 KPI แผนก / Department KPI','kpi'),('📊 เปิด–ปิดใบสั่ง / Open–close orders','open_close'),('📄 Recovery: ยอด · ผล · ค้าง / Recovery totals','recovery_review')]
     for _col,(_label,_route) in zip(st.columns(5),_analysis_links):_col.link_button(_label,_hub_page_href(_route),use_container_width=True)
     with st.expander('📄 อัปโหลด Recovery / Upload Recovery'):
@@ -1975,11 +1975,25 @@ if _page in ('control',):
                     st.download_button('⬇ Download delivery trace CSV',_delivery_display.to_csv(index=False).encode('utf-8-sig'),'Plan2026_Customer_OnTime_Trace.csv','text/csv',key='home_delivery_trace')
         except Exception as _e:st.caption(f'Today summary diagnostic: {_e}')
 
+if _page == 'control' and st.session_state.get('sl_role') in ('admin','planning'):
+    @st.dialog('เอกสารฝ่ายวางแผน / Planning documents',width='large')
+    def _private_planning_uploads():
+        from suite.kpi_workspace import upload_center
+        upload_center(st,DB,True,st.session_state.get('sl_user',''),key='private62',groups=('staff','counts'))
+    st.divider()
+    if st.button('🔒 เอกสารฝ่ายวางแผน / Planning documents',key='private62_open'):
+        _private_planning_uploads()
+
+if _page in ('staff_kpi','kpi') and st.session_state.get('sl_role') not in ('admin','planning','management'):
+    st.info('สำหรับฝ่ายวางแผนและผู้บริหาร / Planning or management access required')
+    st.stop()
+
 if _page in ('daily','daily_wip','daily_closed','daily_status','daily_kpi','daily_recovery','capacity_actual'):
     st.markdown("<div style='padding:12px 18px;border-left:6px solid #e76613;background:#fff6ed;border-radius:10px'><h2 style='margin:0;color:#12395b'>📅 Daily Planning</h2><span>Plan · Delivery · Capacity · Recovery</span></div>",unsafe_allow_html=True)
     st.subheader('📅 Daily / Section Planner')
     _daily_focus={'daily_wip':'wip','daily_closed':'closed','daily_status':'status','daily_kpi':'kpi','daily_recovery':'recovery','capacity_actual':'capacity_actual'}.get(_page,'')
-    if _page=='daily' and st.query_params.get('focus') in ('download','material','capacity','capacity_actual','mixing'):_daily_focus=st.query_params.get('focus')
+    if _page=='daily' and st.query_params.get('focus') in ('download','material','capacity','capacity_actual','mixing','daily','section'):_daily_focus=st.query_params.get('focus')
+    _daily_query=urllib.parse.urlencode({'focus':_daily_focus,'section':st.query_params.get('section','')}) if _daily_focus else ''
     if _page=='daily_closed':
         st.markdown('### 📋 Daily Open / Closed — from files already on Home')
         _jr=fp('Job-Register-LATEST.xlsx')
@@ -2018,10 +2032,10 @@ if _page in ('daily','daily_wip','daily_closed','daily_status','daily_kpi','dail
             show_planner('daily', 'focus=closed')
     elif plan:
         st.success(f'Plan-2026 already loaded on Home: `{plan}`. Daily / Firing / reports use this file. Do not upload it again.')
-        show_planner('daily', ('focus='+_daily_focus) if _daily_focus else '')
+        show_planner('daily', _daily_query)
     else:
         st.warning('Plan-2026 is not on Home yet. Upload it once under Home → Upload / replace source files.')
-        show_planner('daily', ('focus='+_daily_focus) if _daily_focus else '')
+        show_planner('daily', _daily_query)
 if _page == 'floor':
     st.markdown('## Shop floor / หน้างาน')
     st.caption('Type a work order, use a USB QR scanner, or take/upload a QR photo. Save OPEN/CLOSED for the selected section. Records are stored locally in CENTRAL_DATA and do not require section workbook uploads.')

@@ -1,0 +1,38 @@
+..............FF.....                                                    [100%]
+=================================== FAILURES ===================================
+_________________ test_venv_dir_defaults_inside_program_folder _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff0f4d67e90>
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc59-focused/test_venv_dir_defaults_inside_0')
+
+    def test_venv_dir_defaults_inside_program_folder(monkeypatch, tmp_path):
+        monkeypatch.setattr(W, "_is_windows", lambda: False)
+        monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "appdata"))
+        monkeypatch.delenv("SL_VENV", raising=False)
+        monkeypatch.setattr(W, "ROOT", tmp_path / "program")
+>       assert W.venv_dir() == tmp_path / "program" / "RUNTIME" / "venv"
+E       AssertionError: assert PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') == (((PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc59-focused/test_venv_dir_defaults_inside_0') / 'program') / 'RUNTIME') / 'venv')
+E        +  where PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') = <function venv_dir at 0x7ff0f412ee80>()
+E        +    where <function venv_dir at 0x7ff0f412ee80> = W.venv_dir
+
+suite/test_windows_runtime_env.py:112: AssertionError
+__ test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists ___
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff0f4dfd550>
+tmp_path = PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc59-focused/test_venv_dir_windows_defaults0')
+
+    def test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists(monkeypatch, tmp_path):
+        monkeypatch.setattr(W, "_is_windows", lambda: True)
+        monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "appdata"))
+        monkeypatch.delenv("SL_VENV", raising=False)
+        monkeypatch.setattr(W, "ROOT", tmp_path / "program")
+>       assert W.venv_dir() == tmp_path / "program" / "RUNTIME" / "venv"
+E       AssertionError: assert PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') == (((PosixPath('/workspace/sl-analysis/.cloud-test-data/SYNTHETIC-rc59-focused/test_venv_dir_windows_defaults0') / 'program') / 'RUNTIME') / 'venv')
+E        +  where PosixPath('/workspace/SL-Carborundum-Planning-30.10/RUNTIME/venv') = <function venv_dir at 0x7ff0f412ee80>()
+E        +    where <function venv_dir at 0x7ff0f412ee80> = W.venv_dir
+
+suite/test_windows_runtime_env.py:120: AssertionError
+=========================== short test summary info ============================
+FAILED suite/test_windows_runtime_env.py::test_venv_dir_defaults_inside_program_folder
+FAILED suite/test_windows_runtime_env.py::test_venv_dir_windows_defaults_inside_program_even_if_localappdata_exists
+2 failed, 19 passed in 0.39s

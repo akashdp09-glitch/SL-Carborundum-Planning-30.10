@@ -380,10 +380,12 @@ def packages_ready(py: Path | None = None) -> bool:
                 "-c",
                 "import streamlit,pandas,fastapi,uvicorn,cv2,pillow_heif,openpyxl,qrcode,plotly,xlsxwriter,matplotlib,PIL; "
                 "from pptx import Presentation; import pandas as p; "
+                "from suite.qr_png import png_bytes; assert png_bytes('SLWO:INSTALL-CHECK').startswith(bytes([137,80,78,71])); "
                 f"assert p.__version__=='{PINNED_PANDAS}', p.__version__",
             ],
             capture_output=True,
             text=True,
+            cwd=str(ROOT),
             timeout=60,
         )
     except (OSError, subprocess.TimeoutExpired):

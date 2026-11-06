@@ -11,6 +11,7 @@ import sqlite3
 import urllib.parse
 from datetime import datetime
 from pathlib import Path
+from .qr_png import make as _make_qr_png
 
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image as XLImage
@@ -213,7 +214,7 @@ def write_label_pack(rows, out_xlsx, png_dir, existing=None, all_work_orders=Tru
         payload = "SLWO:" + wo
         ws.cell(i, 11, payload)
         qpath = qdir / f"{re.sub(r'[^A-Za-z0-9_.-]', '_', wo)}_stable.png"
-        qrcode.make(payload).save(qpath)
+        _make_qr_png(payload).save(qpath)
         im = XLImage(str(qpath))
         im.width = 105
         im.height = 105

@@ -3,6 +3,7 @@ import uuid, io, os, re, sys, socket, sqlite3, ssl, subprocess, urllib.request, 
 from datetime import datetime, date, time
 from zoneinfo import ZoneInfo
 from pathlib import Path
+from suite.qr_png import make as _make_qr_png
 import pandas as pd, numpy as np, streamlit as st, plotly.express as px
 import streamlit.components.v1 as components
 from openpyxl import load_workbook, Workbook
@@ -1655,7 +1656,7 @@ if _page in ('control',):
         with _hq1:
             try:
                 import qrcode,io
-                _bio=io.BytesIO();qrcode.make(_mobile_url).save(_bio,format='PNG')
+                _bio=io.BytesIO();_make_qr_png(_mobile_url).save(_bio,format='PNG')
                 st.image(_bio.getvalue(),caption='Scan with phone camera to open the shop-floor app',width=230)
             except Exception as _e:st.warning(f'Connection QR unavailable: {_e}')
         with _hq2:
@@ -1677,7 +1678,7 @@ if _page in ('control',):
             _floor_q1,_floor_q2=st.columns([1,3])
             with _floor_q1:
                 try:
-                    _floor_buf=io.BytesIO();qrcode.make(_floor_url).save(_floor_buf,format='PNG')
+                    _floor_buf=io.BytesIO();_make_qr_png(_floor_url).save(_floor_buf,format='PNG')
                     st.image(_floor_buf.getvalue(),caption='Section status — phone or computer',width=145)
                 except Exception as _floor_qe:st.caption(f'Shop-floor QR unavailable: {_floor_qe}')
             with _floor_q2:
@@ -2416,7 +2417,7 @@ if _page in ('audit','audits'):
     import qrcode, io
     _pub3,_phone_primary3,_phone_http3,_phone_https3,_https_up3,_http_up3=phone_app_urls()
     _mobile_url=_phone_primary3
-    _qr=qrcode.make(_mobile_url);_buf=io.BytesIO();_qr.save(_buf,format='PNG')
+    _qr=_make_qr_png(_mobile_url);_buf=io.BytesIO();_qr.save(_buf,format='PNG')
     _mc1,_mc2=st.columns([1,2]);_mc1.image(_buf.getvalue(),width=190);_mc2.code(_mobile_url);_mc2.caption('Use the factory LAN address, never 127.0.0.1 (that is the phone itself). HTTP supports type/photo; live camera QR scanning requires HTTPS. Open '+_phone_https3+' and install '+_pub3['http']+'/tls/ca.crt once, or ask IT to place the company certificate in CENTRAL_DATA/TLS. HTTP: '+_phone_http3+' · HTTPS camera: '+_phone_https3)
     if not mobile_online():
         if st.session_state.get('_audit_mobile_start_error'):
@@ -3155,7 +3156,7 @@ if _page == 'newplan':
                     if pd.isna(_dt):raise ValueError(f"Invalid due date for {_r['order'] or _tab}: {_r['due']}")
                     _sheet.cell(_row,9).value=_dt.to_pydatetime();_sheet.cell(_row,9).number_format='d/m/yyyy'
                 _wo=f'P{_n:03d}-{_token}';_ws=_wb[_tab];_ws['D2']=f'{_n:03d}';_ws['F2']=_token;_ws['D5']=datetime.combine(_today,time.min);_ws['D5'].number_format='d/m/yyyy';_ws['C9']=_n
-                _payload=f'SLWO:{_wo}';qrcode.make(_payload).save(_qrdir/f'{_wo}.png')
+                _payload=f'SLWO:{_wo}';_make_qr_png(_payload).save(_qrdir/f'{_wo}.png')
                 _cr=_n+4;_serial=lambda d:(d-datetime(1899,12,30).date()).days
                 _sdrow=_r.get('sdrow') or []
                 _formula_cache.update({f'A{_cr}':_wo,f'B{_cr}':_serial(_today),f'C{_cr}':_serial(pd.to_datetime(_r['due']).date()) if _r['due'] else None,f'D{_cr}':_r['order'] or '',f'E{_cr}':_r['po'] or '',f'F{_cr}':_r['customer'] or '',f'G{_cr}':_r['custcode'] or '',f'H{_cr}':_r['spec'] or '',f'I{_cr}':_sdrow[8] if len(_sdrow)>8 else '',f'J{_cr}':_r['qty'] if _r['qty']!='' else None,f'K{_cr}':_r['code'] or '',f'L{_cr}':_sdrow[11] if len(_sdrow)>11 else '',f'BB{_cr}':_sdrow[53] if len(_sdrow)>53 else '',f'BC{_cr}':_sdrow[54] if len(_sdrow)>54 else ''})

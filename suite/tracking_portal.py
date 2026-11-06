@@ -1,6 +1,7 @@
 """Prominent shared desktop/mobile tracking entry; no scanner-model dependency."""
 import html,io,hashlib,os
 from pathlib import Path
+from .qr_png import make as _make_qr_png
 from urllib.parse import urlsplit,urlunsplit
 import qrcode
 from . import production_evidence as E
@@ -37,7 +38,7 @@ def render(st,default_base,db_path,*,can_edit=False,user='',key='track'):
     st.markdown('<div class="sl-track-grid">'+cards+'</div>',unsafe_allow_html=True)
     st.code(base+'/scan',language=None)
     a,b=st.columns([1,3])
-    image=qrcode.make(base+'/scan');bio=io.BytesIO();image.save(bio,format='PNG');data=bio.getvalue()
+    image=_make_qr_png(base+'/scan');bio=io.BytesIO();image.save(bio,format='PNG');data=bio.getvalue()
     shared=Path(os.environ.get('SL_SHARED_ROOT',str(Path(db_path).parent.parent)))
     folder=shared/'QR'/'ACCESS';folder.mkdir(parents=True,exist_ok=True);file=folder/('desktop_scan_'+hashlib.sha256(base.encode()).hexdigest()[:12]+'.png')
     if not file.exists():file.write_bytes(data)

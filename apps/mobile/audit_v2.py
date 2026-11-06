@@ -25,6 +25,7 @@ import shutil
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
+from suite.qr_png import make as _make_qr_png
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -1330,5 +1331,5 @@ def _qr_png(payload: str, ident: str) -> Path:
     safe = re.sub(r"[^A-Za-z0-9_.-]", "_", ident)[:80]
     out = core.QR_DIR / f"{safe}_{hashlib.sha1(payload.encode()).hexdigest()[:16]}.png"
     if not out.exists():
-        qrcode.make(payload).save(out)
+        _make_qr_png(payload).save(out)
     return out

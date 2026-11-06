@@ -42,6 +42,7 @@ SHARED_DATA = Path(os.environ.get("SL_DB_PATH", str(SHARED_ROOT / "DATABASE" / "
 SHARED_DATA.mkdir(parents=True, exist_ok=True)
 DB_PATH = Path(os.environ.get("SL_DB_PATH", str(SHARED_ROOT / "DATABASE" / "sl_planning.db")))
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+from suite.qr_png import make as _make_qr_png
 from suite.storage_migration import migrate_legacy_database, default_legacy_paths, restore_missing_photo_files, default_legacy_photo_roots
 LEGACY_DB_RECOVERY = migrate_legacy_database(DB_PATH, default_legacy_paths(PROGRAM_ROOT))
 DATA.mkdir(exist_ok=True)
@@ -705,7 +706,7 @@ def create_qr_png(wo_id: str, base_url: str = "", mode: str = "code") -> Path:
     safe_id = re.sub(r"[^A-Za-z0-9_.-]", "_", safe_text(wo_id))[:80] or "WO"
     out = QR_DIR / f"{safe_id}_{safe_key}.png"
     if not out.exists():
-        img = qrcode.make(payload)
+        img = _make_qr_png(payload)
         img.save(out)
     return out
 
@@ -1007,7 +1008,7 @@ def create_access_qr(server_url: str) -> str:
     safe_key = hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
     out = QR_DIR / f"mobile_access_{safe_key}.png"
     if not out.exists():
-        qrcode.make(payload).save(out)
+        _make_qr_png(payload).save(out)
     return f"/qr/{out.name}"
 
 

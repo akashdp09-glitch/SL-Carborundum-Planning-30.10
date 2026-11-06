@@ -733,7 +733,9 @@ if fr is not None:
             # Show every physically planned load supported by ready WIP OR achievable upstream capacity.
             # HOLD is reserved for hard physical/capacity impossibility and is excluded from the committed schedule.
             _gate=sched.get('Release Gate',pd.Series('',index=sched.index)).astype(str).str.upper()
-            sched=sched[~_gate.str.startswith('HOLD')].copy()
+            from apps.firing.issued_transition import planning_target_mask
+            sched=sched[planning_target_mask(sched)].copy()
+            st.caption('Issued dates are Production targets. A readiness HOLD remains visible and does not cancel the instruction; review Production Instructions before release.')
             if 'Planning Status' not in sched.columns:
                 _mk=pd.to_numeric(sched.get('MAKE Before Firing pcs',0),errors='coerce').fillna(0)
                 sched['Planning Status']=_mk.map(lambda q:'PLANNED — UPSTREAM CAPACITY COMMITMENT' if q>0 else 'READY / RELEASE')
@@ -793,7 +795,8 @@ if fr is not None:
                 _zd=z['_Date'].dropna(); _uc1,_uc2=st.columns(2); _uf=_uc1.date_input('Utilization FROM / การใช้เตาจาก',value=_zd.min().date(),key='f12y_util_from'); _ut=_uc2.date_input('Utilization TO / การใช้เตาถึง',value=_zd.max().date(),key='f12y_util_to'); z=z[(z['_Date'].dt.date>=_uf)&(z['_Date'].dt.date<=_ut)].copy()
             if not z.empty:
                 z['Kiln']=z['Kiln'].astype(str);z['Program']=z['Program'].astype(str);z['_Day']=z['_Date'].dt.strftime('%Y-%m-%d')
-                z['Planned?']=~z.get('Release Gate',pd.Series('',index=z.index)).astype(str).str.upper().str.startswith('HOLD')
+                from apps.firing.issued_transition import planning_target_mask
+                z['Planned?']=planning_target_mask(z)
                 rel=z.copy()  # show ALL allocated planned loads, including FUTURE PLANNED / MAKE; release gate remains visible on hover
 
                 st.markdown('### 🔥 ALL PLANNED KILNS EACH DAY — kiln + program stack')

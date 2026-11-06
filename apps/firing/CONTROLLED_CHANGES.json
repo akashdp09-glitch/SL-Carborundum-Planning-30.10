@@ -17,8 +17,8 @@
   },
   "firing_tomorrow_fast.py": {
     "baseline_sha256": "f8a184730a4e86d3879a59ce607fdd89010b4d25304bcdcaddf8629292ae3f20",
-    "accepted_sha256": "69cb2d6628a9815c6345c1a8eca7b7069241f0441ad44d65ad7ab06f23531fc7",
-    "reason": "Expose retention horizon and pass actual previous files into the integrated transition pipeline without post-merge date shifts",
+    "accepted_sha256": "539c0b867e18c0d4cf6c3b94854946f2e820fcc3ce38ef284a4139fa4ea3aa65",
+    "reason": "Keep retained issued production targets visible in the schedule even when execution readiness remains on HOLD; preserve unsafe new-load exclusion",
     "evidence": "apps/firing/tests/test_issued_transition.py",
     "reviewed": false,
     "recorded": "2026-11-06"

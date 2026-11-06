@@ -102,3 +102,10 @@ def test_calendar_overlap_and_duplicate_upload_do_not_duplicate_commitments():
     kept,review,_,_=reconcile(rows,plan,editor,max_volume=.95)
     assert 'T4' not in set(kept.Kiln)
     assert review[review.Kiln.eq('T4')].Reason.str.contains('maximum occupancy').all()
+
+
+def test_schedule_keeps_issued_targets_visible_without_releasing_other_held_loads():
+    from apps.firing.issued_transition import planning_target_mask
+    loads=pd.DataFrame([{'Load ID':'SYNTH-issued','Plan origin':'RETAINED ISSUED','Release Gate':'HOLD — confirm drying'}, {'Load ID':'SYNTH-invalid','Plan origin':'NEW OPTIMIZED','Release Gate':'HOLD — physically incompatible'}, {'Load ID':'SYNTH-ready','Plan origin':'NEW OPTIMIZED','Release Gate':'RELEASE'}])
+    assert loads.loc[planning_target_mask(loads),'Load ID'].tolist()==['SYNTH-issued','SYNTH-ready']
+    assert loads.iloc[0]['Release Gate'].startswith('HOLD')

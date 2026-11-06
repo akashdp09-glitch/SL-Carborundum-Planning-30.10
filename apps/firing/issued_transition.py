@@ -140,7 +140,12 @@ def reconcile(commitments, plan, kiln_editor, blocks=None, starts=2, max_volume=
         if typ=='normal':normal[day]=normal.get(day,0)+1
         elif typ=='resin':resin.add((day,kiln))
         else:t0.add(day)
-        kept=g.copy();kept['Release Gate']='HOLD — verify retained physical loading and drying';kept['Release Reason']='; '.join(holds)
+        kept=g.copy()
+        ready_by_row={r['Row']:r['Current unreserved formed WIP'] for r in review if r['Load ID']==lid}
+        kept['MAKE pcs']=[max(float(r['Planned Firing Qty'])-ready_by_row.get(r['Issued row'],0),0) for _,r in kept.iterrows()]
+        kept['MAKE Before Firing pcs']=kept['MAKE pcs']
+        kept['Planning Status']='ISSUED PRODUCTION TARGET — supply and release checks separate'
+        kept['Release Gate']='HOLD — verify retained physical loading and drying';kept['Release Reason']='; '.join(holds)
         kept['Cutover / Previous Plan Protection']='ISSUED PRODUCTION TARGET — original date and quantity';accepted.append(kept)
     return (pd.concat(accepted,ignore_index=True) if accepted else commitments.iloc[:0].copy(),pd.DataFrame(review),reservations,occupied)
 
@@ -180,3 +185,10 @@ def merge_operational(fr,retained,review,start,new_start):
     floor=pd.DataFrame([{'Load ID':lid,'Note':'Retained issued load: original detail retained; top/front placement requires verification, no new geometry invented.'} for lid in retained['Load ID'].unique()])
     fr['floor']=pd.concat([floor,fr.get('floor',pd.DataFrame())],ignore_index=True,sort=False)
     return fr
+
+
+def planning_target_mask(loads):
+    """Issued targets stay visible; execution holds must not erase instructions."""
+    gates=loads.get('Release Gate',pd.Series('',index=loads.index)).astype(str).str.upper()
+    origin=loads.get('Plan origin',pd.Series('',index=loads.index)).astype(str)
+    return ~gates.str.startswith('HOLD') | origin.eq('RETAINED ISSUED')

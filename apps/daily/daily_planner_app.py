@@ -961,6 +961,9 @@ def _daily_current_signature(force_hash=False):
     for name,value in paths.items():
         inputs[name]=dailysnap.file_record(value,_hash_cache,force_hash)
     params={'calculation_rules_version':'V16.23_DATE_AB','start':str(start),'horizon':int(horizon),'prep_kg_day':float(prep),'packing_people':int(packpeople),'normal_hours':float(normal_hours),'safe_buffer_workdays':int(safe_buffer),'import_lead':int(import_lead),'domestic_lead':int(domestic_lead),'mapping':mapping,'plan_overrides':dailysnap.dataframe_fingerprint(st.session_state.get('plan_overrides')),'firing_override':dailysnap.dataframe_fingerprint(st.session_state.get('firing_override'))}
+    from suite.order_status import revision as _whole_status_revision
+    from suite.central_paths import db_path as _status_db
+    params['Whole WO decision revision']=_whole_status_revision(_status_db())
     return dailysnap.content_digest(inputs,params),inputs,params
 
 _run_daily_plan=False
@@ -2126,7 +2129,7 @@ if res:
         st.warning(f'Capacity control: {len(_ov)} day/section overload(s) detected. Planner must not silently accept >100% controlled capacity; OT/capacity recovery is suggested and the excess remains a risk.')
         _major=_ov[pd.to_numeric(_ov.get('Utilization %'),errors='coerce')>103.0]
         if not _major.empty: st.error(f'HARD CAPACITY GATE: {len(_major)} day/section load(s) exceed 103%. These are NOT considered normal feasible production; reschedule/rebalance or approve OT before release.')
-    _NAV=['📺 Dashboard / แดชบอร์ด','📅 Daily / รายวัน','🔀 Route / เส้นทาง','⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง','📈 Analysis / วิเคราะห์','🏭 WIP details (central page) / ดู WIP หน้ากลาง','⚙️ Machine / เครื่องจักร','🧪 Plan Material Check / ตรวจวัตถุดิบตามแผน','🚚 Risk / ความเสี่ยง','🗓️ MPS + Backorder / แผนหลัก + งานค้างส่ง','⚠️ Issues / ปัญหา','🔎 Evidence / หลักฐาน','🔭 Demand-Capacity / อุปสงค์-กำลัง','📦 Packaging / บรรจุภัณฑ์','💎 Tooling / เครื่องมือ','📡 Daily Status Analysis / วิเคราะห์สถานะรายวัน','🧪 Test Work / งานทดสอบ','🗂️ Order Portfolio / กลุ่มงาน','⬇️ Download Plan / ดาวน์โหลดแผน','📈 Weekly Factory Performance Review / รายงานผลงานโรงงานรายสัปดาห์','✅ Validation / ตรวจสอบ','📊 Department KPI workbook analysis / วิเคราะห์ KPI จาก 2 ไฟล์','📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน','⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง']
+    _NAV=['📺 Dashboard / แดชบอร์ด','📅 Daily / รายวัน','🔀 Route / เส้นทาง','⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง','📈 Analysis / วิเคราะห์','🏭 WIP details (central page) / ดู WIP หน้ากลาง','⚙️ Machine / เครื่องจักร','🧪 Plan Material Check / ตรวจวัตถุดิบตามแผน','🚚 Risk / ความเสี่ยง','🗓️ MPS + Backorder / แผนหลัก + งานค้างส่ง','⚠️ Issues / ปัญหา','🔎 Evidence / หลักฐาน','🔭 Demand-Capacity / อุปสงค์-กำลัง','📦 Packaging / บรรจุภัณฑ์','💎 Tooling / เครื่องมือ','📡 Daily Status Analysis / วิเคราะห์สถานะรายวัน','🧪 Test Work / งานทดสอบ','🗂️ Order Portfolio / กลุ่มงาน','⬇️ Download Plan / ดาวน์โหลดแผน','📈 Weekly Factory Performance Review / รายงานผลงานโรงงานรายสัปดาห์','✅ Validation / ตรวจสอบ','🎯 Department KPI — retained sources / KPI แผนกจากข้อมูลกลาง','📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน','⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง']
     _GROUPS={
       '① 🏭 Daily Planning / การวางแผนรายวัน':[0,1,2,3,6,14,13],
       '② 🧪 Plan Material Check / ตรวจวัตถุดิบตามแผน':[7,8],
@@ -2134,9 +2137,8 @@ if res:
       '④ 📋 Work Orders / ใบสั่งผลิต':[17,16],
       '⑤ 📊 Reports & Evidence / รายงานและหลักฐาน':[5,22,15,21,19,11,18,20,23]
     }
-    _quick_options=['Browse all modules / ดูทุกโมดูล','🏭 WIP — Planning vs Production (central page)','📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน','📡 Daily Status analysis / วิเคราะห์สถานะรายวัน','🎯 Monthly Planning KPI Scorecard / KPI ผลลัพธ์รายเดือน','📊 Department KPI workbook analysis / วิเคราะห์ KPI จาก 2 ไฟล์','⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง']
+    _quick_options=['Browse all modules / ดูทุกโมดูล','🏭 WIP — Planning vs Production (central page)','📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน','📡 Daily Status analysis / วิเคราะห์สถานะรายวัน','🎯 Monthly Planning KPI Scorecard / KPI ผลลัพธ์รายเดือน','🎯 Department KPI — retained sources / KPI แผนกจากข้อมูลกลาง','⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง']
     _quick_options.append('⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม')
-    _quick_options.append('🧯 Weekly Recovery Action Plan / แผนกู้คืนงานค้างและความเสี่ยง')
     _quick_options.append('🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก')
     _quick_options.append('⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง')
     _focus_to_label={'wip':_quick_options[1],'closed':_quick_options[2],'status':_quick_options[3],'kpi':_quick_options[4],'planning_kpi':_quick_options[4],'download':_quick_options[7],'recovery':_quick_options[8],'capacity':_quick_options[9],'mixing':_quick_options[6],'capacity_actual':_quick_options[10]}
@@ -2151,7 +2153,7 @@ if res:
         st.session_state['daily_quick_access_v13']=browse_label
         if 'focus' in st.query_params:del st.query_params['focus']
     _quick_choice=st.sidebar.selectbox('📌 DIRECT ACCESS / เปิดหน้าหลักโดยตรง',_quick_options,key='daily_quick_access_v13',on_change=_clear_daily_focus)
-    _quick_idx={'🏭 WIP — Planning vs Production (central page)':5,'📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน':22,'📡 Daily Status analysis / วิเคราะห์สถานะรายวัน':15,'📊 Department KPI workbook analysis / วิเคราะห์ KPI จาก 2 ไฟล์':21,'⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง':23,'⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม':18,'🧯 Weekly Recovery Action Plan / แผนกู้คืนงานค้างและความเสี่ยง':19,'🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก':3,'⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง':3}
+    _quick_idx={'🏭 WIP — Planning vs Production (central page)':5,'📊 Daily Open / Closed WO Report / รายงานใบสั่งเปิด-ปิดรายวัน':22,'📡 Daily Status analysis / วิเคราะห์สถานะรายวัน':15,'🎯 Department KPI — retained sources / KPI แผนกจากข้อมูลกลาง':21,'⚙️ Mixing Mill Plan vs Actual / แผนโม่เทียบจริง':23,'⬇️ Download Complete Daily Plan / ดาวน์โหลดแผนรายวันฉบับเต็ม':18,'🏭 All-section Plan vs Capacity Graphs / กราฟแผนเทียบกำลังผลิตทุกแผนก':3,'⚖️ Capacity vs Plan vs Actual / กำลังผลิตเทียบแผนและผลจริง':3}
     if _quick_choice == _quick_options[4] and st.query_params.get('hub_kpi_url'):
         _kpi_link_label='เปิด KPI รายเดือน' if _LANG=='ไทย' else 'Open monthly KPI'
         st.markdown(f"<a href='{st.query_params.get('hub_kpi_url')}' target='_top' style='font-size:.82rem;color:#0057b8;text-decoration:underline'>↗ {_kpi_link_label}</a>",unsafe_allow_html=True)
@@ -4368,252 +4370,11 @@ if res:
 
 
     if _nav_idx==22:
-        st.subheader('📋 DAILY OPEN / CLOSED WORK ORDERS / รายการใบสั่งผลิตเปิด-ปิดรายวัน')
-        st.caption('REPORT ONLY — to enter a section OPEN/CLOSED event, use Production → Update WO Section Status. Source: separate Daily Status department workbooks. The sheet tab name is the date. A WO-section is CLOSED when cumulative actual ≥ required quantity or the remaining balance is ≤ 0; otherwise it is OPEN / IN PROGRESS. Every row retains workbook, tab and Excel source row.')
-        _daily_src=_ds_cache_valid.copy() if isinstance(_ds_cache_valid,pd.DataFrame) else pd.DataFrame()
-        if _daily_src.empty:
-            st.warning('No readable Daily Status actual rows are available. The Plan-2026 open/closed report is shown below as a separate planned-order view; it does not represent daily production actuals.')
-            if _hub_sources_url:
-                st.markdown(f"<a href='{html.escape(str(_hub_sources_url),quote=True)}' target='_top' style='font-size:.78rem;color:#0057b8;text-decoration:underline'>↻ {'อัปโหลด/แก้ไข Daily Status ที่หน้า Files' if _LANG=='ไทย' else 'Upload or replace Daily Status on Files'}</a>",unsafe_allow_html=True)
-            _plan_for_status=st.session_state.get('plan_path') or str(_resolve_central('Plan-2026-LATEST.xlsx') or '')
-            if _plan_for_status and Path(_plan_for_status).is_file():
-                from suite.open_closed_view import render as _render_plan_open_closed
-                _render_plan_open_closed(st,plan_path=str(_plan_for_status),daily_status=_daily_src,
-                    job_path=str(_resolve_central('Job-Register-LATEST.xlsx') or ''),
-                    cache_dir=str(Path(os.environ.get('SL_SHARED_ROOT',str(Path(__file__).resolve().parents[2]/'CENTRAL_DATA')))/'CACHE'),
-                    key='daily_plan_open_closed_fallback')
-            else:
-                st.info('Upload the active Plan-2026 once on Home to see planned OPEN/CLOSED by section.')
-        else:
-            _daily_src['Date']=pd.to_datetime(_daily_src['Date'],errors='coerce').dt.normalize()
-            _valid_dates=sorted(_daily_src['Date'].dropna().unique())
-            if not _valid_dates: st.warning('The uploaded section workbooks have no valid dates in their worksheet tab names.')
-            else:
-                _date_labels={pd.Timestamp(d).strftime('%Y-%m-%d'):pd.Timestamp(d) for d in _valid_dates}
-                _chosen_label=st.selectbox('Production date / worksheet tab date',list(_date_labels)[::-1],key='daily_open_closed_date_v13')
-                _chosen_date=_date_labels[_chosen_label]
-                _day=_daily_src[_daily_src['Date'].eq(_chosen_date)].copy()
-                for _ncol in ['Section Required Qty','Cumulative Actual Qty','Balance Qty','Production Plan Qty','Production Actual Qty']:
-                    if _ncol not in _day:_day[_ncol]=0
-                    _day[_ncol]=pd.to_numeric(_day[_ncol],errors='coerce').fillna(0)
-                _keys=[c for c in ['Work Order','Section'] if c in _day]
-                _daily_wo=_day.groupby(_keys,dropna=False,as_index=False).agg(
-                    **{'Required Qty':('Section Required Qty','max'),'Cumulative Actual Qty':('Cumulative Actual Qty','max'),'Balance Qty':('Balance Qty','min'),
-                       'Daily Plan Qty':('Production Plan Qty','sum'),'Daily Actual Qty':('Production Actual Qty','sum'),
-                       'Source Files':('Source File',lambda s:', '.join(sorted(set(s.dropna().astype(str))))),
-                       'Source Tabs':('Source Sheet',lambda s:', '.join(sorted(set(s.dropna().astype(str))))),
-                       'Source Rows':('Source Row',lambda s:', '.join(map(str,s.dropna().tolist()))),
-                       'Date Basis':('Date Source','first')})
-                _daily_wo['Daily Status']=np.where((_daily_wo['Required Qty']>0)&((_daily_wo['Cumulative Actual Qty']>=_daily_wo['Required Qty'])|(_daily_wo['Balance Qty']<=0)),'CLOSED','OPEN / IN PROGRESS')
-                _st1,_st2,_st3,_st4=st.columns(4)
-                _st1.metric('WOs with daily evidence',f"{_daily_wo['Work Order'].nunique():,}")
-                _st2.metric('Closed WOs',f"{_daily_wo.loc[_daily_wo['Daily Status'].eq('CLOSED'),'Work Order'].nunique():,}")
-                _st3.metric('Open / in progress',f"{_daily_wo.loc[_daily_wo['Daily Status'].ne('CLOSED'),'Work Order'].nunique():,}")
-                _st4.metric('Actual pcs on selected date',f"{_daily_wo['Daily Actual Qty'].sum():,.0f}")
-                _sec_pick=st.selectbox('Filter by section / กรองแผนก',['All sections']+sorted(_daily_wo['Section'].dropna().astype(str).unique()),key='daily_open_closed_section_v13')
-                if _sec_pick!='All sections':_daily_wo=_daily_wo[_daily_wo['Section'].astype(str).eq(_sec_pick)]
-                _status_counts=_daily_wo.groupby('Daily Status',as_index=False)['Work Order'].nunique().rename(columns={'Work Order':'Work Orders'})
-                _stfig=px.bar(_status_counts,x='Daily Status',y='Work Orders',color='Daily Status',text='Work Orders',title=f'Daily open vs closed work orders — {_chosen_label}')
-                _show_plotly(_stfig,'Daily_Open_Closed_WO_v13')
-                _open_tab,_closed_tab=st.tabs(['🟠 Open / In Progress','🟢 Closed'])
-                _showcols=['Work Order','Section','Required Qty','Cumulative Actual Qty','Balance Qty','Daily Plan Qty','Daily Actual Qty','Source Files','Source Tabs','Source Rows','Date Basis']
-                with _open_tab:st.dataframe(_daily_wo[_daily_wo['Daily Status'].ne('CLOSED')][_showcols].sort_values(['Section','Work Order']),use_container_width=True,hide_index=True,height=420)
-                with _closed_tab:st.dataframe(_daily_wo[_daily_wo['Daily Status'].eq('CLOSED')][_showcols].sort_values(['Section','Work Order']),use_container_width=True,hide_index=True,height=420)
-                st.download_button('⬇ Download daily open/closed WO evidence CSV',_daily_wo.to_csv(index=False).encode('utf-8-sig'),file_name=f'Daily_Open_Closed_WO_{_chosen_label}.csv',mime='text/csv',key='daily_open_closed_download_v13')
+        from suite.kpi_workspace import render_open_close as _shared_open_close55
+        from suite.central_paths import db_path as _central_db55
+        _shared_open_close55(st,_central_db55())
 
     if _nav_idx==21:
-        st.subheader('🎯 SECTION PERFORMANCE (KPI) / ผลงานแต่ละแผนก')
-        st.caption('Reference format is based on the two KPI workbooks supplied by Planning: section plan-vs-actual achievement and warehouse-delivery achievement. Date window is selectable.')
-        _kpi_root=Path(os.environ.get('SL_SHARED_ROOT',str(Path(__file__).resolve().parents[2]/'CENTRAL_DATA')))/'KPI'
-        _kpi_root.mkdir(parents=True,exist_ok=True)
-        st.markdown('#### Current KPI source files / ไฟล์ KPI ปัจจุบัน')
-        _kp1=(_kpi_root/'Section-Performance-KPI-LATEST.xlsx').resolve()
-        _kp2=(_kpi_root/'Warehouse-Delivery-KPI-LATEST.xlsx').resolve()
-        _kpi_slot_meta=[]
-        _kpi_manager=None
-        try:
-            from suite.source_manager import SourceManager as _KpiSourceManager
-            @st.cache_resource(show_spinner=False)
-            def _get_kpi_source_manager(_root,_data):
-                _root=Path(_root);_data=Path(_data)
-                return _KpiSourceManager(_root,_data,_root/'SOURCE_COPIES',_root/'source_registry.json',bundled_capacity=_root/'__skip_capacity_bootstrap_for_kpi__')
-            _kpi_manager=_get_kpi_source_manager(str(_kpi_root.parent),str(_company_data()))
-        except Exception as _kpi_manager_err:
-            st.caption(f'Source revision details are unavailable; file content and checksum remain visible. {_kpi_manager_err}')
-        for _slot,_ktype,_kpath in [('KPI_SECTION_PLAN_VS_ACTUAL','Section plan vs actual',_kp1),('KPI_DELIVERY_WAREHOUSE','Delivery / warehouse',_kp2)]:
-            _active=_kpi_manager.active(_slot) if _kpi_manager else None
-            _history=_kpi_manager.history(_slot) if _kpi_manager else []
-            if _kpath.is_file():
-                _kstat=_kpath.stat();_ksha=hashlib.sha256(_kpath.read_bytes()).hexdigest()
-                _kpi_slot_meta.append({'KPI type':_ktype,'Active workbook':_active.get('original_name') if _active else _kpath.name,'Revision':_active.get('revision_no') if _active else 'Legacy / unregistered','Saved revisions':len(_history),'Trend months':'Loaded from saved revisions below','Published file':str(_kpath),'Uploaded at':_active.get('imported_at') if _active else datetime.datetime.fromtimestamp(_kstat.st_mtime,ZoneInfo('Asia/Bangkok')).strftime('%Y-%m-%d %H:%M:%S'),'SHA-256':(_active.get('sha256') or _ksha)[:16]})
-            else:_kpi_slot_meta.append({'KPI type':_ktype,'Active workbook':'NOT UPLOADED','Revision':'—','Saved revisions':len(_history),'Trend months':'—','Published file':str(_kpath),'Uploaded at':'—','SHA-256':'—'})
-        st.dataframe(pd.DataFrame(_kpi_slot_meta),use_container_width=True,hide_index=True)
-        with st.expander('↻ Update monthly KPI workbooks / อัปเดตไฟล์ KPI รายเดือน',expanded=False):
-            st.caption('Upload either or both current-month workbooks here. Analysis below refreshes from these shared active files. Previous revisions remain available in file history; no upload is requested again unless you choose to replace a workbook.')
-            with st.form('monthly_kpi_source_update_form',clear_on_submit=True):
-                _kpi_up1=st.file_uploader('Section Plan vs Actual KPI workbook',type=['xlsx','xlsm'],key='monthly_kpi_section_upload')
-                _kpi_up2=st.file_uploader('Delivery / Warehouse KPI workbook',type=['xlsx','xlsm'],key='monthly_kpi_delivery_upload')
-                _kpi_submit=st.form_submit_button('Save selected KPI revision(s) and refresh analysis',type='primary',use_container_width=True)
-            if _kpi_submit:
-                if _kpi_up1 is None and _kpi_up2 is None:st.warning('Select at least one KPI workbook to upload.')
-                else:
-                    try:
-                        if _kpi_manager is None:raise RuntimeError('Shared Source Manager is unavailable; no file was replaced.')
-                        # Register any existing legacy publication first, so replacing it archives the old bytes.
-                        _kpi_manager.adopt_existing(st.session_state.get('sl_user','daily-kpi'))
-                        _kpi_results=[]
-                        for _kup,_kslot in [(_kpi_up1,'KPI_SECTION_PLAN_VS_ACTUAL'),(_kpi_up2,'KPI_DELIVERY_WAREHOUSE')]:
-                            if _kup is None:continue
-                            _kres=_kpi_manager.import_bytes(_kslot,_kup.name,_kup.getvalue(),st.session_state.get('sl_user','unknown'),
-                                note='Monthly KPI update from Department KPI Analysis page')
-                            _kpi_results.append((_kres.status,_kres.message))
-                        for _status,_message in _kpi_results:
-                            (st.success if _status in ('IMPORTED','REACTIVATED','DUPLICATE_UNCHANGED') else st.error)(f'{_status}: {_message}')
-                        if _kpi_results and all(_status in ('IMPORTED','REACTIVATED','DUPLICATE_UNCHANGED') for _status,_ in _kpi_results):
-                            st.session_state['kpi_section_path']=str(_kp1);st.session_state['kpi_delivery_path']=str(_kp2)
-                            st.rerun()
-                    except Exception as _kpi_upload_error:st.error(f'KPI upload failed; the previous active source is preserved. {_kpi_upload_error}')
-        st.info('These two published shared files are the only KPI inputs used below. If a month is wrong, use the small Update monthly KPI workbooks control above; this page will then refresh from the new revisions.')
-        _kpi_read_errors=[]
-        def _read_kpi_matrix(path, delivery=False, cfg=None):
-            if not path.is_file(): return pd.DataFrame()
-            try:
-                xl=pd.ExcelFile(path)
-                pref='ส่งมอบเข้าคลัง สิงหาคม' if delivery else 'ผลิตตามแผน กันยายน'; cfg=cfg or {}; sh=cfg.get('sheet') or (pref if pref in xl.sheet_names else xl.sheet_names[0]); sh=sh if sh in xl.sheet_names else xl.sheet_names[0]; raw=pd.read_excel(path,sheet_name=sh,header=None)
-                _hr=max(1,int(cfg.get('header_row',3)))-1; _dr=max(1,int(cfg.get('data_row',4)))-1; _gc=_col0(cfg.get('group_col','B')); _tc=_col0(cfg.get('type_col','C')); _dc=_col0(cfg.get('day_start_col','D'))
-                hdr=raw.iloc[_hr].tolist(); rows=[]; current_group=''
-                _thai_month={'มกราคม':1,'กุมภาพันธ์':2,'มีนาคม':3,'เมษายน':4,'พฤษภาคม':5,'มิถุนายน':6,'กรกฎาคม':7,'สิงหาคม':8,'กันยายน':9,'ตุลาคม':10,'พฤศจิกายน':11,'ธันวาคม':12}
-                _head=' '.join(str(x) for x in raw.iloc[:3].fillna('').values.ravel())+' '+sh+' '+path.name
-                # Use the report title's first month mention. The supplied delivery KPI
-                # sheet is named "August" while its report title and contents are September.
-                _month_pattern='('+'|'.join(re.escape(x) for x in _thai_month.keys())+')'
-                _month_hits=[(m.start(),_thai_month[m.group(1)]) for m in re.finditer(_month_pattern,_head)]
-                _month=_month_hits[0][1] if _month_hits else date.today().month
-                _yrs=[int(x) for x in re.findall(r'\b(25\d{2}|20\d{2})\b',_head)]; _year=(_yrs[0]-543 if _yrs and _yrs[0]>2400 else (_yrs[0] if _yrs else date.today().year))
-                for i in range(_dr,len(raw)):
-                    grp=raw.iloc[i,_gc] if raw.shape[1]>_gc else None
-                    if pd.notna(grp) and str(grp).strip(): current_group=str(grp).strip()
-                    typ=str(raw.iloc[i,_tc]).strip() if raw.shape[1]>_tc and pd.notna(raw.iloc[i,_tc]) else ''
-                    if typ not in ['แผน','ผลิตจริง']: continue
-                    for j in range(_dc,min(raw.shape[1],_dc+32)):
-                        day=hdr[j] if j<len(hdr) else None
-                        try: day=int(float(day))
-                        except: continue
-                        val=pd.to_numeric(pd.Series([raw.iloc[i,j]]),errors='coerce').iloc[0]
-                        if pd.isna(val): continue
-                        rows.append({'Group':current_group, 'Measure':'Plan' if typ=='แผน' else 'Actual','Day':day,'Date':pd.Timestamp(_year,_month,day),'Qty':float(val)})
-                return pd.DataFrame(rows)
-            except Exception as _err:
-                _kpi_read_errors.append({'File':path.name,'Error':str(_err)})
-                return pd.DataFrame()
-        def _kpi_cfg_ui(label,path,key):
-            _sheets=[]
-            try:_sheets=pd.ExcelFile(path).sheet_names if path.exists() else []
-            except:pass
-            with st.expander(label+' mapping / ตำแหน่งข้อมูล',expanded=False):
-                _sh=st.selectbox('Sheet / ชีต',_sheets if _sheets else [''],key=key+'_sheet')
-                _c1,_c2,_c3=st.columns(3); _hr=_c1.number_input('Header row',1,30,3,key=key+'_hr'); _dr=_c2.number_input('Data row',1,50,4,key=key+'_dr'); _gc=_c3.text_input('Group column',value='B',key=key+'_gc')
-                _c4,_c5=st.columns(2); _tc=_c4.text_input('Plan/Actual column',value='C',key=key+'_tc'); _dc=_c5.text_input('First day column',value='D',key=key+'_dc')
-            return {'sheet':_sh,'header_row':_hr,'data_row':_dr,'group_col':_gc,'type_col':_tc,'day_start_col':_dc}
-        def _read_kpi_history(slot, active_path, delivery, cfg):
-            # Source Manager retains every uploaded workbook revision. Read each saved
-            # snapshot once per Streamlit session-state signature; the newest revision
-            # replaces its own calendar month while older months remain for trend views.
-            from suite.kpi_history import latest_monthly_revision
-            revisions=_kpi_manager.history(slot) if _kpi_manager else []
-            signature=[]; entries=[]
-            for rev in revisions:
-                src=Path(rev.get('stored_path',''))
-                try:
-                    if not src.is_file(): continue
-                    stat=src.stat(); sig=(int(rev.get('revision_no') or 0),str(rev.get('sha256') or ''),stat.st_size,stat.st_mtime_ns)
-                    signature.append(sig)
-                    entries.append((rev,src))
-                except OSError:
-                    continue
-            # Legacy active copy is used if this installation predates revision history.
-            if not entries and active_path.is_file():
-                stat=active_path.stat(); signature=[(0,'legacy',stat.st_size,stat.st_mtime_ns)]
-                entries=[({'revision_no':0,'original_name':active_path.name,'imported_at':datetime.datetime.fromtimestamp(stat.st_mtime,ZoneInfo('Asia/Bangkok')).isoformat()},active_path)]
-            cache_key=f'_kpi_trend_cache_{slot}'
-            cache_sig=(tuple(signature),str(cfg))
-            cached=st.session_state.get(cache_key)
-            if cached and cached.get('signature')==cache_sig:
-                return cached['data'].copy()
-            parsed=[]
-            for rev,src in entries:
-                frame=_read_kpi_matrix(src,delivery,cfg)
-                if frame.empty: continue
-                parsed.append({'data':frame,'revision':rev.get('revision_no') or 0,'source_file':rev.get('original_name') or src.name,'imported_at':rev.get('imported_at') or 'Not recorded'})
-            combined=latest_monthly_revision(parsed)
-            st.session_state[cache_key]={'signature':cache_sig,'data':combined.copy()}
-            return combined
-        _kcfg1=_kpi_cfg_ui('Section KPI',_kp1,'kpi_sec_cfg'); _kcfg2=_kpi_cfg_ui('Delivery KPI',_kp2,'kpi_del_cfg')
-        _ks=_read_kpi_history('KPI_SECTION_PLAN_VS_ACTUAL',_kp1,False,_kcfg1)
-        _kd=_read_kpi_history('KPI_DELIVERY_WAREHOUSE',_kp2,True,_kcfg2)
-        if not _ks.empty or not _kd.empty:
-            st.caption('Trend uses the newest saved workbook revision for each month; earlier months remain available. Each row retains source filename, revision and import time.')
-            with st.expander('KPI trend source history / ประวัติไฟล์ที่ใช้คำนวณแนวโน้ม',expanded=False):
-                _kh_parts=[]
-                for _klab,_kdf in [('Section KPI',_ks),('Delivery / Warehouse KPI',_kd)]:
-                    if not _kdf.empty:
-                        _kt=_kdf[['Date','Source file','Revision','Imported at']].drop_duplicates().copy()
-                        _kt.insert(0,'KPI workbook',_klab);_kh_parts.append(_kt)
-                if _kh_parts:
-                    _kh=pd.concat(_kh_parts,ignore_index=True).sort_values(['Date','KPI workbook'])
-                    st.dataframe(_kh,use_container_width=True,hide_index=True,height=260)
-                    st.download_button('⬇ Download KPI trend provenance CSV',_kh.to_csv(index=False).encode('utf-8-sig'),file_name='KPI_Trend_Source_Provenance.csv',mime='text/csv',key='kpi_trend_provenance_download')
-        if _kpi_read_errors:
-            st.error('KPI source could not be parsed. Expand the relevant mapping panel and select the sheet/header/data rows, then review the source error:')
-            st.dataframe(pd.DataFrame(_kpi_read_errors),use_container_width=True,hide_index=True)
-        if _ks.empty and _kd.empty:
-            if _kp1.exists() or _kp2.exists():
-                st.warning('KPI workbook(s) are present but no Plan/Actual day values were mapped. Expand each mapping panel, verify the main sheet, header row, data row, Plan/Actual column, and first day column. The source files are preserved; correct the mapping and the charts will refresh.')
-            else: st.info(f'Upload the two KPI workbooks above. Files are saved separately in {_kpi_root}.')
-        else:
-            _allkd=pd.concat([x[['Date']] for x in [_ks,_kd] if not x.empty],ignore_index=True)['Date']
-            _kmn=pd.to_datetime(_allkd,errors='coerce').min().date(); _kmx=pd.to_datetime(_allkd,errors='coerce').max().date()
-            _kperiod=st.selectbox('Trend grouping / จัดกลุ่มกราฟ',['Weekly','Daily','Monthly','Quarterly'],index=0,key='kpi_trend_group')
-            _kfrom,_kto=st.columns(2)
-            _kfd=_kfrom.date_input('KPI FROM / จากวันที่',value=_kmn,min_value=_kmn,max_value=_kmx,key='kpi_date_from')
-            _ktd=_kto.date_input('KPI TO / ถึงวันที่',value=_kmx,min_value=_kmn,max_value=_kmx,key='kpi_date_to')
-            if not _ks.empty:
-                _ks_window=_ks[(pd.to_datetime(_ks['Date']).dt.date>=_kfd)&(pd.to_datetime(_ks['Date']).dt.date<=_ktd)].copy()
-                _ks_window['Period']=pd.to_datetime(_ks_window['Date']).dt.to_period({'Weekly':'W-SAT','Daily':'D','Monthly':'M','Quarterly':'Q'}[_kperiod]).astype(str)
-                _x=_ks_window.groupby(['Group','Measure'],as_index=False)['Qty'].sum()
-                _pv=_x.pivot_table(index='Group',columns='Measure',values='Qty',aggfunc='sum',fill_value=0).reset_index()
-                if 'Plan' not in _pv:_pv['Plan']=0
-                if 'Actual' not in _pv:_pv['Actual']=0
-                _pv['Achievement %']=np.where(_pv['Plan']>0,_pv['Actual']/_pv['Plan']*100,0)
-                st.markdown('### Section plan achievement / ผลิตตามแผนแยกตามหน่วยงาน')
-                _p_total=float(_pv['Plan'].sum());_a_total=float(_pv['Actual'].sum());_p_rate=100*_a_total/_p_total if _p_total else 0
-                _pm1,_pm2,_pm3=st.columns(3);_pm1.metric('Plan quantity',f'{_p_total:,.0f}');_pm2.metric('Actual quantity',f'{_a_total:,.0f}');_pm3.metric('Achievement',f'{_p_rate:.1f}%')
-                _fkp=px.bar(_pv,x='Group',y=['Plan','Actual'],barmode='group',text_auto='.0f',title='SECTION PERFORMANCE — PLAN vs ACTUAL')
-                _show_plotly(_fkp,'KPI_Section_Plan_Actual')
-                _kstrend=_ks_window.groupby(['Period','Measure'],as_index=False)['Qty'].sum().pivot(index='Period',columns='Measure',values='Qty').fillna(0).reset_index()
-                for _mc in ['Plan','Actual']:
-                    if _mc not in _kstrend:_kstrend[_mc]=0.0
-                _kfig=go.Figure();_kfig.add_bar(x=_kstrend['Period'],y=_kstrend['Plan'],name='Plan');_kfig.add_bar(x=_kstrend['Period'],y=_kstrend['Actual'],name='Actual');_kfig.update_layout(barmode='group',title=f'{_kperiod} Section Plan vs Actual · {_kfd:%d-%b-%Y} to {_ktd:%d-%b-%Y}',xaxis_title='Period',yaxis_title='Workbook native quantity')
-                _show_plotly(_kfig,'KPI_Section_Weekly_Trend')
-                st.caption(f'Source: {_kp1.name} · sheet/configuration shown above · selected date window {_kfd:%d-%b-%Y}–{_ktd:%d-%b-%Y}.')
-                st.dataframe(_pv.sort_values('Achievement %'),use_container_width=True,hide_index=True)
-            if not _kd.empty:
-                _kd_window=_kd[(pd.to_datetime(_kd['Date']).dt.date>=_kfd)&(pd.to_datetime(_kd['Date']).dt.date<=_ktd)].copy()
-                _kd_window['Period']=pd.to_datetime(_kd_window['Date']).dt.to_period({'Weekly':'W-SAT','Daily':'D','Monthly':'M','Quarterly':'Q'}[_kperiod]).astype(str)
-                _y=_kd_window.groupby(['Group','Measure'],as_index=False)['Qty'].sum()
-                _yp=_y.pivot_table(index='Group',columns='Measure',values='Qty',aggfunc='sum',fill_value=0).reset_index()
-                if 'Plan' not in _yp:_yp['Plan']=0
-                if 'Actual' not in _yp:_yp['Actual']=0
-                _yp['Achievement %']=np.where(_yp['Plan']>0,_yp['Actual']/_yp['Plan']*100,0)
-                st.markdown('### Warehouse delivery achievement / ผลงานส่งมอบเข้าคลัง')
-                _yd_total=float(_yp['Plan'].sum());_ya_total=float(_yp['Actual'].sum());_yd_rate=100*_ya_total/_yd_total if _yd_total else 0
-                _ym1,_ym2,_ym3=st.columns(3);_ym1.metric('Delivery plan quantity',f'{_yd_total:,.0f}');_ym2.metric('Delivered quantity',f'{_ya_total:,.0f}');_ym3.metric('Delivery achievement',f'{_yd_rate:.1f}%')
-                _fkd=px.bar(_yp,x='Group',y=['Plan','Actual'],barmode='group',text_auto='.0f',title='WAREHOUSE DELIVERY KPI — PLAN vs ACTUAL BY PRODUCT CATEGORY')
-                _show_plotly(_fkd,'KPI_Warehouse_Delivery')
-                _kdtrend=_kd_window.groupby(['Period','Measure'],as_index=False)['Qty'].sum().pivot(index='Period',columns='Measure',values='Qty').fillna(0).reset_index()
-                for _mc in ['Plan','Actual']:
-                    if _mc not in _kdtrend:_kdtrend[_mc]=0.0
-                _kfigd=go.Figure();_kfigd.add_bar(x=_kdtrend['Period'],y=_kdtrend['Plan'],name='Plan');_kfigd.add_bar(x=_kdtrend['Period'],y=_kdtrend['Actual'],name='Actual');_kfigd.update_layout(barmode='group',title=f'{_kperiod} Warehouse Plan vs Actual · {_kfd:%d-%b-%Y} to {_ktd:%d-%b-%Y}',xaxis_title='Period',yaxis_title='Workbook native quantity')
-                _show_plotly(_kfigd,'KPI_Delivery_Weekly_Trend')
-                st.caption(f'Source: {_kp2.name} · sheet/configuration shown above · selected date window {_kfd:%d-%b-%Y}–{_ktd:%d-%b-%Y}.')
-                st.dataframe(_yp.sort_values('Achievement %'),use_container_width=True,hide_index=True)
+        from suite.production_analysis_page import render_department as _shared_department55
+        from suite.central_paths import db_path as _central_db55
+        _shared_department55(st,_central_db55(),can_edit=bool(st.session_state.get('sl_authenticated')),user=st.session_state.get('sl_user','VIEWER'))

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% block content %}
 <div class="page-head"><h1>🔫 <span data-i="title">Scan / section status</span></h1><span>{{ user.display_name }} · {{ user.username }}</span></div>
-<section class="panel"><label for="scanInput" data-i="scan">1. Scan WO · B2D21 USB → Enter</label>
+<section class="panel"><label for="scanInput" data-i="scan">1. Scan WO · USB → Enter</label>
 <div style="display:flex;gap:8px"><input id="scanInput" class="scan-input" autocomplete="off" autofocus placeholder="SLWO:P005-110826"><button id="findWO" type="button" class="button" data-i="find">Find</button></div>
 <div id="scanResult" role="status" aria-live="polite"></div>
 <div id="jobActions" hidden><a id="auditLink" class="button primary">📸 <span data-i="audit">Physical WIP audit</span></a> <a id="detailLink" class="button">🕘 <span data-i="detail">Part / history</span></a></div>
@@ -8,6 +8,7 @@
 </section>
 <section class="panel"><h2 data-i="status">2. Save section OPEN / CLOSED</h2>
 <p class="muted" data-i="note">Section status is separate from physical audits and final packed output.</p>
+<label for="statusScope">ขอบเขต / Scope</label><select id="statusScope"><option value="SECTION">แผนก / One process</option><option value="WHOLE">ทั้งใบสั่ง — ต้องระบุเหตุผล / Whole WO — reason required</option></select>
 <label for="section" data-i="section">Section</label><select id="section">{% for en,th in [('Preparation','เตรียม'),('Mixing','ผสม'),('Forming','ขึ้นรูป'),('Firing','เผา'),('Grinding','เจียร'),('Cutting','ตัด'),('Packing','บรรจุ'),('QC','ตรวจสอบคุณภาพ'),('Warehouse','คลังสินค้า'),('Dispatch','จัดส่ง'),('Other','อื่น ๆ')] %}<option value="{{ en }}" {% if en==default_section %}selected{% endif %}>{{ th }} / {{ en }}</option>{% endfor %}</select>
 <p id="chosenStatus" role="status">OPEN / เปิด</p><div class="actions"><button id="openStatus" type="button" class="action-button start" aria-pressed="true">▶ OPEN / เปิด</button><button id="closedStatus" type="button" class="action-button complete" aria-pressed="false">✓ CLOSED / ปิด</button></div>
 <label for="qtyInput" data-i="qty">Actual pcs · blank = unknown</label><input id="qtyInput" type="number" min="0" step="1" inputmode="decimal">
@@ -25,4 +26,4 @@
 <button id="saveEvent" class="button primary">💾 Save production event / บันทึกเหตุการณ์ผลิต</button><div id="eventResult" role="status" aria-live="polite"></div><button id="retryEvent" hidden class="button">Retry retained event / ส่งรายการเดิมอีกครั้ง</button>
 </details></section>
 <section class="panel"><h2 data-i="history">3. Saved section history</h2><div id="statusHistory"></div></section>
-{% endblock %}{% block scripts %}<script>window.SCANNER_USER={{ user.username|tojson }};</script><script src="/static/scan.js?v=54"></script>{% endblock %}
+{% endblock %}{% block scripts %}<script>window.SCANNER_USER={{ user.username|tojson }};</script><script src="/static/scan.js?v=55"></script>{% endblock %}

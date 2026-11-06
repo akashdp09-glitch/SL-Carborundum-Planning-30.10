@@ -381,7 +381,7 @@ _CONTEXT_SOURCE_SLOTS={
     'daily_closed':['PLAN_2026','SEPT_OPEN_CLOSED'],
     'daily_status':['PLAN_2026'],
     'daily_recovery':['PLAN_2026','FIRING_PLAN','STOCK_ON_HAND','SALES_FORECAST','CAPACITY_DATABASE','RECOVERY_PLAN'],
-    'recovery_review':['RECOVERY_PLAN','SALES_PRODUCT_REGISTER','PACKAGING_STANDARD'],
+    'recovery_review':['RECOVERY_PLAN'],
     'firing':['PLAN_2026','FIRING_PLAN','STOCK_ON_HAND','CAPACITY_DATABASE'],
     'back':['PLAN_2026','STOCK_ON_HAND','SALES_FORECAST','CAPACITY_DATABASE'],
     'mps':['PLAN_2026','SALES_FORECAST','STOCK_ON_HAND','CAPACITY_DATABASE'],
@@ -849,7 +849,7 @@ def _strict_status_by_wo(raw):
     return z.groupby('Work Order',as_index=False).agg({'Preparation Closed':'max','FB Closed':'max','Packing Closed':'max','Final Closed':'max','Strict Closed':'max'})
 
 @st.cache_data(show_spinner=False)
-def model(plan_path,mtime):
+def model(plan_path,mtime,status_revision=0):
     sys.path.insert(0,str(ROOT/'apps'/'daily'))
     import sl_daily_engine_v3_22_from_v17 as eng
     _blob=Path(plan_path).read_bytes()
@@ -1399,7 +1399,7 @@ def plan2026_wo_detail(plan_path, query, raw_df=None):
 _TREE=[('▾ HOME & REFERENCE',[('🏠 Home / Main Page','control'),('📚 Code & Part Knowledge','knowledge')]),
        ('▾ PLANNING',[('📅 Daily Production Plan','daily'),('🔥 Firing / Kiln Plan','firing'),('🗓️ MPS / Future Plan','mps'),('🆕 New Part Plan','newplan'),('📦 Stock-on-Hand Material Status','material'),('🧪 Material MRP','mrp'),('⚖️ Capacity / Recovery','capacity'),('⚖️ Capacity vs Plan vs Actual','capacity_actual'),('📦 Packaging Plan','pack'),('🧰 Planning Suite','suite')]),
        ('▾ PRODUCTION & PART TRACKING',[('📋 Update WO Section Status','floor'),('⚡ Mobile Part Audit / QR','audit'),('📋 Mobile Audit Register','audits')]),
-       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Department KPI / KPI แผนก','kpi'),('🏭 Production Evidence Analysis','production_analysis'),('💰 Cost & Planning KPI Analysis','cost'),('🚨 Backorder / Delivery Risk','back'),('🧯 Weekly Recovery Action Plan','daily_recovery'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
+       ('▾ REPORTS',[('📋 Daily Open / Closed WO Report','daily_closed'),('🏭 WIP — Planning vs Production','wip'),('📡 Daily Status Analysis','daily_status'),('🎯 Department KPI / KPI แผนก','kpi'),('🏭 Production Evidence Analysis','production_analysis'),('💰 Cost analysis / ต้นทุน','cost'),('🚨 Backorder / Delivery Risk','back'),('📄 Production Recovery Plan — source status, reasons & WO detail','recovery_review'),('🕘 Usage & Edit History','history')]),
        ('▾ DATA & CONTROL',[('📥 Upload / Replace Source Files','src'),('🔎 Source Traceability','src')])]
 _goto_terms={
  'daily':'download plan excel export daily production schedule แผนรายวัน ดาวน์โหลดแผน',
@@ -1416,7 +1416,7 @@ _goto_terms={
  'audits':'audit register search history export',
  'src':'upload source files traceability daily status source',
  'back':'backorder delivery risk late overdue',
- 'daily_recovery':'backorder recovery risk recovery action plan weekly factory performance',
+
  'recovery_review':'recovery production committed plan snapshot sales product register packaging standard compare pack quantity',
  'newplan':'new part plan new order provisional',
  'capacity':'capacity recovery overload overtime','capacity_actual':'capacity vs plan vs actual utilization daily section กำลังการผลิต แผน ผลิตจริง',
@@ -1478,13 +1478,17 @@ else: st.sidebar.error('ACTIVE PLAN: NOT LOADED')
 # Files & Traceability also hosts the Plan-2026 QR label filters. Load the same
 # analyzed active plan there so section choices and open/closed eligibility are
 # based on the current shared workbook, not an empty local `master` variable.
-_NEED_PLAN={'back','mps','mrp','pack','audit','wip','report','audits','newplan','src','recovery_review'}
+_NEED_PLAN={'back','mps','mrp','pack','audit','wip','report','audits','newplan','src'}
 def _ensure_plan_model():
     global raw,master,op,bo
     if master is not None or not plan:
         return
     try:
         raw,master,op,bo=model(str(plan),plan.stat().st_mtime)
+        from suite.order_status import apply_frame as _whole_status
+        master=_whole_status(master,DB)
+        op=master[(~master['Authoritative Closed']) & master['pcs'].gt(0)].copy()
+        bo=overdue_backorders(master,bkk_today())
         st.session_state.pop('plan_analysis_error',None)
         if master is not None:
             master=_apply_customer_language(master, lang)
@@ -1519,8 +1523,11 @@ try:
 except Exception as _f1e:
     st.sidebar.caption(f'F1 help unavailable: {_f1e}')
 _page=st.query_params.get('page','control')
+if _page == 'daily_closed': _page = 'open_close'
+if _page == 'daily_recovery': _page = 'recovery_review'  # retired weekly action shortcut
 if _page == 'daily_kpi': _page = 'kpi'  # retired hub route uses current department definitions
 _PAGE_TITLES={
+ 'staff_kpi':'KPI สอย / ปุ้ย / Staff KPI','open_close':'รายงาน MD เปิดปิด / Open-close',
  'labels':'QR labels / สร้างป้าย QR',
  'drying':'Confirm drying readiness / ยืนยันการอบแห้ง','accounts':'Shared accounts / บัญชีผู้ใช้',
  'control':'Home / หน้าหลัก','daily':'Daily Production Plan / แผนผลิตรายวัน','material':'Stock-on-Hand Material Status / สถานะวัตถุดิบคงคลัง','firing':'Firing / Kiln Plan / แผนเผา',
@@ -1543,7 +1550,7 @@ if _page == 'control':
 st.markdown(f"<div style='padding:6px 10px;margin:2px 0 8px;border-left:4px solid #e76613;background:#f7f9fc;border-radius:7px;color:#12395b'><small>YOU ARE HERE / ตำแหน่งปัจจุบัน</small>　<b>{_current_title}</b></div>",unsafe_allow_html=True)
 if _page in ('daily_wip','daily_closed','daily_status','daily_kpi','daily_recovery','kpi','wip','capacity_actual','production_analysis'): _nav='more'
 elif _page in ('audit','report','audits','floor'): _nav='audit'
-elif _page in ('back','mps','material','mrp','pack','capacity','newplan','history','knowledge','suite','more','wip','kpi','recovery_review','drying','accounts','labels'): _nav='more'
+elif _page in ('back','mps','material','mrp','pack','capacity','newplan','history','knowledge','suite','more','wip','kpi','recovery_review','drying','accounts','labels','staff_kpi','open_close'): _nav='more'
 elif _page in ('control','daily','firing','src'): _nav=_page
 else: _nav='control'; _page='control'
 _pill_en={'control':'🏠 Home','daily':'📅 Daily','firing':'🔥 Firing','audit':'⚡ Track / QR','src':'📥 Files','more':'📊 Reports & Tools'}
@@ -1566,6 +1573,8 @@ st.markdown(f"<div class='sl-quick-title'>{'เปิดใช้ด่วน' i
 _fastlinks=[('🔫','สแกน เปิด/ปิด / Scan status','floor',''),('📸','ตรวจ WIP / WIP audit','audit',''),('📅','แผนรายวัน / Daily','daily',''),('🔥','แผนเผา / Firing','firing',''),('🧭','ทุกฟังก์ชัน / All functions','more','')]
 st.markdown('<nav class="sl-quicklinks" aria-label="Quick access">'+''.join(f"<a href='{_hub_page_href(_pg,_focus)}' target='_self'><span aria-hidden='true'>{_icon}</span>{_label}</a>" for _icon,_label,_pg,_focus in _fastlinks)+'</nav>',unsafe_allow_html=True)
 st.markdown("""<style>.sl-task-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:12px 0 20px}.sl-task-card{background:#12395b;color:white!important;border-radius:16px;padding:20px;text-decoration:none!important;display:flex;flex-direction:column;gap:5px;min-height:155px;border-bottom:6px solid #e76613}.sl-task-card:focus,.sl-task-card:hover{outline:3px solid #e76613;background:#194c73}.sl-task-card span{font-size:2.5rem}.sl-task-card b{font-size:1.2rem}.sl-task-card small{color:#e1ebf2}.sl-task-card strong{font-size:1rem}@media(max-width:760px){.sl-task-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sl-task-card{padding:14px}}@media(max-width:420px){.sl-task-grid{grid-template-columns:1fr}}</style>""",unsafe_allow_html=True)
+from suite.tracking_portal import styles as _ui55_styles
+_ui55_styles(st)
 _render_context_source_updates(_page)
 if _page not in ('control','src'):
     st.markdown(f"<a href='{_hub_page_href('src')}' target='_self' style='display:inline-block;font-size:.78rem;color:#0057b8;text-decoration:underline;margin:0 0 8px'>↗ Upload / replace source file used by this analysis</a>",unsafe_allow_html=True)
@@ -1594,9 +1603,16 @@ if _page in ('control',):
         st.warning(f"{PHOTO_RECOVERY_STATUS['missing']} audit photo file(s) are still not in the active folder. Their database references were preserved; check the former photo folder and exact paths in Files & Traceability.")
     from suite.task_catalog import render as _task_catalog
     _task_catalog(st,_hub_page_href,compact=True)
+    from suite.tracking_portal import render as _tracking_portal
+    _tracking_portal(st,_pub['http'],DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user',''),key='home')
+    st.link_button('🏭 วิเคราะห์สถานะการผลิต 2026-4 88 / Detailed production file analysis',_hub_page_href('production_analysis'),use_container_width=True)
+    st.link_button('📊 รายงาน MD เปิด–ปิดงาน / Open–close graphs',_hub_page_href('open_close'),use_container_width=True)
+    st.link_button('👥 KPI สอย · ปุ้ย · กราฟเปิดปิด / Staff & open-close analysis',_hub_page_href('staff_kpi'),use_container_width=True)
+    from suite.kpi_workspace import upload_center as _home_kpi_uploads
+    _home_kpi_uploads(st,DB,hub_can_edit(),st.session_state.get('sl_user',''),key='home')
     c1,c2,c3,c4=st.columns(4)
     from suite.service_launcher import probe as _svc_probe, mobile_https_up as _https_up
-    if not mobile_online() and not st.session_state.get('_home_mobile_autostart_requested'):
+    if os.environ.get('SL_DISABLE_AUTO_SERVICES')!='1' and not mobile_online() and not st.session_state.get('_home_mobile_autostart_requested'):
         st.session_state['_home_mobile_autostart_requested']=True
         def _start_mobile_in_background():
             try:
@@ -1994,7 +2010,7 @@ if _page in ('daily','daily_wip','daily_closed','daily_status','daily_kpi','dail
 if _page == 'floor':
     st.markdown('## Shop floor / หน้างาน')
     st.caption('Type a work order, use a USB QR scanner, or take/upload a QR photo. Save OPEN/CLOSED for the selected section. Records are stored locally in CENTRAL_DATA and do not require section workbook uploads.')
-    st.link_button('🔫 B2D21 USB scanner / สแกนและดูประวัติ',_pub['http']+'/scan',use_container_width=True)
+    st.link_button('🔫 สแกนและดูประวัติ / Desktop scanner / สแกนและดูประวัติ',_pub['http']+'/scan',use_container_width=True)
     from suite.floor_open_close import render as _floor_page
     _qr_scan_dir=Path(os.environ.get('SL_PHOTO_ROOT',str(SHARED_ROOT/'PHOTOS')))/'QR_SCANS'
     _floor_page(st, plan_path=str(plan) if plan else None, db_file=DB, data_dir=DATA, raw_df=raw,
@@ -2064,7 +2080,9 @@ if _page == 'firing':
     st.caption('Full Firing Planner below')
     show_planner('firing')
 if _page == 'report':
-    if not mobile_online() and not st.session_state.get('_audit_mobile_autostart_attempted'):
+    from suite.tracking_reports import render as _tracking_reports
+    _tracking_reports(st,DB,DATA)
+    if os.environ.get('SL_DISABLE_AUTO_SERVICES')!='1' and not mobile_online() and not st.session_state.get('_audit_mobile_autostart_attempted'):
         st.session_state['_audit_mobile_autostart_attempted']=True
         with st.spinner('Starting shared part-tracking service on this PC…'):
             try:
@@ -2155,7 +2173,7 @@ if _page == 'report':
         st.error(f'Audit report unavailable: {_report_error}')
 
 if _page in ('audit','audits'):
-    if not mobile_online() and not st.session_state.get('_audit_mobile_autostart_attempted'):
+    if os.environ.get('SL_DISABLE_AUTO_SERVICES')!='1' and not mobile_online() and not st.session_state.get('_audit_mobile_autostart_attempted'):
         st.session_state['_audit_mobile_autostart_attempted']=True
         with st.spinner('Starting part tracking service on this PC…'):
             try:
@@ -2166,7 +2184,9 @@ if _page in ('audit','audits'):
                 if _mobile_start.get('ready'): st.rerun()
             except Exception as _mobile_start_error:
                 st.session_state['_audit_mobile_start_error']=str(_mobile_start_error)
-    st.markdown('## Part Audit, QR & Audit Register')
+    from suite.tracking_portal import render as _tracking_portal
+    _tracking_portal(st,_pub['http'],DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user',''),key='audit')
+    st.markdown('## ตรวจนับและทะเบียนชิ้นงาน / Part Audit & Register')
     st.markdown("""<div class="sl-how">
 <div><b>1. Find a work order</b>Type any format (P005-110826 or p005110826). USB scanner works in the same box. Camera photo is optional.</div>
 <div><b>2. Update status</b>After the WO is selected: change status, location and quantity, then take a photo. File name is WO + location + time.</div>
@@ -2347,10 +2367,12 @@ if _page in ('audit','audits'):
         _aqty=None if _qty_unknown else _ac3.number_input('Verified physical quantity (pcs)',min_value=0.0,value=0.0,step=1.0,key='desk_audit_qty_'+_norm_wo(_ad['wo']))
         _aproc=st.text_input('Observed process — enter actual section',value='',key='desk_audit_process_'+_norm_wo(_ad['wo']))
         _anote=st.text_area('Audit notes',key='desk_audit_notes_'+_norm_wo(_ad['wo']))
-        _aphoto=st.camera_input('📸 Part photo — optional evidence',key='desk_part_photo_'+_norm_wo(_ad['wo']))
+        _acam=st.camera_input('📸 ภาพชิ้นงาน / Part photo',key='desk_part_photo_'+_norm_wo(_ad['wo']))
+        _afile=st.file_uploader('หรือเลือกภาพ / Or upload photo',type=['jpg','jpeg','png','webp'],key='desk_part_file_'+_norm_wo(_ad['wo']))
+        _aphoto=_acam if _acam is not None else _afile
         _sub_key='desktop_audit_submission_'+_norm_wo(_ad['wo'])
         _photo_hash=hashlib.sha256(_aphoto.getvalue()).hexdigest() if _aphoto is not None else ''
-        _form_fingerprint=hashlib.sha256(repr((_norm_wo(_ad['wo']),_ast,_aloc,_aqty,_qty_unknown,_aproc,_anote,_photo_hash)).encode()).hexdigest()
+        _form_fingerprint=hashlib.sha256(repr((st.session_state.get('sl_user',''),_norm_wo(_ad['wo']),_ast,_aloc,_aqty,_qty_unknown,_aproc,_anote,_photo_hash)).encode()).hexdigest()
         if st.session_state.get(_sub_key+'_fingerprint')!=_form_fingerprint:
             st.session_state[_sub_key]=uuid.uuid4().hex
             st.session_state[_sub_key+'_fingerprint']=_form_fingerprint
@@ -2639,6 +2661,14 @@ if _page == 'cost':
     from suite.cost_kpi import render as _render_cost_kpi
     _render_cost_kpi(st, SM, user=st.session_state.get('sl_user','Unknown'), can_edit=hub_can_edit())
 
+if _page == 'open_close':
+    from suite.kpi_workspace import render_open_close as _openclose55
+    _openclose55(st,DB)
+
+if _page == 'staff_kpi':
+    from suite.kpi_workspace import render as _staff_kpi
+    _staff_kpi(st,DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user',''))
+
 if _page == 'more':
     from suite.task_catalog import render as _task_catalog
     _task_catalog(st,_hub_page_href)
@@ -2670,139 +2700,13 @@ if _page == 'accounts':
         st.caption('Desktop and mobile use this same account database. Existing passwords are preserved. New-install credentials are in user details.txt. Section defaults can be changed for cross-section work; saves retain the signed-in username.')
 
 if _page == 'recovery_review':
-    st.header('📄 Production Backorder Recovery Plan / แผนกู้คืนงานค้างส่งฝ่ายผลิต')
-    st.caption('Production source status, reason/hold, proposed recovery date and WO-level comparison with the active Plan-2026. Original due dates remain separate.')
-    st.info(f"Plan-2026 is the current, ongoing master. The Production recovery workbook is a dated activity snapshot, so its older backorders can outnumber today's overdue Plan-2026 list after dates, quantities, or closure status change. This page reconciles each WO as of {bkk_today():%d %b %Y}; a later Plan date is shown as a difference to verify, not assumed to be an authorized customer-date change.")
-    def _active_src(sid):
-        a=SM.active(sid)
-        if a and Path(a.get('stored_path','')).is_file(): return Path(a['stored_path']),a
-        p=_slot_published_path(sid)
-        return (p,{}) if p and p.is_file() else (None,{})
-    _rp,_rmeta=_active_src('RECOVERY_PLAN'); _salesp,_smeta=_active_src('SALES_PRODUCT_REGISTER'); _packp,_pmeta=_active_src('PACKAGING_STANDARD')
-    for _lab,_path,_meta in [('Production recovery snapshot',_rp,_rmeta),('Sales product register',_salesp,_smeta),('Production packaging standard',_packp,_pmeta)]:
-        if _path:
-            st.caption(f"{_lab}: {_meta.get('original_name',_path.name)} · {('r'+str(_meta.get('revision_no'))) if _meta.get('revision_no') else 'saved source'} · imported {_meta.get('imported_at','time not recorded')}")
-        else: st.warning(f'{_lab} is not loaded. Use “Update sources for this page” above; earlier revisions remain retained.')
-    if _rp:
-        try:
-            from suite.recovery_product_review import read_recovery_snapshot
-            _rec,_rec_sheets=read_recovery_snapshot(str(_rp))
-            from suite.recovery_progress_page import render as _render_recovery_progress
-            _render_recovery_progress(st, str(_rp))
-            from suite.recovery_product_review import reconcile_recovery_to_plan
-            _bridge,_plan_only=reconcile_recovery_to_plan(_rec,master,bo,bkk_today())
-            from suite.recovery_product_review import recovery_unique_orders
-            _rec_unique=recovery_unique_orders(_rec)
-            _status_col='Recovery status (source)'
-            _onplan=int(_rec_unique[_status_col].eq('ตามแผน').sum()) if not _rec_unique.empty else 0
-            _behind=int(_rec_unique[_status_col].eq('ตกแผน').sum()) if not _rec_unique.empty else 0
-            _conflict=int(_rec_unique[_status_col].str.contains('CONFLICT',na=False).sum()) if not _rec_unique.empty else 0
-            _plan_open=int(_bridge.get('Plan status',pd.Series(dtype=str)).eq('OPEN').sum()) if not _bridge.empty else 0
-            _plan_closed_positive=int((_bridge.get('Plan status',pd.Series(dtype=str)).eq('CLOSED') & pd.to_numeric(_bridge.get('Plan open balance (pcs)',pd.Series(dtype=float)),errors='coerce').fillna(0).gt(0)).sum()) if not _bridge.empty else 0
-            _strict_overdue=int(bo['Work Order'].astype(str).nunique()) if isinstance(bo,pd.DataFrame) and not bo.empty and 'Work Order' in bo else 0
-            _snapdates=pd.to_datetime(_rec.get('Recovery snapshot as-of date',pd.Series(dtype=object)),errors='coerce').dropna()
-            if not _snapdates.empty:st.caption(f"Production recovery sheet snapshot date: {_snapdates.iloc[0]:%d %b %Y} · status is the source's Achieve by Item field (FQ). It is separate from today's strict Plan-2026 overdue rule.")
-            st.subheader('Production recovery status vs current Plan-2026 / แผนกู้คืนฝ่ายผลิตเทียบ Plan ปัจจุบัน')
-            _s1,_s2,_s3,_s4,_s5=st.columns(5)
-            _s1.metric('Current Plan overdue WOs',f'{_strict_overdue:,}')
-            _s2.metric('Production recovery WOs',f'{len(_rec_unique):,}')
-            _s3.metric('Source says on plan / ตามแผน',f'{_onplan:,}')
-            _s4.metric('Source says behind / ตกแผน',f'{_behind:,}')
-            _s5.metric('Recovery WOs still open in Plan',f'{_plan_open:,}')
-            _bridge_overdue=int(_bridge.get('Current overdue in Plan-2026',pd.Series(dtype=bool)).fillna(False).sum()) if not _bridge.empty else 0
-            st.caption(f"Bridge: {_bridge_overdue:,} recovery-list WOs are overdue in current Plan-2026; {len(_plan_only):,} additional current Plan overdue WOs are absent from the Production recovery file. {_plan_closed_positive:,} WOs are marked CLOSED in Plan but still carry positive residual pcs for review.")
-            if _conflict:st.warning(f'{_conflict:,} recovery WOs have conflicting on-plan/behind source rows; they are not counted as either status.')
-            _wip_src=pd.to_numeric(_rec_unique.get('Recovery source WIP (unit not specified)',pd.Series(dtype=float)),errors='coerce')
-            if _wip_src.notna().any():
-                _behind_wip=pd.to_numeric(_rec_unique.loc[_rec_unique[_status_col].eq('ตกแผน'),'Recovery source WIP (unit not specified)'],errors='coerce')
-                _onplan_wip=pd.to_numeric(_rec_unique.loc[_rec_unique[_status_col].eq('ตามแผน'),'Recovery source WIP (unit not specified)'],errors='coerce')
-                st.caption(f"Recovery WIP field (unit not specified): behind-plan {_behind_wip.sum(min_count=1):,.0f}; on-plan {_onplan_wip.sum(min_count=1):,.0f}; all distinct WOs {_wip_src.sum(min_count=1):,.0f}. Do not compare this source field with Production WIP tonnes or Plan-2026 pcs.")
-            _status_plot=_rec_unique.groupby(_status_col,dropna=False,as_index=False).agg(WOs=('_key','nunique')) if not _rec_unique.empty else pd.DataFrame()
-            _cause_base=_rec_unique[_rec_unique[_status_col].isin(['ตกแผน','CONFLICT — inspect source rows'])].copy() if not _rec_unique.empty else pd.DataFrame()
-            _cause_plot=_cause_base.groupby('Recovery reason / note',dropna=False,as_index=False).agg(WOs=('_key','nunique')).sort_values('WOs',ascending=False) if not _cause_base.empty else pd.DataFrame()
-            _behind_rows=_rec_unique[_rec_unique[_status_col].eq('ตกแผน')] if not _rec_unique.empty else pd.DataFrame()
-            _behind_no_reason=int(_behind_rows['Recovery reason / note'].eq('No reason recorded in source').sum()) if not _behind_rows.empty else 0
-            _behind_with_reason=len(_behind_rows)-_behind_no_reason
-            if not _status_plot.empty:
-                _g1,_g2=st.columns(2)
-                with _g1:st.plotly_chart(px.bar(_status_plot,x=_status_col,y='WOs',color=_status_col,title='Production source: recovery items on plan vs behind'),use_container_width=True)
-                with _g2:
-                    if not _cause_plot.empty:st.plotly_chart(px.bar(_cause_plot.head(12),x='WOs',y='Recovery reason / note',orientation='h',title='Recorded reasons / notes on behind-plan recovery WOs'),use_container_width=True)
-                    else:st.info('No source reason/note is available for behind-plan items.')
-            st.caption(f'Among {_behind:,} behind-plan WOs, {_behind_with_reason:,} have a recorded reason/note and {_behind_no_reason:,} have none in the source. Counts use distinct WOs; reason groups combine note and cause when both exist. “On plan” does not by itself prove warehouse receipt or customer delivery.')
-            _rec_cols=[c for c in ['Work Order','Recovery status (source)','Recovery source WIP (unit not specified)','Recovery source order qty','Original due date','Production proposed date / hold','Recovery reason / note','Recovery rows','Recovery source row(s)','Recovery source cell references'] if c in _rec_unique]
-            st.dataframe(_rec_unique[_rec_cols],use_container_width=True,hide_index=True,height=350)
-            st.download_button('⬇ Download distinct Production recovery status and reasons',_rec_unique[_rec_cols].to_csv(index=False).encode('utf-8-sig'),'production_recovery_status_by_wo.csv','text/csv',key='recovery_status_reason_download')
-            if not _bridge.empty:
-                _both=int(_bridge['Current overdue in Plan-2026'].sum())
-                _r1,_r2,_r3,_r4,_r5=st.columns(5)
-                _r1.metric('Recovery snapshot WOs',f'{_bridge["_key"].nunique():,}')
-                _r2.metric('Still overdue in current Plan',f'{_both:,}')
-                _r3.metric('Recovery WOs not overdue now',f'{len(_bridge)-_both:,}')
-                _r4.metric('Current Plan overdue total',f'{bo["Work Order"].nunique() if isinstance(bo,pd.DataFrame) and not bo.empty else 0:,}')
-                _r5.metric('Plan overdue absent from snapshot',f'{len(_plan_only):,}')
-                _bridge['_due_month']=pd.to_datetime(_bridge['Historical due date (Recovery)'],errors='coerce').dt.strftime('%Y-%m')
-                _bridge_chart=_bridge.dropna(subset=['_due_month']).groupby(['_due_month','Reconciliation result'],as_index=False).agg(WOs=('_key','nunique'))
-                if not _bridge_chart.empty:
-                    _month_order=sorted(_bridge_chart['_due_month'].unique())
-                    st.plotly_chart(px.bar(_bridge_chart,x='_due_month',y='WOs',color='Reconciliation result',barmode='stack',category_orders={'_due_month':_month_order},title='Production recovery snapshot WOs by historical due month and current Plan-2026 status'),use_container_width=True)
-                st.caption('Interpretation: “Recovery only” does not mean the old delay never happened. It means this recovery snapshot WO is not in today’s strict overdue list; check whether the current Plan shows it closed, has no balance, has a later date, or is missing the WO. Production recovery rows are counted once per normalized WO; repeats remain visible in the source-row column.')
-                _bridge_cols=['Recovery Work Order','Historical due date (Recovery)','Production proposed date / hold','Recovery result (source)','Recovery QTY (source)','Recovery WIP (source)','Current Plan due date','Plan status','Plan open balance (pcs)','Plan section / location','Current overdue in Plan-2026','Reconciliation result','Recovery source row(s)','Plan source row(s)','Recovery customer (source)','Recovery specification (source)','Recovery reason (source)','Recovery note (source)','Recovery source cell references','Recovery result source cell(s)']
-                _bridge_cols=[c for c in _bridge_cols if c in _bridge]
-                _bridge_view=_bridge[_bridge_cols].copy()
-                _bridge_view=_bridge_view.rename(columns={'Recovery Work Order':'Work Order'})
-                st.markdown('#### Work-order reconciliation / เทียบสถานะรายใบสั่งผลิต')
-                st.dataframe(_bridge_view,use_container_width=True,hide_index=True,height=430)
-                st.download_button('⬇ Download Plan vs Recovery reconciliation CSV',_bridge_view.to_csv(index=False).encode('utf-8-sig'),'plan_vs_production_recovery_reconciliation.csv','text/csv',key='recovery_plan_bridge_download')
-                if not _plan_only.empty:
-                    with st.expander(f'Current Plan overdue WOs not found in this Production snapshot ({len(_plan_only):,})'):
-                        st.dataframe(_plan_only,use_container_width=True,hide_index=True,height=300)
-                        st.download_button('⬇ Download Plan-only overdue WOs',_plan_only.to_csv(index=False).encode('utf-8-sig'),'plan_overdue_not_in_recovery_snapshot.csv','text/csv',key='plan_only_recovery_download')
-            else:
-                st.warning('No recovery work orders could be reconciled. Check that Plan-2026 and the dated Production recovery workbook are both loaded, and compare source WO formats.')
-            _u=_rec.sort_values('Recovery Source Row').groupby('_key',as_index=False).agg(
-                **{'Work Order':('Fac No','first'),'Recovery rows':('Fac No','size'),'Original Due Date':('Original Due Date',lambda x:x.dropna().iloc[0] if x.notna().any() and x.dropna().nunique()==1 else pd.NaT),
-                   'Internal Recovery Date':('Internal Recovery Date',lambda x:x.dropna().iloc[0] if x.notna().any() and x.dropna().nunique()==1 else pd.NaT),
-                   'Recovery status':('Recovery Result',lambda x:x.iloc[0] if x.nunique()==1 else 'CONFLICT — inspect source rows'),
-                   'QTY source':('QTY',lambda x:x.dropna().iloc[0] if x.notna().any() and x.dropna().nunique()==1 else None),
-                   'Reported warehouse QTY':('Reported Warehouse QTY (source unit)','max'),
-                   'Customer':('Custumer','first'),'Spec':('Spec','first'),'Delay / reason':('สาเหตุที่ตกแผน','first')})
-            _r1,_r2,_r3,_r4=st.columns(4)
-            _r1.metric('Recovery source rows',f'{len(_rec):,}')
-            _r2.metric('Distinct work orders',f'{_u["_key"].nunique():,}')
-            _r3.metric('Repeated WO keys',f'{int((_u["Recovery rows"]>1).sum()):,}')
-            _r4.metric('Status conflicts',f'{int(_u["Recovery status"].str.startswith("CONFLICT").sum()):,}')
-            _u['Due month']=pd.to_datetime(_u['Original Due Date'],errors='coerce').dt.strftime('%Y-%m')
-            _month=_u.dropna(subset=['Due month']).groupby(['Due month','Recovery status'],as_index=False).agg(WOs=('Work Order','nunique'))
-            if not _month.empty:
-                _months=sorted(_month['Due month'].unique())
-                st.plotly_chart(px.bar(_month,x='Due month',y='WOs',color='Recovery status',barmode='stack',category_orders={'Due month':_months},title='Distinct recovery WOs by original due month and source result'),use_container_width=True)
-            st.caption('Duplicate WO rows are retained below. Headline WOs are distinct keys; dates and quantities are only rolled up when duplicate rows agree. Warehouse quantity is shown in the source unit because the workbook does not label a consistent unit.')
-            _cols=[c for c in ['Recovery Source Row','Fac No','Custumer','Spec','QTY','Wip','Original Due Date','Internal Date / Hold Status','Recovery Result','Reported Warehouse QTY (source unit)','Recovery reason (source)','Recovery note (source)','Recovery source cell references','Duplicate WO Rows','Duplicate WO Review'] if c in _rec]
-            st.dataframe(_rec[_cols],use_container_width=True,hide_index=True,height=440)
-            st.download_button('⬇ Download recovery detail CSV',_rec[_cols].to_csv(index=False).encode('utf-8-sig'),'recovery_snapshot_detail.csv','text/csv',key='recovery_snapshot_download')
-            with st.expander('Snapshot validation and coverage'):
-                st.write({'Sheets in source':_rec_sheets,'Repeated source rows':int((_rec['Duplicate WO Rows']>1).sum()),'Distinct WOs':int(_rec['_key'].nunique()),'Rows with original due date':int(_rec['Original Due Date'].notna().sum()),'Rows with internal recovery date':int(_rec['Internal Recovery Date'].notna().sum()),'Internal hold/status text rows':int(_rec['Internal Date / Hold Status'].str.strip().ne('').sum())})
-                st.caption('Text values such as “รอแผนขาย”, “NCR”, or “รอปรับแผน” remain hold/status values, never dates. The page does not call a WO “Production accepted” unless an explicit approval field exists.')
-        except Exception as _e: st.error(f'Recovery snapshot could not be analyzed: {_e}')
-    if _salesp and _packp:
-        try:
-            from suite.recovery_product_review import compare_product_masters
-            _cmp,_prod=compare_product_masters(str(_salesp),str(_packp))
-            _distinct=_cmp.sort_values('Sales Source Row').drop_duplicates('Product Code')
-            _s1,_s2,_s3,_s4=st.columns(4)
-            _s1.metric('Sales register rows',f'{len(_cmp):,}')
-            _s2.metric('Distinct Sales codes',f'{_cmp["Product Code"].nunique():,}')
-            _s3.metric('Production standard rows / codes',f'{len(_prod):,} / {_prod["Product Code"].nunique():,}')
-            _s4.metric('Exact codes shared',f'{int(_distinct["Production Source Row"].notna().sum()):,}')
-            _status=_distinct['Comparison'].value_counts().rename_axis('Comparison').reset_index(name='Products')
-            st.plotly_chart(px.bar(_status,x='Comparison',y='Products',color='Comparison',title='Sales registration vs Production packaging standard — code/pack check'),use_container_width=True)
-            st.caption('Sales register = registered product/code, customer-facing description, brand and registered pack quantity. Production standard = packing quantity and shop-floor packing material instructions. Each stays an independent revision; mismatches require review and are not auto-corrected.')
-            _filter=st.multiselect('Show comparison status',sorted(_distinct['Comparison'].dropna().unique()),default=sorted(_distinct['Comparison'].dropna().unique()),key='recovery_product_compare_filter')
-            _show=_cmp[_cmp['Comparison'].isin(_filter)]
-            st.dataframe(_show,use_container_width=True,hide_index=True,height=420)
-            st.download_button('⬇ Download product master comparison CSV',_show.to_csv(index=False).encode('utf-8-sig'),'sales_vs_production_product_master.csv','text/csv',key='product_master_compare_download')
-        except Exception as _e: st.error(f'Product master comparison could not be completed: {_e}')
+    _recovery=SM.active('RECOVERY_PLAN')
+    _recovery_path=Path(_recovery['stored_path']) if _recovery else fp('Recovery-Plan-LATEST.xlsx')
+    if _recovery_path and Path(_recovery_path).is_file():
+        from suite.recovery_workspace import render as _recovery55
+        _recovery55(st,_recovery_path)
+    else:st.info('นำเข้าไฟล์ Recovery ครั้งเดียวที่ไฟล์ต้นทาง / Import the Recovery workbook once in Sources')
+
 if _page == 'back':
     st.header('🚨 Past-due Backorders / งานค้างส่งเกินกำหนด')
     st.markdown(f"<a href='{_hub_page_href('recovery_review')}' target='_self' style='font-size:.9rem;color:#0057b8;text-decoration:underline'>↗ Open Production Recovery Plan — accepted status, hold reasons, proposed recovery dates & WO detail</a>",unsafe_allow_html=True)
@@ -2811,8 +2715,7 @@ if _page == 'back':
     _b1,_b2=st.columns(2)
     if _b1.button('📄 Production Recovery Plan — status, reasons and WO detail',key='open_production_recovery_analysis',type='primary'):
         st.query_params['page']='recovery_review';st.rerun()
-    if _b2.button('🧯 Weekly Recovery Action Plan', key='open_weekly_recovery_from_backorder'):
-        st.query_params['page']='daily_recovery'
+
         st.rerun()
     if master is None:st.warning('Load Plan-2026 in SOURCES first.')
     else:
@@ -2846,15 +2749,9 @@ if _page == 'back':
                 st.plotly_chart(_ff,use_container_width=True)
                 st.dataframe(_future_g,use_container_width=True,hide_index=True)
 if _page == 'mps':
-    st.header('🗓️ MPS — open demand by due period + category')
-    if op is None:st.warning('Load Plan-2026 in SOURCES first.')
-    else:
-        _m1,_m2,_m3,_m4=st.columns(4)
-        _m1.metric('Open WOs',int(op['Work Order'].nunique()) if 'Work Order' in op.columns else len(op))
-        _m2.metric('Open pcs',f"{float(op['pcs'].sum()):,.0f}" if 'pcs' in op.columns else '—')
-        _m3.metric('Open ton',f"{float(op['ton'].sum()):,.2f}" if 'ton' in op.columns else '—')
-        _m4.metric('Due months',int(op['Due Date'].dt.to_period('M').nunique()) if 'Due Date' in op.columns else 0)
-        x=op.copy();x['Due Month']=x['Due Date'].dt.strftime('%Y-%m');g=x.groupby(['Due Month','Product Category'],dropna=False).agg(WOs=('Work Order','nunique'),pcs=('pcs','sum'),ton=('ton','sum')).reset_index();st.plotly_chart(px.bar(g,x='Due Month',y='pcs',color='Product Category',barmode='stack',title='MPS open requirement — pcs',text_auto='.0f'),use_container_width=True);st.plotly_chart(px.bar(g,x='Due Month',y='ton',color='Product Category',barmode='stack',title='MPS open requirement — tonnes',text_auto='.2f'),use_container_width=True);st.dataframe(display_df(g),use_container_width=True,hide_index=True)
+    from suite.supply_workspace import render_mps as _mps55
+    _mps55(st,op)
+
 if _page == 'material':
     st.header('📦 Stock-on-Hand Material Status / สถานะวัตถุดิบคงคลัง')
     st.caption('This page reads the active shared Stock on Hand workbook directly. It does not run or rebuild the Daily Plan. Stock status and work-order material feasibility are separate checks.')
@@ -2876,6 +2773,11 @@ if _page == 'material':
             st.caption(f"Source workbook: {_source_name} · Revision {('r'+str(_source_revision)) if _source_revision else 'existing file'} · Imported {_source_imported}"+(f" · SHA-256 {_source_sha[:16]}…" if _source_sha else ''))
             st.info('The import timestamp identifies when this software received the workbook; it is not assumed to be the stock-count date. Check the workbook’s own report date before acting.')
             # Render the two familiar graphs before the evidence table; reuse the page's already parsed DataFrame.
+            with st.expander('รายงานสต็อกครบและฐานคำนวณ / Complete stock evidence'):
+                st.caption('Under-test material is separate; undated incoming is not confirmed available stock. Source report date and reservations must be checked before release.')
+                if st.button('เตรียม Excel สต็อก / Prepare stock Excel',key='stock55_xlsx'):
+                    from suite.exporters import to_workbook as _stock_book
+                    st.download_button('⬇ Complete stock analysis',_stock_book({'Source stock':_material_stock,'Basis':pd.DataFrame({'Source':[_source_name],'Revision':[_source_revision],'Imported':[_source_imported],'SHA256':[_source_sha]})}),'Stock_Source_Analysis.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             _graph_all=st.toggle('Show every material on the graph / แสดงวัตถุดิบทั้งหมด',value=False,key='material_graph_all_rc31')
             _graph_stock=_material_stock.copy()
             for _gc in ['Order on Hand g','Physical Stock g','Waiting to Receive g','Under Test g','Balance Stock g']:
@@ -2939,32 +2841,15 @@ if _page == 'material':
             st.caption(f'Active source: {Path(_stock_file).name} · Update it from the source panel above if the workbook is revised or its controlled sheet layout changed.')
 
 if _page == 'mrp':
-    st.header('🧪 Material MRP — actual codes only / MRP วัตถุดิบ')
-    if raw is None:st.warning('Load Plan-2026 in SOURCES first.')
+    if raw is None or master is None:st.info('Load the active Plan-2026 once in Sources')
     else:
-        mat,pairs=material_mrp(raw); st.caption('Detected Plan material columns: '+(', '.join(f'{a}/{b}' for a,b in pairs) if pairs else 'NONE'))
-        if mat.empty: st.error('No material demand calculated. The diagnostic above shows whether material-code/gram columns were detected.')
-        else:
-            tot=mat.groupby('Material Code',as_index=False)['Required kg'].sum().sort_values('Required kg',ascending=False);stock=fp('Stock-on-Hand-LATEST.xlsx')
-            if stock:
-                try:
-                    a=pd.read_excel(stock,sheet_name='Abrasive').rename(columns={'รหัสสินค้า':'Material Code','รายละเอียดสินค้า':'Description','วัตถุดิบคงคลัง':'Stock kg','รอวัถุดิบเข้า':'Incoming kg','รอผลLAB':'LAB kg'});a['Material Code']=a['Material Code'].astype(str).str.strip();tot['Material Code']=tot['Material Code'].astype(str).str.strip();tot=tot.merge(a[[c for c in ['Material Code','Description','Stock kg','Incoming kg','LAB kg'] if c in a]].drop_duplicates('Material Code'),on='Material Code',how='left')
-                except Exception as e:st.warning(f'Stock diagnostic: {e}')
-            for c in ['Stock kg','Incoming kg','LAB kg']:
-                if c not in tot:tot[c]=0
-                tot[c]=pd.to_numeric(tot[c],errors='coerce').fillna(0)
-            tot['Hard shortage kg']=(tot['Required kg']-tot['Stock kg']-tot['Incoming kg']).clip(lower=0);tot['Shortage if LAB passes kg']=(tot['Required kg']-tot['Stock kg']-tot['Incoming kg']-tot['LAB kg']).clip(lower=0)
-            _req='Required kg'
-            if _req not in tot.columns: tot[_req]=0.0
-            st.metric('Calculated material demand',f"{pd.to_numeric(tot[_req],errors='coerce').fillna(0).sum():,.1f} kg")
-            edited_mrp=_persistent_data_editor(editor_view(tot),use_container_width=True,hide_index=True,height=520,num_rows='dynamic',key='mrp_editor',disabled=not hub_can_edit(),column_config=editor_column_config(tot))
-            if _req in edited_mrp.columns:
-                _mg=edited_mrp.copy();_mg[_req]=pd.to_numeric(_mg[_req],errors='coerce').fillna(0)
-                st.plotly_chart(px.bar(_mg.sort_values(_req,ascending=False).head(30),x='Material Code',y=_req,title='Top material requirements — kg',text_auto='.0f'),use_container_width=True)
-            c1,c2=st.columns(2);
-            with c1:
-                if hub_can_edit() and st.button('💾 SAVE MRP CHANGES',use_container_width=True): save_editable(edited_mrp,'Material_MRP_Editable',st.session_state.get('sl_user',''),st.session_state.get('sl_section',''));st.success('MRP changes saved; graph uses edited values immediately.')
-            with c2: st.download_button('⬇ DOWNLOAD EDITED MRP',to_xlsx_bytes(edited_mrp,'Material MRP'),'Material_MRP_Editable.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',use_container_width=True);st.download_button('⬇ Material MRP trace CSV',mat.to_csv(index=False).encode('utf-8-sig'),'SL_MRP_TRACE.csv','text/csv')
+        from suite.supply_workspace import render_mrp as _mrp55
+        _mrp55(st,raw,master,material_pairs(raw),fp('Stock-on-Hand-LATEST.xlsx'))
+        if st.checkbox('เปิดเครื่องมือ MRP แบบกำหนดวัน / Dated requirements & purchase proposals',key='mrp55_dated'):
+            from suite.plan_reader import load_plan as _normalized_plan
+            from suite.requirements_page import render as _dated_mrp55
+            _dated_mrp55(_normalized_plan(plan),plan,DATA,SHARED_ROOT)
+
 if _page == 'pack':
     st.markdown("<div style='padding:12px 18px;border-left:6px solid #e76613;background:#fff6ed;border-radius:10px'><h2 style='margin:0;color:#12395b'>📦 Packaging Plan / แผนบรรจุภัณฑ์</h2></div>",unsafe_allow_html=True)
     st.caption('Due dates come from the shared Plan-2026. Default packaging comes from the latest Packaging Standard; missing standards may use a same-size alternative selected by Planning.')

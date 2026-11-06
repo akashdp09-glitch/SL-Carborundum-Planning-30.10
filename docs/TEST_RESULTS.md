@@ -1,3 +1,11 @@
+Current broader suite: 318 passed, 8 skipped, 16 failed. Fourteen previously reproduce on the RC29.53 baseline; two additional old monthly-upload assertions expect the format/navigation that the owner explicitly replaced. They remain visible failures, not marked passed. Firing integrity retains three inherited mismatches; daily integrity passes with pending review entries. Missing cloud validation script is recorded.
+
+RC29.57: 38 focused tests passed; mobile 98 passed / 1 skipped; 10 real-browser checks passed. Real fast allocator + merged operational Excel scenario passed with synthetic data, hard pull/upstream validation disabled for that scenario. Full factory-file acceptance remains outstanding. See RC57 logs and review notes.
+
+# RC29.57 — current review
+
+See [RC29.57 notes](docs/RC29_57_REVIEW_NOTES.md) and the RC57 test logs. Revised transition loads now feed main operational output; exact older factory-file acceptance remains outstanding. Existing shared data is preserved.
+
 # Test results
 
 ## RC29.54 — 5 November 2026

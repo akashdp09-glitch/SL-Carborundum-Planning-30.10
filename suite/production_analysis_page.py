@@ -97,7 +97,7 @@ def render_department(st, db_path, *, can_edit=False,user="Unknown",**_):
     df=retained_frame(str(path),production_revision(sources))
     if not df.empty and "date" in df:
         periods=sorted(set(periods)|set(df.loc[df.valid.eq(True),"date"].dropna().dt.strftime("%Y-%m")))
-    period=st.selectbox("Reporting month",periods or [bkk_today().strftime("%Y-%m")],index=len(periods)-1 if periods else 0,key="department_reporting_month")
+    period=st.selectbox("Reporting month",periods or [bkk_today().strftime("%Y-%m")],index=periods.index(max(values.period)) if not values.empty and max(values.period) in periods else len(periods)-1 if periods else 0,key="department_reporting_month")
     results=store.department_results(path,period,frame=df)
     for col,(_,row) in zip(st.columns(3),results.iterrows()):
         col.metric(row.KPI,"Not recorded" if pd.isna(row.Achievement_percent) else f"{row.Achievement_percent:.2f}%")
@@ -112,7 +112,7 @@ def render_department(st, db_path, *, can_edit=False,user="Unknown",**_):
         show_table(st,"Final packed output by category",category)
         for measure in ("distinct_WOs","pieces","weight_tonnes"):
             chart(st,category,granularity,measure,"category",f"Packing only — {measure} by category")
-    if not values.empty and st.checkbox("Show revised Production KPI workbook comparisons",key="show_production_kpi_matrices"):
+    if not values.empty:
         matrices=values[values.role.isin(["production_kpi_section","production_kpi_category"])].copy()
         matrices=matrices[matrices.period.eq(period)]
         for role,title in [("production_kpi_section","Section KPI evidence"),("production_kpi_category","Category KPI evidence — packing source")]:
@@ -147,7 +147,7 @@ def render_department(st, db_path, *, can_edit=False,user="Unknown",**_):
 
 def render(st, db_path, *, can_edit=False,user="Unknown"):
     path=evidence_path(db_path)
-    st.header("🏭 Production Evidence Analysis")
+    st.header("🏭 วิเคราะห์สถานะการผลิต 2026-4 88 / Production Evidence Analysis")
     st.caption("Detailed English analysis · approved production plans vs section handovers · all normalised weights in metric tonnes. Plans, actual outputs, kiln loads, WIP and QC are separate evidence bases.")
     source_controls(st,path,can_edit,user)
     sources=store.source_list(path)

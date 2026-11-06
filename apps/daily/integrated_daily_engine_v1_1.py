@@ -291,6 +291,8 @@ def build_detailed(plan_path,firing_path,cap_path,start,horizon,prep_kg=1200.0,p
     from suite.lead_time_source import attach as _active_lead_times
     from suite.drying_confirmations import apply as _dry_confirmations
     from suite.central_paths import db_path as _shared_db_path
+    from suite.order_status import apply_frame as _manual_whole_status
+    plan=_manual_whole_status(plan,_shared_db_path())
     plan=_dry_confirmations(_active_lead_times(plan,cap_path),_shared_db_path())
     core=oldeng.build_daily(plan,firing,mix,form,kiln,grind,pack,start,int(horizon),float(prep_kg),int(packing_people),previous_firing=previous_firing,normal_hours=float(normal_hours))
     allp=core['all']; allp,pair_audit=cr.synchronize_ab_layers(allp); core['all']=allp; ot=cr.ot_suggestion(allp,normal_hours); plans={}

@@ -50,6 +50,11 @@ def classify(plan: pd.DataFrame, today: Optional[dt.date] = None) -> pd.DataFram
     out.loc[eu_closed & ~fc_closed, "state"] = STATE_CLOSED_PACKING
     out.loc[fc_closed, "state"] = STATE_CLOSED_FC
     out["whole_closed"] = fc_closed | eu_closed
+    if 'Manual Whole WO status' in x:
+        manual=x['Manual Whole WO status'];known=manual.isin(['OPEN','CLOSED'])
+        out['source_whole_closed']=out['whole_closed']
+        out.loc[known,'whole_closed']=manual[known].eq('CLOSED')
+        out.loc[known,'state']='MANUAL '+manual[known]+' (reasoned whole-WO decision)'
     for s in ORDER:
         out[f"{s} closed"] = x[f"{s}.closed"].astype(bool)
     pre = [f"{s} closed" for s in ORDER[:-1]]

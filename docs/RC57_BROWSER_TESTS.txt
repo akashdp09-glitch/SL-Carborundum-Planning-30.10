@@ -1,0 +1,10 @@
+PASS USB Enter resolves stable label, explicit status saves and history is visible
+PASS lost acknowledgement retries one committed row without duplicate
+PASS browser reload restores unfinished scalar draft
+PASS production event panel saves with explicit station/reason
+PASS mobile layout, audit destination and no JavaScript page errors
+PASS complete bilingual task directory renders desktop actions
+PASS shared drying confirmation page renders
+PASS new route accounts
+PASS new route labels
+PASS Home revised KPI filenames, upload area and prominent desktop tracking links

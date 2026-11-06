@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 
 TASKS = [
+ ('Reports / รายงาน','staff_kpi','👥','KPI สอย · ปุ้ย · เปิดปิดงาน','Soi / Pui KPI · open-close','Retained staff workbooks, daily/week/month opening and closure graphs, Excel'),
  ('Production / ฝ่ายผลิต','labels','▦','สร้าง QR · พิมพ์ป้าย','QR labels · print','One WO, selected WOs, all WOs and temporary tracking IDs'),
  ('Production / ฝ่ายผลิต','drying','🌬️','ยืนยันการอบแห้ง','Confirm drying readiness','Ready quantity, actual completion date, source and reason; shared by planners'),
  ('Production / ฝ่ายผลิต','floor','🔫','สแกน · เปิด/ปิดแผนก','Scan · section OPEN/CLOSED','USB scanner / keyboard; saved user, time, reason and event ID'),
@@ -19,14 +20,13 @@ TASKS = [
  ('Planning / วางแผน','capacity','⚖️','มาตรฐานกำลังผลิต','Capacity standards','Native units, source cells, resources and unresolved gaps'),
  ('Planning / วางแผน','capacity_actual','📈','กำลังผลิต · แผน · ผลจริง','Capacity · plan · actual','Comparable units and utilization by section'),
  ('Planning / วางแผน','suite','🧰','เครื่องมือวางแผน','Planning tools','Additional planning, material and export tools'),
- ('Reports / รายงาน','daily_closed','📋','รายงานเปิด/ปิด','Open/closed report','Source workbook and saved section history'),
+ ('Reports / รายงาน','open_close','📋','รายงานเปิด/ปิด','Open/closed report','Source workbook and saved section history'),
  ('Reports / รายงาน','wip','🏭','WIP แผนและฝ่ายผลิต','Planning / production WIP','Compare separate planning, production and audit evidence'),
  ('Reports / รายงาน','daily_status','📡','สถานะรายวัน','Daily status analysis','Section workbook analysis'),
  ('Reports / รายงาน','kpi','🎯','KPI แผนก','Department KPI','Accuracy 15; plan vs packed WOs 10; closed/opened WOs 15'),
  ('Reports / รายงาน','production_analysis','📊','วิเคราะห์ข้อมูลฝ่ายผลิต','Production evidence analysis','Section/category/customer/size/week/month; tonnes, pcs and WOs'),
  ('Reports / รายงาน','cost','💰','ต้นทุน','Cost analysis','Material and planning costs'),
  ('Reports / รายงาน','back','🚨','งานค้างส่ง','Backorders','Shared overdue calculation, closure and due-date basis'),
- ('Reports / รายงาน','daily_recovery','🧯','แผนกู้คืนรายสัปดาห์','Weekly recovery','Actions, owners, dates and saved reasons'),
  ('Reports / รายงาน','recovery_review','📄','ติดตามแผน Recovery','Recovery review','Production commitments, source status and WO reconciliation'),
  ('Data / ข้อมูล','src','📥','ไฟล์ต้นทาง · อัปโหลดครั้งเดียว','Sources · upload once','Active originals, revisions, import user/time, source paths and storage'),
  ('Data / ข้อมูล','history','🕘','ประวัติการใช้งาน · แก้ไข','Usage / edit history','Who changed what, when, with source and reason'),
@@ -38,7 +38,7 @@ TASKS = [
 def render(st, href, *, compact=False):
     st.subheader('🧭 เลือกงาน / Choose your task')
     if compact:
-        chosen=[x for x in TASKS if x[1] in {'floor','audit','daily','firing','production_analysis','src'}]
+        chosen=[x for x in TASKS if x[1] in {'audit','daily','firing','production_analysis','staff_kpi','src'}]
         groups=[('Tasks',chosen)]
     else:
         query=st.text_input('🔎 ค้นหางาน / Find a function',key='task_catalog_search',placeholder='USB, WIP, history, drying, KPI, ประวัติ…').strip().casefold()

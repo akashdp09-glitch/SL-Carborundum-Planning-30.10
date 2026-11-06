@@ -68,7 +68,7 @@ def test_section_accounts_use_shared_database_and_preselect_section(core):
     assert 'value="Mixing" selected' in text
     assert 'value="MIX-01" selected' in text
     assert c.get('/operator').headers['location']=='/scan'
-    assert 'scan.js?v=54' in text
+    assert 'scan.js?v=55' in text
 
 
 def test_parallel_status_retries_commit_once(core,operator):
@@ -105,3 +105,20 @@ def test_production_event_cannot_guess_completion_quantity_or_silently_hold(oper
     assert operator.post('/api/scan',json=p).status_code==400
     p.update(reason='SYNTHETIC material issue')
     assert operator.post('/api/scan',json=p).status_code==200
+
+
+def test_whole_order_status_shared_report_and_section_are_independent(core,operator,management):
+    import io
+    from openpyxl import load_workbook
+    p={'wo_id':'WO-TEST-0002','status':'CLOSED','remark':'SYNTHETIC authorized whole WO decision','client_submission_id':'whole-'+uuid.uuid4().hex}
+    r=operator.post('/api/order-status',json=p);assert r.status_code==200,r.text
+    retry=operator.post('/api/order-status',json=p);assert retry.json()['record_id']==r.json()['record_id']
+    snap=core.get_current_snapshot('WO-TEST-0002');assert snap['whole_order_decision']['status']=='CLOSED' and snap['produced']==0
+    h=management.get('/api/section-history?wo_id=WO-TEST-0002').json();assert any(x['Status']=='CLOSED' for x in h['whole_rows'])
+    today=core.bkk_now().date().isoformat()
+    report=management.get('/tracking-reports.xlsx',params={'start':today,'end':today});assert report.status_code==200,report.text[:100]
+    book=load_workbook(io.BytesIO(report.content),read_only=True)
+    assert {'WIP observations','Process open-close','Whole WO decisions','Production events','Basis'}<=set(book.sheetnames)
+    assert book['Whole WO decisions'].max_row>=2;book.close()
+    assert operator.post('/api/order-status',json={**p,'status':'OPEN'}).status_code==400
+    assert operator.post('/api/order-status',json={**p,'client_submission_id':'whole-'+uuid.uuid4().hex,'remark':''}).status_code==400

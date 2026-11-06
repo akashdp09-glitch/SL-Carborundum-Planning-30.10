@@ -79,3 +79,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 #statusHistory article{padding:10px 0;border-bottom:1px solid #d5e0ec}#statusHistory small{display:block;color:#485768}#statusHistory details{font-size:.9rem;overflow-wrap:anywhere}
 
 .topbar{flex-wrap:wrap;gap:8px}.topbar a{color:#fff}.topbar .brand{min-width:0}.mobile-lang{margin-left:auto}
+
+.primary-language{display:block;font-size:1.15rem;font-weight:800;line-height:1.4}.secondary-language{display:block;font-size:.76rem;font-weight:400;line-height:1.4}.choice-grid button{min-height:90px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}.choice-grid button .audit-icon{font-size:2rem}.choice-grid button b{font-size:1.1rem}.choice-grid button small{font-size:.72rem}.audit-form-v2 label{font-size:1.05rem;font-weight:700}

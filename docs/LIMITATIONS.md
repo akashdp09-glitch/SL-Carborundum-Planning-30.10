@@ -1,3 +1,7 @@
+# RC29.57 — current review
+
+See [RC29.57 notes](docs/RC29_57_REVIEW_NOTES.md) and the RC57 test logs. Revised transition loads now feed main operational output; exact older factory-file acceptance remains outstanding. Existing shared data is preserved.
+
 # Remaining limitations (concise)
 
 ## RC29.54 current review limits — 5 November 2026

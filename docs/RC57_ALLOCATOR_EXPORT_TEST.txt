@@ -1,0 +1,6 @@
+2026-11-06 01:28:41.080 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-06 01:28:41.082 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-06 01:28:41.083 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+2026-11-06 01:28:41.083 WARNING streamlit.runtime.caching.cache_data_api: No runtime found, using MemoryCacheStorageManager
+PASS real fast allocation -> merge -> Excel: 8 retained starts, 25 retained rows, per-WO quantities <=30; actuals unchanged. Synthetic WIP; hard_pull=False, upstream validation=False; not factory acceptance.
+Operational dates: {datetime.date(2026, 11, 6): 1, datetime.date(2026, 11, 7): 3, datetime.date(2026, 11, 9): 4, datetime.date(2026, 11, 10): 1, datetime.date(2026, 11, 16): 1}

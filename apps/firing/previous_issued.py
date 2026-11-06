@@ -20,7 +20,7 @@ def _norm(value):
 
 
 def _as_date(value):
-    if value is None or (isinstance(value, float) and pd.isna(value)):
+    if value is None or pd.isna(value):
         return None
     if isinstance(value, datetime):
         return value.date()

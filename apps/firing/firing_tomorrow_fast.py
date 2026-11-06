@@ -3,7 +3,7 @@ import traceable_views as tv48
 import io
 import time, os, traceback, threading, subprocess, sys
 from pathlib import Path
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -282,11 +282,19 @@ with st.sidebar:
     if _central_prev.exists(): st.success(f'✅ Previous issued Firing Plan: {_central_prev.name}')
     else: st.warning('No previous issued Firing Plan is stored yet. First plan can still be created; continuity protection starts after the first saved firing plan.')
     st.success('🗄️ Capacity Database auto-loaded / โหลดฐานกำลังการผลิตอัตโนมัติ')
-    tomorrow=date.today()+timedelta(days=1)
+    from zoneinfo import ZoneInfo
+    tomorrow=datetime.now(ZoneInfo('Asia/Bangkok')).date()+timedelta(days=1)
     start=st.date_input('First firing date / วันเริ่มเผา', value=tomorrow)
     planning_days=st.number_input('Planning days / จำนวนวันที่วางแผน', min_value=1, max_value=365, value=60, step=1,
                                   help='Default 60 days. All open Plan2026 demand supports future balanced kiln planning; due date and upstream capacity control sequence.')
-    st.caption('🔒 CUTOVER: before First Firing Date = previous issued plan/actual execution. From First Firing Date = new optimized plan. Previous released/running kiln cycles remain protected.')
+    retain_through=None
+    if prevu:
+        preserve_issued=st.checkbox('รักษาแผนเดิมช่วงเปลี่ยนแผน / Preserve issued transition loads',value=True,key='rc57_preserve_issued')
+        if preserve_issued:
+            _default_through=date(2026,11,9) if start==date(2026,11,6) else start
+            retain_through=st.date_input('รักษาโหลดเดิมถึงวันที่ / Retain issued loads through',value=_default_through,min_value=start,key='rc57_retain_through_'+str(start))
+            st.caption(f'Original valid loads remain in Firing Loads + Operator Print. New optimization starts {retain_through+timedelta(days=1)} after reconciliation; rejected commitments show exact reasons.')
+    st.caption('🔒 Requested start stays unchanged. Issued quantities are reserved before optimization; whole-order actuals are never changed by reservations.')
     st.caption('🎯 POSITIVE PPC: due date first → upstream capacity commitment → best compatible/smaller kiln → height/volume/program-weight utilization → balanced daily workload. Missing parts may be planned only when Preparation/Mixing/Forming capacity can produce them before firing.')
     target=st.slider('Target occupancy / เป้าหมายการใช้พื้นที่เตา',0.50,0.95,0.80,0.05)
     maxv=st.slider('Maximum occupancy / การใช้พื้นที่สูงสุด',0.70,1.00,0.95,0.01)
@@ -576,11 +584,14 @@ if st.button('▶ CREATE FIRING PLAN / สร้างแผนเผา', type=
         t=time.time(); msg.info('Stage 3/6 — WIP + readiness check / ตรวจ WIP และความพร้อม')
         # run_firing_fast internally applies the same V4.6 queue, capacity and release rules.
         starts=min(2,max(1,int(starts)))  # F12U hard safety guard; T0/resin handled separately by engine
+        _prev_blocks,_prev_audit=_previous_issued_kiln_blocks(prevu,start)
         fr=fc.run_firing_fast(df,cap,start,float(target),float(maxv),False,True,int(starts),bool(strict),
                               hard_pull=True,pull_horizon_days=int(planning_days),balance_target=.90,
-                              validate_upstream=True,prep_capacity=1200.0,plan2026_path=plan)
-        _prev_blocks,_prev_audit=_previous_issued_kiln_blocks(prevu,start)
-        fr=_apply_previous_kiln_blocks(fr,_prev_blocks,start,int(starts))
+                              validate_upstream=True,prep_capacity=1200.0,plan2026_path=plan,previous_blocks=_prev_blocks,previous_files=prevu,retain_through=retain_through)
+        # Capacity was reserved before allocation. Never shift retained issued dates after merging.
+        if retain_through is None:fr=_apply_previous_kiln_blocks(fr,_prev_blocks,start,int(starts))
+        from suite.firing_start_policy import start_diagnostic as _start_diagnostic
+        fr['selected_start_check']=_start_diagnostic(fr,start)
         # The user-selected date is the authoritative NEW PLAN CUTOVER date. It must
         # never be silently rewritten to the first feasible kiln load date. A load may
         # occur later only for a documented physical/capacity/cycle reason.
@@ -600,7 +611,7 @@ if st.button('▶ CREATE FIRING PLAN / สร้างแผนเผา', type=
         _first=pd.to_datetime(_ld.get('Load Date'),errors='coerce').min() if isinstance(_ld,pd.DataFrame) and not _ld.empty and 'Load Date' in _ld.columns else pd.NaT
         fr['plan_control']=pd.DataFrame([{
             'Planning Start / วันเริ่มแผน':start,
-            'Rule / กฎ':'New planning horizon begins on selected date; previous issued execution is protected before this date.',
+            'Rule / กฎ':'Selected start retained; issued transition loads are reconciled into main outputs before optimization of remaining WIP.',
             'First Feasible Firing Load / โหลดเผาแรกที่เป็นไปได้':(_first.date() if pd.notna(_first) else ''),
             'Start-Date Note / หมายเหตุ':('Firing starts on selected date' if pd.notna(_first) and _first.date()==start else 'No firing load is forced onto the cutover date when previous kiln cycle, readiness, upstream lead-time, or capacity makes it infeasible.')
         }])
@@ -610,6 +621,9 @@ if st.button('▶ CREATE FIRING PLAN / สร้างแผนเผา', type=
         _snap_cols=[c for c in ['Work Order','Customer','Product Category','Due Date','Order Qty','Preparation Actual','Preparation Status','Mixing Actual','Mixing Status','Forming Actual','Forming Status','Firing Actual','Firing Status','Grinding / Cutting Actual','Grinding / Cutting Status','Packing Actual','Packing Status','WO Closure','Overall Closed'] if c in df.columns]
         fr['plan2026_status_snapshot']=df[_snap_cols].copy() if _snap_cols else pd.DataFrame()
         st.session_state.fr=fr
+        if not fr.get('transition_review',pd.DataFrame()).empty:
+            _rejected=fr['transition_review']['Result'].eq('REJECTED')
+            if _rejected.any():st.warning(f'{int(_rejected.sum())} issued rows rejected during WIP/calendar reconciliation. See Transition Reconciliation; dates/quantities were not silently changed.')
         progress.progress(100); msg.success('Finished / เสร็จสิ้น')
     except Exception as e:
         msg.error('Calculation stopped with an error. / การคำนวณหยุดเนื่องจากข้อผิดพลาด')
@@ -639,6 +653,23 @@ if fr is not None:
             if isinstance(_d1,pd.DataFrame) and not _d1.empty:
                 st.markdown('**Day-1 explanation / ทำไมไม่เริ่มเผาในวันที่เลือก** - loads moved later than the selected start date:')
                 st.dataframe(_d1,use_container_width=True,hide_index=True)
+    _start_check=fr.get('selected_start_check')
+    if isinstance(_start_check,pd.DataFrame) and not _start_check.empty:
+        st.markdown('### วันเริ่มที่ผู้ใช้เลือก / Selected planning start')
+        st.dataframe(_start_check,use_container_width=True,hide_index=True)
+        if st.button('⬇ เตรียมตรวจวันเริ่ม / Prepare start-date audit Excel',key='prepare_start_audit55'):
+            from suite.exporters import to_workbook as _start_audit_book
+            _sheets={}
+            for _label,_key in [('Selected start','selected_start_check'),('Previous issued','previous_plan_cutover_audit'),('Kiln availability','kiln_editor'),('Proposed loads','loads'),('Exceptions','exceptions'),('Upstream dates','upstream_firing_check'),('Drying review','drying_check')]:
+                _table=fr.get(_key)
+                if isinstance(_table,pd.DataFrame):_sheets[_label]=_table
+            _parts=fr.get('prepared',pd.DataFrame())
+            _part_cols=[c for c in ['Work Order','Planning lot','Effective Qty','Verified Ready for Firing Qty','Execution-ready quantity','Earliest Normal Firing','Readiness','Firing Ready Basis'] if c in _parts]
+            _sheets['Planning portions']=_parts[_part_cols]
+            st.download_button('⬇ Start-date audit / ดาวน์โหลดหลักฐานวันเริ่ม',_start_audit_book(_sheets),'Firing_Start_Date_Audit.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',key='download_start_audit55')
+
+        if not int(_start_check.iloc[0]['Loads on selected day']):
+            st.error('No load on the requested day. The selected date was not changed; review the exact physical/capacity/availability exception before accepting this proposal. / ยังไม่มีโหลดในวันที่เลือก ต้องตรวจสอบเหตุผลก่อนยอมรับแผน')
     _dry=fr.get('drying_check')
     if isinstance(_dry,pd.DataFrame) and not _dry.empty:
         _held=int(_dry['Timing status'].eq('HOLD').sum())

@@ -49,11 +49,11 @@
   },
   "daily_planner_app.py": {
     "baseline_sha256": "685a8210142f51b63f75e84946ecb3e7a557dfac71ae9dea0badd789a842c9c2",
-    "accepted_sha256": "7860cb3d1c81ac501fb9345f2dba204f71233e2f08744585633fda33f8760648",
-    "reason": "Promote Capacity vs Plan vs Actual in navigation; unify Daily WIP with the central report; show category-stacked Plan-2026 WIP totals; preserve monthly KPI revisions and provenance; display Thai customer name with English in smaller text.",
-    "evidence": "suite/test_kpi_history.py::test_latest_revision_replaces_same_month_and_preserves_older_months",
-    "reviewed": true,
-    "recorded": "2026-10-27"
+    "accepted_sha256": "ba96d125a9fec3e85f0e4c2a6e1c76857a07f724d4df27450786c6579c36d2a1",
+    "reason": "Reuse retained KPI and MD evidence, remove owner-retired duplicate weekly recovery shortcut and invalidate draft signatures after reasoned whole-order decisions",
+    "evidence": "suite/test_revision55.py",
+    "reviewed": false,
+    "recorded": "2026-11-06"
   },
   "daily_linear_engine_v1_1.py": {
     "baseline_sha256": "1060bf3a3cf86ccb8a5e41c97dd9a0fba084947f4c92c18812969daa1679706f",
@@ -97,10 +97,10 @@
   },
   "integrated_daily_engine_v1_1.py": {
     "baseline_sha256": "3f7210a3819f236b9c48f87d2ba08ba6d220177b971a2ed252420d681834b4ae",
-    "accepted_sha256": "3b15d1a0f5122cf037914a37e4ad24266542366c0114274893eb5580c597e5ed",
-    "reason": "RC29.54: attach current capacity-workbook lead profiles and shared drying confirmations before Daily scheduling; export the active lead source. Review candidate; no capacity approval implied.",
-    "evidence": "suite/test_drying_confirmations.py::test_active_capacity_changes_route_offsets_without_mutating_defaults",
+    "accepted_sha256": "d20935d731672afa7735862d38a1bd61f73cd1a0f207e4b6f7f3c2ee1da65f1a",
+    "reason": "Apply central whole-order status and drying evidence before daily scheduling",
+    "evidence": "suite/test_revision55.py",
     "reviewed": false,
-    "recorded": "2026-11-05"
+    "recorded": "2026-11-06"
   }
 }

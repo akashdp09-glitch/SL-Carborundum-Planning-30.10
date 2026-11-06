@@ -8,15 +8,15 @@
   {% if wo %}<section class="panel confirm-card"><div class="confirm-id">{{ wo.production_code or wo.wo_id }}</div>
     <div class="muted">{{ wo.product_code or '' }} · order qty {{ wo.qty|round(0)|int }}</div></section>{% endif %}
   <form id="auditForm" class="audit-form-v2" autocomplete="off">
-    <label>1 · Status / สถานะ</label>
-    <div class="choice-grid">{% for s in statuses %}<button type="button" data-status="{{ s }}">{{ s.replace('_',' ') }}</button>{% endfor %}</div>
+    <label>1 · สถานะ / Status</label>
+    <div class="choice-grid">{% for s in statuses %}<button type="button" data-status="{{ s }}"><span class="audit-icon">{{ {'OK':'✅','OPEN':'▶','CLOSED':'✓','HOLD':'⏸','REWORK':'♻','NCR':'⚠','UNIDENTIFIED':'❓'}.get(s,'📋') }}</span><b>{{ {'OK':'ปกติ','OPEN':'เปิด','CLOSED':'ปิด','HOLD':'พักงาน','REWORK':'แก้ไข','NCR':'ข้อบกพร่อง','UNIDENTIFIED':'ไม่ทราบชิ้นงาน'}.get(s,s.replace('_',' ')) }}</b><small>{{ s.replace('_',' ') }}</small></button>{% endfor %}</div>
 
-    <label for="qty">2 · Quantity counted / จำนวน</label>
+    <label for="qty">2 · จำนวนที่ตรวจนับ / Quantity counted</label>
     <input id="qty" type="number" inputmode="decimal" min="0" step="any" placeholder="Counted quantity">
     <div class="chip-row" role="group" aria-label="Unit">{% for u in units %}<button type="button" data-unit="{{ u }}">{{ u }}</button>{% endfor %}</div>
-    <label class="check"><input type="checkbox" id="qtyUnknown"> Quantity unknown / ไม่ทราบจำนวน</label>
+    <label class="check"><input type="checkbox" id="qtyUnknown"> ไม่ทราบจำนวน / Quantity unknown</label>
 
-    <label>3 · Location / สถานที่</label>
+    <label>3 · ตำแหน่ง / Location</label>
     <select id="locBuilding" aria-label="Building"></select>
     <select id="locSection" aria-label="Section"></select>
     <select id="locPosition" aria-label="Machine, rack or bin"></select>

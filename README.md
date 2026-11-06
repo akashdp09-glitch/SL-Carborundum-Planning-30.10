@@ -1,3 +1,7 @@
+# Revised software RC29.57
+
+Read docs/RC29_57_REVIEW_NOTES.md and docs/RC29_57_User_Guide_Thai_English.docx. Extract into a new folder and reuse the existing central data; do not overwrite CENTRAL_DATA.
+
 # SL Carborundum — RC29.54 review
 
 Bilingual function directory; B2D21 USB keyboard scanning; shared status/audit/history; production and section accounts; source-backed drying gates and persistent confirmations. Start with [the release notes](docs/RC29_54_SCANNER_AND_PLANNING.md) and [illustrated Thai/English Word guide](docs/RC29_54_User_Guide_Thai_English.docx).

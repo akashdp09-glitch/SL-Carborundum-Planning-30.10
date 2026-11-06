@@ -64,7 +64,10 @@ def load_plan(path, cache_dir=None, force=False) -> pd.DataFrame:
     key = hashlib.md5(f'v2|{path.name}{st.st_size}{int(st.st_mtime)}'.encode()).hexdigest()[:12]
     cache = (Path(cache_dir) if cache_dir else path.parent) / f'.plancache_{key}.pkl'
     if cache.exists() and not force:
-        try: return pickle.loads(cache.read_bytes())
+        try:
+            from .order_status import apply_frame
+            from .central_paths import db_path
+            return apply_frame(pickle.loads(cache.read_bytes()),db_path())
         except Exception: pass
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
     ws = _master_sheet(wb, path)
@@ -102,4 +105,6 @@ def load_plan(path, cache_dir=None, force=False) -> pd.DataFrame:
     for c in ('customer','spec','brand','status','remark'): df[c] = df[c].map(lambda v: '' if v is None else str(v))
     try: cache.write_bytes(pickle.dumps(df))
     except Exception: pass
-    return df
+    from .order_status import apply_frame
+    from .central_paths import db_path
+    return apply_frame(df,db_path())

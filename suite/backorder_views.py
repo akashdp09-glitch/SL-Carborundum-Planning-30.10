@@ -41,6 +41,14 @@ def _truth(value):
         return False
 
 
+def effective_closed(frame,columns):
+    result=frame[columns].apply(lambda col:col.map(_truth)).any(axis=1) if columns else pd.Series(False,index=frame.index)
+    if 'Manual Whole WO status' in frame:
+        status=frame['Manual Whole WO status'];known=status.isin(['OPEN','CLOSED'])
+        result.loc[known]=status[known].eq('CLOSED')
+    return result
+
+
 def overdue_backorders(master, as_of):
     """Return only WOs that are open, have positive balance, and were due before as_of.
 
@@ -60,7 +68,7 @@ def overdue_backorders(master, as_of):
 
     closed_cols = [c for c in ("Authoritative Closed", "Strict Closed", "Overall Closed", "Packing Closed", "Final Closed") if c in x]
     if closed_cols:
-        x["_closed"] = x[closed_cols].apply(lambda col: col.map(_truth)).any(axis=1)
+        x["_closed"] = effective_closed(x,closed_cols)
     else:
         x["_closed"] = False
 
@@ -211,7 +219,7 @@ def future_open_month_category(master, as_of):
     x["Work Order"] = x["Work Order"].astype(str).str.strip()
     x["Due Date"] = x["Due Date"].map(_local_date)
     closed_cols = [c for c in ("Authoritative Closed", "Strict Closed", "Overall Closed", "Packing Closed", "Final Closed") if c in x]
-    x["_closed"] = x[closed_cols].apply(lambda col: col.map(_truth)).any(axis=1) if closed_cols else False
+    x["_closed"] = effective_closed(x,closed_cols) if closed_cols else False
     qty_col = next((c for c in ("pcs", "Open quantity (pcs)", "Open Qty", "Open Qty pcs") if c in x), None)
     if qty_col:
         x["_open_qty"] = pd.to_numeric(x[qty_col], errors="coerce").fillna(0).clip(lower=0)

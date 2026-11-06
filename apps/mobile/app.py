@@ -837,6 +837,11 @@ def get_current_snapshot(wo_id: str):
     if last_audit and last_audit["verified_qty"] is not None and abs(float(last_audit["verified_qty"]) - audit_reference_qty) > 0.000001:
         audit_mismatch_count = 1
     audit_con.close()
+    whole_decision=None
+    with db() as status_con:
+        if status_con.execute("SELECT 1 FROM sqlite_master WHERE name='wo_status_events'").fetchone():
+            decision=status_con.execute('SELECT status,reason,user,recorded_at,source FROM wo_status_events WHERE wo=? ORDER BY id DESC LIMIT 1',(wo_id,)).fetchone()
+            whole_decision=dict(decision) if decision else None
     try: section_status=json.loads(wo["section_status_json"] or "[]")
     except Exception: section_status=[]
     # Planned route dates and actual events are separate evidence streams.
@@ -847,7 +852,7 @@ def get_current_snapshot(wo_id: str):
     _completed_pct=completion_percent(_order_qty,events)
     _qty_event_recorded=_completed_pct is not None
     return {
-        "wo": wo, "events": events, "route": route, "materials": materials,
+        "wo": wo, "events": events, "route": route, "materials": materials,"whole_order_decision":whole_decision,
         "process_timeline": process_timeline, "completed_percent": _completed_pct,
         "production_qty_recorded": _qty_event_recorded,
         "section_status": section_status,
@@ -1837,12 +1842,50 @@ def api_wo(request: Request, wo_id: str):
     snap=get_current_snapshot(rows[0]["wo_id"])
     w=dict(snap["wo"])
     # The importer already retained these values. Never reopen Excel per scan.
-    return {"ok":True,"wo":w,"status":snap["status"],"plan_status":w.get("plan_location") or "Planning",
+    return {"ok":True,"wo":w,"status":snap["status"],"whole_order_decision":snap.get("whole_order_decision"),"plan_status":w.get("plan_location") or "Planning",
         "section_status":snap["section_status"],"current_process":snap["current_process"],
         "current_location":snap["current_location"],"produced":snap["produced"],"accepted":snap["accepted"],
         "rework":snap["rework"],"remaining":snap["remaining"],
         "last_event":dict(snap["last_event"]) if snap["last_event"] else None,
         "last_audit":dict(snap["last_audit"]) if snap.get("last_audit") else None}
+
+
+@app.post("/api/order-status")
+async def whole_order_status(request: Request):
+    user=require_login(request)
+    if not user:return JSONResponse({"ok":False,"error":"Sign in first"},status_code=401)
+    payload=await request.json()
+    try:
+        from suite.order_status import save
+        wo=safe_text(payload.get('wo_id'));status=safe_text(payload.get('status')).upper()
+        sid=safe_text(payload.get('client_submission_id'))
+        if not sid or len(sid)>128:raise ValueError('Valid submission ID required')
+        event=save(DB_PATH,wo,status,safe_text(payload.get('remark')),user['username'],sid)
+        return {'ok':True,'work_order':wo,'section':'WHOLE WO','status':status,'event_id':sid,'saved_at':now_iso(),'record_id':event}
+    except ValueError as exc:return JSONResponse({'ok':False,'error':str(exc)},status_code=400)
+
+
+@app.get('/tracking-reports',response_class=HTMLResponse)
+def tracking_reports_page(request: Request):
+    if not require_login(request):return RedirectResponse('/login?next=/tracking-reports',303)
+    return HTMLResponse(render(request,'tracking_reports.html',today=bkk_now().date().isoformat()))
+
+
+@app.get('/tracking-reports.xlsx')
+def tracking_report_excel(request: Request,start: str,end: str):
+    user=require_login(request)
+    if not user:return JSONResponse({'ok':False,'error':'Sign in first'},status_code=401)
+    try:
+        first=date.fromisoformat(start);last=date.fromisoformat(end)
+        if first>last:raise ValueError('Start must be before end')
+        from suite.tracking_reports import excel
+        root=Path(os.environ.get('SL_COMPANY_DATA',str(SHARED_ROOT/'COMPANY_DATA')))
+        data=excel(DB_PATH,root,first,last)
+        target=REPORT_ROOT/('WIP_Status_'+bkk_now().strftime('%Y%m%d_%H%M%S_%f')+'.xlsx')
+        target.write_bytes(data)
+        log_audit(user['username'],'EXPORT','TRACKING_REPORT',target.name)
+        return FileResponse(target,filename=target.name)
+    except ValueError as exc:return JSONResponse({'ok':False,'error':str(exc)},status_code=400)
 
 
 @app.get("/api/section-history")
@@ -1861,7 +1904,12 @@ def section_history(request: Request, wo_id: str):
     if (root/DB_NAME).exists():
         with sqlite3.connect(root/DB_NAME,timeout=15) as con:
             rows=con.execute("SELECT time,wo,section,status,actual_qty,quantity_unknown,remark,user,event_id,source_ref,source_row FROM section_status WHERE wo=? ORDER BY id DESC LIMIT 100",(matches[0]["wo_id"],)).fetchall()
-    return {"ok":True,"rows":[dict(zip(COLS,row)) for row in rows],"limit":100}
+    whole=[]
+    with db() as con:
+        if con.execute("SELECT 1 FROM sqlite_master WHERE name='wo_status_events'").fetchone():
+            items=con.execute('SELECT * FROM wo_status_events WHERE wo=? ORDER BY id DESC LIMIT 100',(matches[0]['wo_id'],)).fetchall()
+            whole=[{'Time':r['recorded_at'],'Section':'WHOLE WO','Status':r['status'],'Actual Qty':None,'User':r['user'],'Event ID':r['submission_id'],'Remark':r['reason'],'Source reference':r['source'],'Plan row':''} for r in items]
+    return {"ok":True,"rows":[dict(zip(COLS,row)) for row in rows],"whole_rows":whole,"limit":100}
 
 
 @app.post("/api/section-status")

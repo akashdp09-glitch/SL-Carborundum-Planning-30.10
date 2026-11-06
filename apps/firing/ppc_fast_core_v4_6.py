@@ -444,7 +444,11 @@ def firing_input(plan_df, planning_start, strict_forming=True,
 
         future_pull=max(plan_qty-current_ready,0)
         form_closed=is_closed(r.get("Forming Status",""))
-        current_release=min(plan_qty,current_ready) if (form_closed or not strict_forming) else 0
+        # Whole-WO stage labels cannot erase measured partial forming output.
+        # Execution readiness is independent and needs the drying evidence gate.
+        confirmed_date=safe_date(r.get('Confirmed Drying Complete Date'))
+        confirmed_qty=num(r.get('Confirmed Drying Qty'),0) if confirmed_date is not None and confirmed_date<=planning_start else 0
+        current_release=min(plan_qty,current_ready) if cat=='PB' else min(plan_qty,current_ready,max(confirmed_qty-reserved,0))
 
         gross=num(r.get("Gross Weight g/pc",0))/1000.0
         product_code,test_work,test_work_type=classify_test_work(r.get("Product Code",""),r.get("Test Work Override","AUTO"))
@@ -457,7 +461,7 @@ def firing_input(plan_df, planning_start, strict_forming=True,
             "D / Length mm":r.get("D",""),"T / Width mm":r.get("T",""),"H / Hole mm":r.get("H",""),
             "Order Qty":max(num(r.get("Order Qty",0)),target_total),
             "Remaining Qty":plan_qty,
-            "Candidate Ready Qty":current_ready,
+            "Candidate Ready Qty":current_ready,"Current Planning WIP Qty":min(plan_qty,current_ready),
             "Current Shop-floor Release Qty":current_release,
             "Future Pull Qty":future_pull,
             "Firing Target Total Qty":target_total,
@@ -865,7 +869,8 @@ def save_firing(fr,path):
         for name,key in [
             ("Firing Loads","loads"),("Operator Print","details"),("Floor Pattern Data","floor"),
             ("Upstream Hard Pull","upstream_plan"),("Upstream Issues","upstream_issues"),
-            ("Workload Balance","workload_balance"),("Drying Readiness","drying_check"),("Release Summary","release_summary"),
+            ("Workload Balance","workload_balance"),("Drying Readiness","drying_check"),("Release Summary","release_summary"),("Selected Start Check","selected_start_check"),
+            ("Transition Control","transition_control"),("Transition Reconciliation","transition_review"),("Retained Transition","retained_transition"),
             ("Plan Control","plan_control"),("Previous Plan Audit","previous_plan_cutover_audit"),("Plan2026 Status","plan2026_status_snapshot"),
             ("PL Mgr Validation","pm_validation"),("Exceptions","exceptions"),("Kiln Master","kiln_editor"),
             ("Plate Furniture","plate_master"),("I-block Furniture","iblock_master")]:
@@ -1096,9 +1101,10 @@ def firing_input(plan_df, planning_start, strict_forming=True,
         if cat=="R": program="P2"
 
         acts=_wo_effective_actuals(r)
-        current_ready=max(acts["Forming"]-acts["Firing"],0)
+        reserved=max(num(r.get("Retained firing reservation Qty",0)),0)
+        current_ready=max(acts["Forming"]-acts["Firing"]-reserved,0)
         target_total=_process_target_total(r,"Firing")
-        total_remaining=max(target_total-acts["Firing"],0)
+        total_remaining=max(target_total-acts["Firing"]-reserved,0)
         due=safe_date(r.get("Due Date"))
 
         # Candidate date basis for feasibility ceiling:
@@ -1118,7 +1124,7 @@ def firing_input(plan_df, planning_start, strict_forming=True,
             feasible_form_cum,feas_meta=_latest_feasible_upstream_qty(
                 r,candidate_date,planning_start,cap_tables,prep_capacity)
 
-        feasible_to_fire=max(feasible_form_cum-acts["Firing"],0)
+        feasible_to_fire=max(feasible_form_cum-acts["Firing"]-reserved,0)
 
         # Plan2026 ALL OPEN demand is the future pull pool.
         # Due date controls priority; upstream capacity/readiness controls release.
@@ -1133,7 +1139,11 @@ def firing_input(plan_df, planning_start, strict_forming=True,
 
         future_pull=max(plan_qty-current_ready,0)
         form_closed=is_closed(r.get("Forming Status",""))
-        current_release=min(plan_qty,current_ready) if (form_closed or not strict_forming) else 0
+        # Whole-WO stage labels cannot erase measured partial forming output.
+        # Execution readiness is independent and needs the drying evidence gate.
+        confirmed_date=safe_date(r.get('Confirmed Drying Complete Date'))
+        confirmed_qty=num(r.get('Confirmed Drying Qty'),0) if confirmed_date is not None and confirmed_date<=planning_start else 0
+        current_release=min(plan_qty,current_ready) if cat=='PB' else min(plan_qty,current_ready,max(confirmed_qty-reserved,0))
 
         gross=num(r.get("Gross Weight g/pc",0))/1000.0
         product_code,test_work,test_work_type=classify_test_work(r.get("Product Code",""),r.get("Test Work Override","AUTO"))
@@ -1146,7 +1156,7 @@ def firing_input(plan_df, planning_start, strict_forming=True,
             "D / Length mm":r.get("D",""),"T / Width mm":r.get("T",""),"H / Hole mm":r.get("H",""),
             "Order Qty":max(num(r.get("Order Qty",0)),target_total),
             "Remaining Qty":plan_qty,
-            "Candidate Ready Qty":current_ready,
+            "Candidate Ready Qty":current_ready,"Current Planning WIP Qty":min(plan_qty,current_ready),
             "Feasible Qty by Candidate Date":feasible_to_fire,
             "Current Shop-floor Release Qty":current_release,
             "Future Pull Qty":future_pull,
@@ -1347,13 +1357,8 @@ def run_firing_fast(plan_df, capacity_path, planning_start, target=.80,maxv=.95,
                      capacity_path=capacity_path,prep_capacity=prep_capacity)
     prepared=fire.prepare_orders(raw,settings)
 
-    if prepared is not None and not prepared.empty:
-        # F6 separation: Effective Qty = future feasible firing demand; Verified Ready = current shop-floor release quantity only.
-        # Never convert future pull demand into false current readiness.
-        _ready_map=raw.set_index(raw["Work Order"].astype(str))["Current Shop-floor Release Qty"].to_dict() if not raw.empty else {}
-        prepared["Verified Ready for Firing Qty"]=prepared["Work Order"].astype(str).map(_ready_map).fillna(0)
-        prepared["Firing Ready Basis"]="F6: CURRENT FORMED/FIRING WIP CONTROLS RELEASE; EFFECTIVE QTY CONTROLS FUTURE DAILY KILN PLAN"
-        prepared["Release Candidate"]=prepared["Include"] & (prepared["Verified Ready for Firing Qty"]>0)
+    from suite.firing_start_policy import split_planning_lots
+    prepared=split_planning_lots(prepared,raw,planning_start)
 
     ked=kiln_editor.copy() if kiln_editor is not None else fire.default_kilns(settings)
     kilns=fire.prepare_kilns(ked,settings)
@@ -1775,12 +1780,14 @@ def read_plan2026_kiln_calendar(plan2026_path,planning_start):
             low=sv.lower()
             if any(k in low for k in ["รอซ่อม","งดใช้เตา","ซ่อม","maintenance","repair","hold"]):
                 st=slots[c]; warns.append((st["date"],st["time"],sv))
+        future_count=sum(x['Start Date']>=planning_start for x in starts)
+        starts=[x for x in starts if x['Start Date']<planning_start]
         if starts:
             starts.sort(key=lambda x:(x["Start Date"],0 if x["Start Time"]=="เช้า" else 1))
             last=starts[-1]
             last["Available From"]=max(planning_start,last["Earliest New Load"])
             last["Status"]="AVAILABLE" if last["Available From"]<=planning_start else "RUNNING / COOLING / CLEANING"
-            last["Calendar Warning"]=""
+            last["Calendar Warning"]=f"{future_count} on/after-cutover PLAN run(s) ignored; rebuild from selected start" if future_count else ""
             if warns:
                 w=sorted(warns,key=lambda x:x[0])[-1]
                 last["Calendar Warning"]=f"{w[0]} {w[1]}: {w[2]}"
@@ -1789,7 +1796,7 @@ def read_plan2026_kiln_calendar(plan2026_path,planning_start):
             out.append({"Kiln":kiln,"Run No":"","Current Program":"","Start Date":None,"Start Time":"",
                         "Cycle Days":0,"Free Date":None,"Free Time":"","Earliest New Load":planning_start,
                         "Available From":planning_start,"Status":"NO ACTIVE RUN FOUND",
-                        "Source":"Plan 2026 / ตารางเตา","Calendar Warning":""})
+                        "Source":"Plan 2026 / ตารางเตา","Calendar Warning":f"{future_count} on/after-cutover planned runs are replaceable" if future_count else ""})
     return pd.DataFrame(out)
 
 def apply_plan2026_kiln_calendar(kiln_editor,calendar_df,planning_start):
@@ -1823,19 +1830,41 @@ def run_firing_fast(plan_df,capacity_path,planning_start,target=.80,maxv=.95,par
                     urgent_partial=True,starts=2,strict_forming=True,kiln_editor=None,
                     plate_master=None,iblock_master=None,hard_pull=True,pull_horizon_days=30,
                     balance_target=.90,validate_upstream=True,prep_capacity=1200.0,
-                    plan2026_path=None):
+                    plan2026_path=None,previous_blocks=None,previous_files=None,retain_through=None):
     from suite.drying_confirmations import apply as _dry_confirmations
     from suite.central_paths import db_path as _shared_db_path
     plan_df=_dry_confirmations(plan_df,_shared_db_path())
+    from suite.order_status import apply_frame as _manual_whole_status
+    plan_df=_manual_whole_status(plan_df,_shared_db_path())
     settings=fire.Settings(planning_start=planning_start,target_volume=target,max_volume=maxv,
                            allow_partial=partial,allow_urgent_partial=urgent_partial,
                            vitrified_starts_per_day=int(starts))
     base_ked=kiln_editor.copy() if kiln_editor is not None else fire.default_kilns(settings)
     cal=read_plan2026_kiln_calendar(plan2026_path,planning_start)
     ked=apply_plan2026_kiln_calendar(base_ked,cal,planning_start)
-    fr=_run_firing_v45(plan_df,capacity_path,planning_start,target,maxv,partial,urgent_partial,
+    from suite.firing_start_policy import prior_availability
+    from apps.firing.issued_transition import read_commitments,reconcile,reserve_frame,merge_operational
+    retained=pd.DataFrame();review=pd.DataFrame();optimization_start=planning_start
+    blocks=dict(previous_blocks or {})
+    if previous_files and retain_through is not None:
+        if retain_through<planning_start:raise ValueError('Retain-through date cannot precede the requested start')
+        from apps.firing.previous_issued import previous_kiln_blocks
+        prior,prior_audit=previous_kiln_blocks(previous_files,planning_start)
+        for kiln,day in prior.items():blocks[kiln]=max(blocks.get(kiln,day),day)
+        commitments=read_commitments(previous_files,planning_start,retain_through)
+        retained,review,reservations,blocks=reconcile(commitments,plan_df,ked,blocks,int(starts),maxv)
+        if not retained.empty:
+            plan_for_optimization=reserve_frame(plan_df,reservations)
+            optimization_start=retain_through+timedelta(days=1)
+        else:plan_for_optimization=plan_df
+    else:plan_for_optimization=plan_df
+    ked=prior_availability(ked,blocks,optimization_start)
+    fr=_run_firing_v45(plan_for_optimization,capacity_path,optimization_start,target,maxv,partial,urgent_partial,
                        starts,strict_forming,ked,plate_master,iblock_master,hard_pull,
                        pull_horizon_days,balance_target,validate_upstream,prep_capacity)
+    fr=merge_operational(fr,retained,review,planning_start,optimization_start)
+    # Public plan identity always retains the requested horizon, including issued loads.
+    fr.setdefault('settings',settings).planning_start=planning_start
     from suite.drying_gate import evaluate_drying
     drying=evaluate_drying(fr.get("details"),plan_df,fr.get("upstream_plan"),capacity_path,planning_start)
     fr["drying_check"]=drying
@@ -1857,4 +1886,6 @@ def run_firing_fast(plan_df,capacity_path,planning_start,target=.80,maxv=.95,par
         # Decision-rule table has four columns in V4.5. Keep exact schema.
         extra=pd.DataFrame([r[:len(cols)] for r in rows],columns=cols)
         fr["decision_rules"]=pd.concat([fr["decision_rules"],extra],ignore_index=True)
+    from suite.firing_start_policy import start_diagnostic
+    fr['selected_start_check']=start_diagnostic(fr,planning_start)
     return fr

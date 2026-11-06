@@ -17,11 +17,11 @@
   },
   "firing_tomorrow_fast.py": {
     "baseline_sha256": "f8a184730a4e86d3879a59ce607fdd89010b4d25304bcdcaddf8629292ae3f20",
-    "accepted_sha256": "7a1aeccf7d3c061162aa99f18929e07ebe12dacd2df1efbb679c89e1d2e47c03",
-    "reason": "RC29.54: expose drying readiness, held rows and downloadable doubtful-load review. Existing supplied planning/geometry UI remains pending complete acceptance.",
-    "evidence": "apps/firing/tests/test_drying_integration.py::test_final_entry_point_holds_unconfirmed_drying_and_exports_it",
+    "accepted_sha256": "69cb2d6628a9815c6345c1a8eca7b7069241f0441ad44d65ad7ab06f23531fc7",
+    "reason": "Expose retention horizon and pass actual previous files into the integrated transition pipeline without post-merge date shifts",
+    "evidence": "apps/firing/tests/test_issued_transition.py",
     "reviewed": false,
-    "recorded": "2026-11-05"
+    "recorded": "2026-11-06"
   },
   "firing_engine_desktop_v2.py": {
     "baseline_sha256": "08cf55f1044fa3a8e688930ae39833bb9686c06f829ce486d2f925fa83df2db3",
@@ -33,10 +33,10 @@
   },
   "ppc_fast_core_v4_6.py": {
     "baseline_sha256": "765ccca19c106350110e36579db37e4acfc660d53178776ad48742002e9964f3",
-    "accepted_sha256": "600319316b9f9a61ded7b8f0837c0bf6d3cd3704bfd557225ddebea337ac2476",
-    "reason": "RC29.54: cache capacity by content with independent copies, serialize legacy global-state runs, enforce source-backed drying release and export held-load evidence. Earlier supplied layers remain pending full factory review.",
-    "evidence": "apps/firing/tests/test_drying_integration.py",
+    "accepted_sha256": "ed08a785121f0143eea10ecf5eee99dd7c3005d225b7fd433563b12549783b39",
+    "reason": "Reserve issued transition quantities before allocation and merge validated commitments into operational exports; separate existing WIP from future supply",
+    "evidence": "apps/firing/tests/test_issued_transition.py",
     "reviewed": false,
-    "recorded": "2026-11-05"
+    "recorded": "2026-11-06"
   }
 }

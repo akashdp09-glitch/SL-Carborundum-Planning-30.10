@@ -73,25 +73,30 @@ def workbook_report(path,period,production=None):
         'Read first':pd.DataFrame({'Notes':['Soi=Chosita; Pui=Sirinun (owner confirmed).','Sirinun monthly October cells are blank; supporting October summary provides the ratios.','Staff maxima: Soi 15+15+5+5=40; Pui 20+20=40. HR awarded-score conversion is not invented.','Sales input jobs, issued items and closure items are distinct measures. They are not verified distinct WO identities.','Backlog closure identities cannot be recovered from category totals. Packing final actual uses Pack จ่าย only.','Section/category Production KPI workbooks are independent views; never add them together as extra actual output.']})})
 
 
-def upload_center(st,db_path,can_edit,user,*,key='home'):
+def upload_center(st,db_path,can_edit,user,*,key='home',groups=('staff','counts','production')):
     from .production_analysis_page import evidence_path
     path=evidence_path(db_path)
-    st.subheader('📥 อัปโหลด KPI และสถานะผลิต / KPI & production files')
-    st.caption('KPI_Chosita_completed · KPI_Sirinun_monthly · October_in out · October-2026_job closure · Production KPI (section / category) · สถานะการผลิต 2026-4 88')
+    st.subheader('📥 เลือกไฟล์ / Upload files')
+    labels={'staff':('👥 KPI สอย · ปุ้ย / Staff KPI','KPI_Chosita_completed · KPI_Sirinun_monthly'), 'counts':('📊 เปิด–ปิดใบสั่ง / Open–close orders','October_in out · October-2026_job closure'), 'production':('🏭 สถานะการผลิต / Production status','สถานะการผลิต 2026-4 88 · Production KPI section/category')}
+    files=[]
+    columns=st.columns(len(groups))
+    for col,group in zip(columns,groups):
+        with col:
+            title,hint=labels[group];st.markdown('**'+title+'**');st.caption(hint)
+            chosen=st.file_uploader(title,type=['xlsx','xlsm'],accept_multiple_files=True,key=key+'_'+group+'_uploads',disabled=not can_edit)
+            files.extend(chosen or [])
+    if not can_edit:st.info('เข้าสู่ระบบเพื่ออัปโหลด / Sign in to upload')
     src=E.source_list(path)
     if not src.empty:
-        latest=src.sort_values('id',ascending=False).drop_duplicates('role')
-        st.dataframe(latest[['role','filename','revision','imported_at']],hide_index=True,use_container_width=True)
-        st.caption('บันทึกแล้ว ใช้ร่วมกันทุกหน้า / Retained here; reused by all pages. A new computer must use the same shared data folder or import originals once.')
-    if not can_edit:
-        st.info('เข้าสู่ระบบเพื่ออัปโหลด / Sign in to update sources');return
-    files=st.file_uploader('เลือกไฟล์ KPI / Production status — เลือกได้หลายไฟล์',type=['xlsx','xlsm'],accept_multiple_files=True,key=key+'_kpi_upload')
+        with st.expander('ไฟล์ที่บันทึกแล้ว / Saved files'):
+            latest=src.sort_values('id',ascending=False).drop_duplicates('role')
+            st.dataframe(latest[['role','filename','revision','imported_at']],hide_index=True,use_container_width=True)
     with st.expander('รูปแบบไฟล์ฝ่ายผลิต / Production KPI format options'):
         role=st.selectbox('รูปแบบ / Format',['auto','production_kpi_section','production_kpi_category'],key=key+'_kpi_role')
         year=st.number_input('ปีรายงาน / Reporting year',2020,2100,bkk_today().year,key=key+'_kpi_year')
         month=st.text_input('เดือนของตารางรายวัน YYYY-MM / Matrix month',value='',key=key+'_kpi_month')
         unit=st.selectbox('หน่วย / Source unit',['work orders','pieces','tonnes'],key=key+'_kpi_unit')
-    if st.button('💾 บันทึกไฟล์ที่เลือก / Save selected files',type='primary',key=key+'_kpi_save',disabled=not files):
+    if st.button('💾 บันทึกไฟล์ที่เลือก / Save selected files',type='primary',key=key+'_kpi_save',disabled=not files or not can_edit):
         errors=False
         for f in files or []:
             try:
@@ -104,8 +109,9 @@ def upload_center(st,db_path,can_edit,user,*,key='home'):
 def render(st,db_path,*,can_edit=False,user='Unknown'):
     from .production_analysis_page import evidence_path,retained_frame,production_revision,show_table,chart
     path=evidence_path(db_path);st.header('🎯 KPI บุคลากรและเปิด–ปิดงาน / Staff KPI & open–close')
+    upload_center(st,db_path,can_edit,user,key='staff60',groups=('staff',))
     values=E.automatic_values(path);periods=sorted(set(values.period)) if not values.empty else []
-    if not periods:upload_center(st,db_path,can_edit,user,key='staff');return
+    if not periods:return
     period=st.selectbox('เดือน / Month',periods,index=len(periods)-1,key='staff_period')
     staff=staff_results(path,period)
     for person in ['Soi / Chosita','Pui / Sirinun']:
@@ -124,13 +130,14 @@ def render(st,db_path,*,can_edit=False,user='Unknown'):
     src=E.source_list(path);prod=retained_frame(str(path),production_revision(src))
     show_table(st,'Department — derived, not a fourth staff KPI',E.department_results(path,period,frame=prod))
     st.download_button('⬇ รายงาน KPI แยกบุคคล / Separate staff & department Excel',workbook_report(path,period,prod),f'Planning_KPI_{period}.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    with st.expander('อัปเดตต้นทาง / Update source workbooks'):upload_center(st,db_path,can_edit,user,key='staff')
 
 
-def render_open_close(st,db_path):
+
+def render_open_close(st,db_path,*,can_edit=False,user="Unknown"):
     from .production_analysis_page import evidence_path,chart,show_table
     path=evidence_path(db_path);st.header('📊 รายงาน MD เปิด–ปิดใบสั่ง / MD open–close report')
     st.caption('Operational report, not an additional staff KPI. Revised opening and separate closure workbooks only.')
+    upload_center(st,db_path,can_edit,user,key='md60',groups=('counts',))
     d=count_details(path)
     if d.empty:st.info('ใช้ไฟล์ที่ Home → KPI และสถานะผลิต / Import the revised opening and closure originals once on Home');return
     months=sorted(d.Date.dt.strftime('%Y-%m').unique());period=st.selectbox('เดือน / Month',months,index=len(months)-1,key='md55_month')

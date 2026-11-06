@@ -31,6 +31,7 @@ EXCLUDE_GLOBS = [
     "knowledge/kpi/Planning_KPI_Measurement_Evidence_REVISED.xlsx",
     "docs/RC29_52_Quick_Guide_Thai_English.docx",  # historical guide uses superseded KPI numbering
     "docs/RC29_54_User_Guide_Thai_English.docx", # superseded scanner-specific guide
+    "docs/RC29_57_User_Guide_Thai_English.docx", # superseded transition controls
     "RELEASE_MANIFEST.json",  # generated below; do not archive a stale manifest or hash itself
     "knowledge/kpi/inputs/*", "seed_data/*", "P280526.csv",
     "apps/daily/DIAMOND_AUG2026_ISSUE.xlsx", "apps/daily/DIAMOND_CURRENT_PLAN_160926.xlsx",

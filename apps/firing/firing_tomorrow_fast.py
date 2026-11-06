@@ -29,7 +29,7 @@ st.set_page_config(page_title='SL PPC Firing Planner F12U', layout='wide', page_
 st.markdown('''<style>.stMetric{background:#f7f9fc;border:1px solid #e5e7eb;border-radius:14px;padding:10px}.block-container{padding-top:1.2rem}</style>''',unsafe_allow_html=True)
 st.title('🔥 SL PPC FIRING PLANNER / โปรแกรมวางแผนการเผา')
 st.markdown('### FIRING PLANNING')
-st.info('Central inputs are loaded automatically from Active Files. Select test work if needed → Create Firing Plan → Review release → Pattern Loading → Download operator plan.')
+st.caption('เลือกวันเริ่ม → สร้างแผน → ตรวจสอบ → ดาวน์โหลด / Start date → Plan → Review → Download')
 
 work = Path.home()/'SL_PPC_DATA'
 work.mkdir(parents=True, exist_ok=True)
@@ -287,15 +287,7 @@ with st.sidebar:
     start=st.date_input('First firing date / วันเริ่มเผา', value=tomorrow)
     planning_days=st.number_input('Planning days / จำนวนวันที่วางแผน', min_value=1, max_value=365, value=60, step=1,
                                   help='Default 60 days. All open Plan2026 demand supports future balanced kiln planning; due date and upstream capacity control sequence.')
-    retain_through=None
-    if prevu:
-        preserve_issued=st.checkbox('รักษาแผนเดิมช่วงเปลี่ยนแผน / Preserve issued transition loads',value=True,key='rc57_preserve_issued')
-        if preserve_issued:
-            _default_through=date(2026,11,9) if start==date(2026,11,6) else start
-            retain_through=st.date_input('รักษาโหลดเดิมถึงวันที่ / Retain issued loads through',value=_default_through,min_value=start,key='rc57_retain_through_'+str(start))
-            st.caption(f'Original valid loads remain in Firing Loads + Operator Print. New optimization starts {retain_through+timedelta(days=1)} after reconciliation; rejected commitments show exact reasons.')
-    st.caption('🔒 Requested start stays unchanged. Issued quantities are reserved before optimization; whole-order actuals are never changed by reservations.')
-    st.caption('🎯 POSITIVE PPC: due date first → upstream capacity commitment → best compatible/smaller kiln → height/volume/program-weight utilization → balanced daily workload. Missing parts may be planned only when Preparation/Mixing/Forming capacity can produce them before firing.')
+    retain_through=None  # Replan future work from the selected date; no manual freeze window.
     target=st.slider('Target occupancy / เป้าหมายการใช้พื้นที่เตา',0.50,0.95,0.80,0.05)
     maxv=st.slider('Maximum occupancy / การใช้พื้นที่สูงสุด',0.70,1.00,0.95,0.01)
     starts=st.number_input('Maximum normal vitrified starts/day T1-T12/T14 / จำนวนเตา vitrified ปกติสูงสุดต่อวัน',min_value=1,max_value=2,value=2,step=1,key='f12u_vitrified_max_2',help='HARD RULE: maximum 2 normal vitrified starts/day. T0 is excluded. Resin R4/R5/R6 are separate.')
@@ -589,7 +581,7 @@ if st.button('▶ CREATE FIRING PLAN / สร้างแผนเผา', type=
                               hard_pull=True,pull_horizon_days=int(planning_days),balance_target=.90,
                               validate_upstream=True,prep_capacity=1200.0,plan2026_path=plan,previous_blocks=_prev_blocks,previous_files=prevu,retain_through=retain_through)
         # Capacity was reserved before allocation. Never shift retained issued dates after merging.
-        if retain_through is None:fr=_apply_previous_kiln_blocks(fr,_prev_blocks,start,int(starts))
+        # Previous kiln occupancy is applied before allocation; do not shift dates again here.
         from suite.firing_start_policy import start_diagnostic as _start_diagnostic
         fr['selected_start_check']=_start_diagnostic(fr,start)
         # The user-selected date is the authoritative NEW PLAN CUTOVER date. It must
@@ -611,7 +603,7 @@ if st.button('▶ CREATE FIRING PLAN / สร้างแผนเผา', type=
         _first=pd.to_datetime(_ld.get('Load Date'),errors='coerce').min() if isinstance(_ld,pd.DataFrame) and not _ld.empty and 'Load Date' in _ld.columns else pd.NaT
         fr['plan_control']=pd.DataFrame([{
             'Planning Start / วันเริ่มแผน':start,
-            'Rule / กฎ':'Selected start retained; issued transition loads are reconciled into main outputs before optimization of remaining WIP.',
+            'Rule / กฎ':'Plan from the selected date using current WIP, process flow, upstream capacity and protected running kiln cycles; no manual transition freeze.',
             'First Feasible Firing Load / โหลดเผาแรกที่เป็นไปได้':(_first.date() if pd.notna(_first) else ''),
             'Start-Date Note / หมายเหตุ':('Firing starts on selected date' if pd.notna(_first) and _first.date()==start else 'No firing load is forced onto the cutover date when previous kiln cycle, readiness, upstream lead-time, or capacity makes it infeasible.')
         }])

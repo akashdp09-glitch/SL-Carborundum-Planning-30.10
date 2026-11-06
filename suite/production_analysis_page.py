@@ -149,7 +149,8 @@ def render(st, db_path, *, can_edit=False,user="Unknown"):
     path=evidence_path(db_path)
     st.header("🏭 วิเคราะห์สถานะการผลิต 2026-4 88 / Production Evidence Analysis")
     st.caption("Detailed English analysis · approved production plans vs section handovers · all normalised weights in metric tonnes. Plans, actual outputs, kiln loads, WIP and QC are separate evidence bases.")
-    source_controls(st,path,can_edit,user)
+    from .kpi_workspace import upload_center
+    upload_center(st,db_path,can_edit,user,key='production60',groups=('production',))
     sources=store.source_list(path)
     # Cache the parsed DataFrame by persisted source revision, not by UI navigation.
     df=retained_frame(str(path),production_revision(sources))

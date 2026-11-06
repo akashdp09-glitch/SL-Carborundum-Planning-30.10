@@ -48,7 +48,10 @@ def cached(path,mtime,size):return read(path)
 
 def summary(d,group):
     if d.empty:return pd.DataFrame()
-    return d.groupby(group,dropna=False).agg(Work_orders=('Work Order','nunique'),Source_rows=('Work Order','size'),Planned_pcs=('Planned pcs',lambda s:s.sum(min_count=1)),Actual_pcs=('Actual pcs',lambda s:s.sum(min_count=1)),Pending_pcs=('Pending planned pcs',lambda s:s.sum(min_count=1)),Unrecorded_actual_rows=('Actual unrecorded','sum')).reset_index()
+    fields=dict(Work_orders=('_WO key' if '_WO key' in d else 'Work Order','nunique'),Source_rows=('Work Order','size'),Planned_pcs=('Planned pcs',lambda s:s.sum(min_count=1)),Actual_pcs=('Actual pcs',lambda s:s.sum(min_count=1)),Pending_pcs=('Pending planned pcs',lambda s:s.sum(min_count=1)),Unrecorded_actual_rows=('Actual unrecorded','sum'))
+    for col in ['Planned tonnes','Actual tonnes','Pending tonnes']:
+        if col in d:fields[col.replace(' ','_')]=(col,lambda s:s.sum(min_count=1))
+    return d.groupby(group,dropna=False).agg(**fields).reset_index()
 
 
 def wo_reconciliation(d):
@@ -64,30 +67,92 @@ def report_sheets(d):
     for mode,freq in [('Week','W-SUN'),('Month','M')]:
         x=d.copy();x[mode]=pd.to_datetime(x['Plan date'],errors='coerce').dt.to_period(freq).astype(str).replace('NaT','NO DATE');out[mode]=summary(x,[mode])
     out['WO reconciliation']=wo_reconciliation(d)
-    out['Basis']=pd.DataFrame({'Rule':['Only แผน Recovery was analysed. Other sheets, including Cover and warehouse reports, are not read.','Plan FL/FM; actual FN/FO; source on-plan/late result FQ; reasons FS/FT.','Pending is planned quantity less recorded row-linked actual, floored at zero. Blank actual stays unknown; pending assumes no confirmed actual and is flagged.','Repeated WO rows are retained; distinct counts and row totals are separate. Check repeated rows before treating totals as unique physical orders.','No source weight in this approved sheet: no tonnes invented. On plan is not proof of completion/packing.']})
+    out['Total orders']=total_orders(d)
+    out['Reasons']=summary(d,['Reason'])
+    out['Basis']=pd.DataFrame({'Rule':['Only แผน Recovery was analysed. Other sheets, including Cover and warehouse reports, are not read.','Plan FL/FM; actual FN/FO; source on-plan/late result FQ; reasons FS/FT.','Pending is planned quantity less recorded row-linked actual, floored at zero. Blank actual stays unknown; pending assumes no confirmed actual and is flagged.','Repeated WO rows are retained; distinct counts and row totals are separate. Check repeated rows before treating totals as unique physical orders.','Tonnes, when available, are explicitly matched Plan-2026 CQ grams/pc equivalents. Missing/conflicting weights stay unknown; they are not measured actual weights. On plan does not mean packed.']})
     return out
 
 
-def render(st,path):
+def render(st,path,plan_path=None):
     import plotly.express as px
-    st.header('📄 วิเคราะห์ Recovery / Recovery source reconciliation')
     p=Path(path);d=cached(str(p),p.stat().st_mtime_ns,p.stat().st_size)
     if d.empty:st.info('No source recovery rows');return
+    d=with_weights(d,plan_path)
+    totals=total_orders(d)
     st.caption(f'{p.name} · แผน Recovery only · row/cell evidence retained')
-    c=st.columns(4);c[0].metric('ใบสั่งไม่ซ้ำ / Distinct WOs',d['Work Order'].nunique());c[1].metric('แถวต้นทาง / Source rows',len(d));c[2].metric('แผน (ชิ้น) / Planned',f"{d['Planned pcs'].sum(min_count=1):,.0f}");c[3].metric('ค้างตามแผน / Pending pcs',f"{d['Pending planned pcs'].sum(min_count=1):,.0f}")
-    st.caption(f"Recorded actual {d['Actual pcs'].sum(min_count=1):,.0f} pcs · unrecorded actual rows {int(d['Actual unrecorded'].sum())} · repeated WO rows {int(d['Repeated WO'].sum())}. These are source row allocations, not inferred unique-order quantities.")
+    st.subheader('ยอดรวม / Totals')
+    c=st.columns(4)
+    for col,label,value in zip(c,['ใบสั่ง / Work orders','ทั้งหมด (ชิ้น) / Total order pcs','แผน (ชิ้น) / Planned pcs','ผลจริง (ชิ้น) / Recorded actual pcs'],[d['_WO key'].nunique(),totals['Total order pcs'].sum(min_count=1),d['Planned pcs'].sum(min_count=1),d['Actual pcs'].sum(min_count=1)]):col.metric(label,f'{value:,.0f}' if pd.notna(value) else 'Unknown')
+    c=st.columns(5)
+    for col,label,series in zip(c,['ค้าง (ชิ้น) / Pending pcs','ทั้งหมด (ตัน) / Total t','แผน (ตัน) / Planned t','ผลจริงเทียบตัน / Actual equivalent t','ค้าง (ตัน) / Pending t'],[d['Pending planned pcs'],totals['Total order tonnes'],d['Planned tonnes'],d['Actual tonnes'],d['Pending tonnes']]):
+        v=series.sum(min_count=1);col.metric(label,f'{v:,.3f}' if pd.notna(v) else 'Weight missing')
+    known=int(d['Reference grams per piece'].notna().sum())
+    st.caption(f'Weight coverage {known}/{len(d)} rows. Tonnes = pcs × Plan-2026 CQ grams/pc ÷ 1,000,000; reference-weight equivalents, not measured actual weights. Missing weights excluded, not zero. Total order pcs counts each consistent WO once; planned/actual/pending remain source-row allocations.')
+    st.caption(f"Total order quantity coverage: {int(totals['Total order pcs'].notna().sum())}/{len(totals)} WOs; conflicting quantities: {int(totals['Order quantity conflict'].sum())} WOs.")
+    st.subheader('ตรวจสอบยอด / Quantity reconciliation')
+    applied=d['Actual applied pcs'].sum(min_count=1);unmatched=d['Unmatched actual pcs'].sum(min_count=1)
+    st.dataframe(pd.DataFrame([{'Basis':'Planned = applied actual + pending','Total pcs':d['Planned pcs'].sum(min_count=1),'Applied actual pcs':applied,'Pending or unmatched pcs':d['Pending planned pcs'].sum(min_count=1)}, {'Basis':'Recorded actual = applied actual + unmatched actual','Total pcs':d['Actual pcs'].sum(min_count=1),'Applied actual pcs':applied,'Pending or unmatched pcs':unmatched}]),hide_index=True,use_container_width=True)
+
     st.caption('Source on-plan/late WO conflicts: '+str(d.loc[d["WO status"].str.startswith("CONFLICT"),'_WO key'].nunique()))
     st.dataframe(wo_reconciliation(d).groupby('Recovery completion').size().reset_index(name='WOs'),hide_index=True,use_container_width=True)
-    fields=['Customer','Category','WO status','Quantity status']
+    fields=['Customer','Category','WO status','Quantity status','Reason']
     pick=st.selectbox('วิเคราะห์ตาม / Analyse by',fields+['Week','Month'],key='recovery55_group')
     if pick in ('Week','Month'):
         d=d.copy();d[pick]=d['Plan date'].dt.to_period('W-SUN' if pick=='Week' else 'M').astype(str).replace('NaT','NO DATE')
     result=summary(d,[pick]);st.dataframe(result,use_container_width=True,hide_index=True)
-    for measure in ['Work_orders','Planned_pcs','Actual_pcs','Pending_pcs']:
-        st.plotly_chart(px.bar(result,x=pick,y=measure,title=measure.replace('_',' '),color=pick),use_container_width=True)
+    unit=st.radio('หน่วยกราฟ / Chart unit',['Pieces','Tonnes','Work orders'],horizontal=True,key='recovery60_unit')
+    measures=['Planned_pcs','Actual_pcs','Pending_pcs'] if unit=='Pieces' else ['Planned_tonnes','Actual_tonnes','Pending_tonnes'] if unit=='Tonnes' else ['Work_orders']
+    plot=result.head(30)
+    st.plotly_chart(px.bar(plot,x=pick,y=measures,barmode='group',title=unit+' · '+pick,color_discrete_sequence=['#F58220','#12395B','#6C889A']),use_container_width=True)
     chosen=st.multiselect('กรองสถานะต้นทาง / Source status filter',sorted(d['Source status'].unique()),key='recovery55_status')
     detail=d[d['Source status'].isin(chosen)] if chosen else d
     st.dataframe(detail,use_container_width=True,hide_index=True,height=440)
     if st.button('เตรียมรายงานครบ / Prepare complete Excel',key='recovery55_export'):
         st.download_button('⬇ Excel — totals, pending, customers, categories, weeks, months',to_workbook(report_sheets(d)),'Recovery_Source_Analysis.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    st.info('Source on-plan/late status and quantity completion are separate. Blank actuals are flagged, not silently recorded as zero production. Weight is unavailable in the approved sheet; other sheets are not used.')
+    with st.expander('เหตุผลและหลักฐาน / Reasons & evidence'):
+        st.dataframe(summary(d,['Reason']),hide_index=True,use_container_width=True)
+    st.caption('Recovery quantities use แผน Recovery only. Weight references use the separately identified Plan-2026 source. Blank actuals remain unrecorded.')
+
+
+@st.cache_data(show_spinner='Matching Plan-2026 weights…',max_entries=3)
+def plan_weights(path,mtime,size):
+    """Read only explicit Plan-2026 CQ grams/pc; duplicate conflicts stay unknown."""
+    from .wo_lookup import norm_wo
+    wb=load_workbook(path,read_only=True,data_only=True);records={}
+    try:
+        if 'แผนการเผา' not in wb.sheetnames:return records
+        ws=wb['แผนการเผา'];ws.reset_dimensions()
+        candidates={}
+        for row,values in enumerate(ws.iter_rows(min_row=4,max_col=95,values_only=True),4):
+            wo=clean(values[0]);weight=number(values[94])
+            if not wo or weight is None or weight<=0:continue
+            candidates.setdefault(norm_wo(wo),[]).append((weight,row))
+        for key,items in candidates.items():
+            if len(set(v for v,_ in items))==1:
+                records[key]=(items[0][0],f'{Path(path).name} · แผนการเผา!CQ'+','.join(str(r) for _,r in items))
+        return records
+    finally:wb.close()
+
+
+def with_weights(d,plan_path=None):
+    """Reference-weight equivalents are not measured actual production weights."""
+    from .wo_lookup import norm_wo
+    x=d.copy();weights={}
+    if plan_path and Path(plan_path).is_file():
+        p=Path(plan_path);weights=plan_weights(str(p),p.stat().st_mtime_ns,p.stat().st_size)
+    x['Reference grams per piece']=[weights.get(norm_wo(w),(float('nan'),''))[0] for w in x['Work Order']]
+    x['Weight source']=[weights.get(norm_wo(w),(None,'MISSING — no unambiguous Plan CQ weight'))[1] for w in x['Work Order']]
+    for qty,weight in [('Order pcs','Order tonnes'),('Planned pcs','Planned tonnes'),('Actual pcs','Actual tonnes'),('Pending planned pcs','Pending tonnes')]:
+        x[weight]=pd.to_numeric(x[qty],errors='coerce')*x['Reference grams per piece']/1e6
+    return x
+
+
+def total_orders(d):
+    """Unique WO order quantity only when repeated source quantities agree."""
+    rows=[]
+    for key,g in d.groupby('_WO key' if '_WO key' in d else 'Work Order'):
+        vals=pd.to_numeric(g['Order pcs'],errors='coerce').dropna().unique()
+        total=float(vals[0]) if len(vals)==1 else float('nan')
+        weight=g['Reference grams per piece'].iloc[0] if 'Reference grams per piece' in g else float('nan')
+        rows.append({'Work Order':g['Work Order'].iloc[0],'Total order pcs':total,'Total order tonnes':total*weight/1e6,'Order quantity conflict':len(vals)>1})
+    return pd.DataFrame(rows)

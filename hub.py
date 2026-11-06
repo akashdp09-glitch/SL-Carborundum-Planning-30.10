@@ -1602,15 +1602,20 @@ if _page in ('control',):
         st.success(f"Recovered {PHOTO_RECOVERY_STATUS['copied']} missing audit photo file(s) into the active photo folder. Original photo files were kept.")
     if PHOTO_RECOVERY_STATUS.get('missing'):
         st.warning(f"{PHOTO_RECOVERY_STATUS['missing']} audit photo file(s) are still not in the active folder. Their database references were preserved; check the former photo folder and exact paths in Files & Traceability.")
+    st.header('📂 ไฟล์และรายงาน / Files & analysis')
+    from suite.kpi_workspace import upload_center as _home_kpi_uploads
+    _home_kpi_uploads(st,DB,hub_can_edit(),st.session_state.get('sl_user',''),key='home')
+    _analysis_links=[('🏭 สถานะการผลิต 2026-4 88 / Production status','production_analysis'),('👥 KPI สอย · ปุ้ย / Staff KPI','staff_kpi'),('🎯 KPI แผนก / Department KPI','kpi'),('📊 เปิด–ปิดใบสั่ง / Open–close orders','open_close'),('📄 Recovery: ยอด · ผล · ค้าง / Recovery totals','recovery_review')]
+    for _col,(_label,_route) in zip(st.columns(5),_analysis_links):_col.link_button(_label,_hub_page_href(_route),use_container_width=True)
+    with st.expander('📄 อัปโหลด Recovery / Upload Recovery'):
+        _ru=st.file_uploader('แผนผลิต Recovery เดือน ตุลาคม 2026-2',type=['xlsx','xlsm'],key='home_recovery60',disabled=not hub_can_edit())
+        if _ru is not None and st.button('บันทึก Recovery / Save Recovery',key='home_recovery60_save'):
+            try:SM.import_bytes('RECOVERY_PLAN',_ru.name,_ru.getvalue(),user=st.session_state.get('sl_user',''));st.rerun()
+            except Exception as _e:st.error(str(_e))
     from suite.task_catalog import render as _task_catalog
     _task_catalog(st,_hub_page_href,compact=True)
     from suite.tracking_portal import render as _tracking_portal
     _tracking_portal(st,_pub['http'],DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user',''),key='home')
-    st.link_button('🏭 วิเคราะห์สถานะการผลิต 2026-4 88 / Detailed production file analysis',_hub_page_href('production_analysis'),use_container_width=True)
-    st.link_button('📊 รายงาน MD เปิด–ปิดงาน / Open–close graphs',_hub_page_href('open_close'),use_container_width=True)
-    st.link_button('👥 KPI สอย · ปุ้ย · กราฟเปิดปิด / Staff & open-close analysis',_hub_page_href('staff_kpi'),use_container_width=True)
-    from suite.kpi_workspace import upload_center as _home_kpi_uploads
-    _home_kpi_uploads(st,DB,hub_can_edit(),st.session_state.get('sl_user',''),key='home')
     c1,c2,c3,c4=st.columns(4)
     from suite.service_launcher import probe as _svc_probe, mobile_https_up as _https_up
     if os.environ.get('SL_DISABLE_AUTO_SERVICES')!='1' and not mobile_online() and not st.session_state.get('_home_mobile_autostart_requested'):
@@ -2664,7 +2669,7 @@ if _page == 'cost':
 
 if _page == 'open_close':
     from suite.kpi_workspace import render_open_close as _openclose55
-    _openclose55(st,DB)
+    _openclose55(st,DB,can_edit=hub_can_edit(),user=st.session_state.get('sl_user','Unknown'))
 
 if _page == 'staff_kpi':
     from suite.kpi_workspace import render as _staff_kpi
@@ -2701,12 +2706,17 @@ if _page == 'accounts':
         st.caption('Desktop and mobile use this same account database. Existing passwords are preserved. New-install credentials are in user details.txt. Section defaults can be changed for cross-section work; saves retain the signed-in username.')
 
 if _page == 'recovery_review':
+    st.header('📄 Recovery — แผน · ผลจริง · ค้าง / Plan · actual · pending')
+    _ru=st.file_uploader('อัปโหลด Recovery / Upload Recovery workbook',type=['xlsx','xlsm'],key='recovery60_upload',disabled=not hub_can_edit())
+    if _ru is not None and st.button('บันทึกไฟล์ / Save file',key='recovery60_save'):
+        try:SM.import_bytes('RECOVERY_PLAN',_ru.name,_ru.getvalue(),user=st.session_state.get('sl_user',''));st.rerun()
+        except Exception as _e:st.error(str(_e))
     _recovery=SM.active('RECOVERY_PLAN')
     _recovery_path=Path(_recovery['stored_path']) if _recovery else fp('Recovery-Plan-LATEST.xlsx')
     if _recovery_path and Path(_recovery_path).is_file():
-        from suite.recovery_workspace import render as _recovery55
-        _recovery55(st,_recovery_path)
-    else:st.info('นำเข้าไฟล์ Recovery ครั้งเดียวที่ไฟล์ต้นทาง / Import the Recovery workbook once in Sources')
+        from suite.recovery_workspace import render as _recovery60
+        _recovery60(st,_recovery_path,plan_path=fp('Plan-2026-LATEST.xlsx') or _resolve_shared_plan())
+    else:st.info('เลือกไฟล์ Recovery ด้านบน / Select the Recovery file above')
 
 if _page == 'back':
     st.header('🚨 Past-due Backorders / งานค้างส่งเกินกำหนด')

@@ -1862,7 +1862,8 @@ def run_firing_fast(plan_df,capacity_path,planning_start,target=.80,maxv=.95,par
     fr=_run_firing_v45(plan_for_optimization,capacity_path,optimization_start,target,maxv,partial,urgent_partial,
                        starts,strict_forming,ked,plate_master,iblock_master,hard_pull,
                        pull_horizon_days,balance_target,validate_upstream,prep_capacity)
-    fr=merge_operational(fr,retained,review,planning_start,optimization_start)
+    if retain_through is not None:
+        fr=merge_operational(fr,retained,review,planning_start,optimization_start)
     # Public plan identity always retains the requested horizon, including issued loads.
     fr.setdefault('settings',settings).planning_start=planning_start
     from suite.drying_gate import evaluate_drying

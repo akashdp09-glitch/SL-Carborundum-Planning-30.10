@@ -74,7 +74,8 @@ def _persistent_data_editor(data, *args, **kwargs):
 
 from suite.navigation_state import preserve_navigation_values, restore_editor_draft, save_editor_draft
 preserve_navigation_values(st.session_state)
-st.caption((ROOT/'VERSION').read_text(encoding='utf-8').strip() if (ROOT/'VERSION').exists() else 'V16.29')
+from suite.build_info import text as _build_text
+st.caption(_build_text(ROOT))
 st.markdown('''<style>
 .block-container{padding-top:.15rem;max-width:none;width:100%;padding-left:1.1rem;padding-right:1.1rem}.block-container>div>div:first-child{gap:.35rem}
 [data-testid="stSidebar"],[data-testid="stSidebar"]>div,[data-testid="stSidebarContent"],[data-testid="stSidebarHeader"]{background:#fff8f0!important;min-width:268px;max-width:300px;color:#12395b}
@@ -1220,6 +1221,14 @@ if not st.session_state.get('sl_authenticated'):
                 st.session_state['sl_role']=_current['role']
     except Exception:
         _ticket_user=None
+if st.session_state.get('sl_authenticated'):
+    from suite.demo_accounts import find_user as _active_account
+    _account=_active_account(DB,st.session_state.get('sl_user',''))
+    if not _account or not _account.get('active',0):
+        for _k in ['sl_authenticated','sl_user','sl_role']:st.session_state.pop(_k,None)
+        if 'auth_ticket' in st.query_params:del st.query_params['auth_ticket']
+        st.rerun()
+    st.session_state['sl_role']=_account['role']
 if st.session_state.get('sl_authenticated'):
     if not st.query_params.get('auth_ticket'):
         _ticket=hub_auth_ticket()
@@ -2701,6 +2710,8 @@ if _page == 'accounts':
         _users['Default section']=_users['username'].str.lower().map(USER_SECTIONS).fillna('Choose section / เลือกแผนก')
         st.dataframe(_users,use_container_width=True,hide_index=True)
         if st.session_state.get('sl_role')=='admin':
+            from suite.account_admin import render as _account_admin
+            _account_admin(st,DB,st.session_state.get('sl_user',''))
             st.link_button('⚙️ Stations / จุดบันทึก',_pub['http']+'/admin/terminals')
             st.link_button('📍 Locations / ตำแหน่งจัดเก็บ',_pub['http']+'/admin/locations')
         st.caption('Desktop and mobile use this same account database. Existing passwords are preserved. New-install credentials are in user details.txt. Section defaults can be changed for cross-section work; saves retain the signed-in username.')

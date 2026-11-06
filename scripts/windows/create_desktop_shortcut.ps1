@@ -12,6 +12,7 @@ $shortcut = $ws.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $target
 $shortcut.WorkingDirectory = Split-Path -Parent $target
 $shortcut.Description = 'SL Carborundum Planning Center — starts the installed interface'
-$shortcut.IconLocation = "$env:SystemRoot\System32\SHELL32.dll,15"
+$icon = Join-Path $shortcut.WorkingDirectory 'assets\sl_carborundum.ico'
+$shortcut.IconLocation = "$icon,0"
 $shortcut.Save()
 Write-Output $shortcutPath

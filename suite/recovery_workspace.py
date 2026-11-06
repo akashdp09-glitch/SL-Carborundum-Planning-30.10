@@ -1,5 +1,6 @@
 """Recovery source reconciliation: only the owner-approved second sheet."""
 from pathlib import Path
+import os
 import pandas as pd
 import streamlit as st
 from openpyxl import load_workbook
@@ -107,6 +108,15 @@ def render(st,path,plan_path=None):
     chosen=st.multiselect('กรองสถานะต้นทาง / Source status filter',sorted(d['Source status'].unique()),key='recovery55_status')
     detail=d[d['Source status'].isin(chosen)] if chosen else d
     st.dataframe(detail,use_container_width=True,hide_index=True,height=440)
+    if st.button('สร้าง HTML dashboard / Prepare HTML dashboard',key='recovery61_html'):
+        data=html_dashboard(detail)
+        from .central_paths import shared_root
+        from .common import bkk_now
+        folder=Path(os.environ.get('SL_REPORT_ROOT',str(shared_root()/'REPORTS')));folder.mkdir(parents=True,exist_ok=True)
+        (folder/('Recovery_Dashboard_'+bkk_now().strftime('%Y%m%d_%H%M%S_%f')+'.html')).write_bytes(data)
+        from streamlit.components.v1 import html as _preview_html
+        _preview_html(data.decode('utf-8'),height=800,scrolling=True)
+        st.download_button('⬇ HTML dashboard — pending pcs & tonnes',data,'Recovery_Dashboard.html','text/html')
     if st.button('เตรียมรายงานครบ / Prepare complete Excel',key='recovery55_export'):
         st.download_button('⬇ Excel — totals, pending, customers, categories, weeks, months',to_workbook(report_sheets(d)),'Recovery_Source_Analysis.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     with st.expander('เหตุผลและหลักฐาน / Reasons & evidence'):
@@ -156,3 +166,24 @@ def total_orders(d):
         weight=g['Reference grams per piece'].iloc[0] if 'Reference grams per piece' in g else float('nan')
         rows.append({'Work Order':g['Work Order'].iloc[0],'Total order pcs':total,'Total order tonnes':total*weight/1e6,'Order quantity conflict':len(vals)>1})
     return pd.DataFrame(rows)
+
+
+def html_dashboard(d):
+    """Standalone dashboard: pending pcs/tonnes, comparisons and row evidence."""
+    import html
+    import plotly.express as px
+    totals=total_orders(d);pending=d['Pending planned pcs'].sum(min_count=1)
+    tonnes=d['Pending tonnes'].sum(min_count=1) if 'Pending tonnes' in d else float('nan')
+    tonnes_text=f'{tonnes:,.3f}' if pd.notna(tonnes) else 'Weight missing'
+    cards=f'<div class="cards"><div><b>{d["_WO key"].nunique():,}</b>Work orders / ใบสั่ง</div><div><b>{pending:,.0f}</b>Pending pieces / ชิ้นค้าง</div><div><b>{tonnes_text}</b>Pending reference tonnes / ตันค้างเทียบเท่า</div></div>'
+    sections=[]
+    tables=report_sheets(d)
+    for title,group in [('Customer',['Customer']),('Category',['Category']),('Reason',['Reason'])]:
+        table=summary(d,group).sort_values('Pending_pcs',ascending=False)
+        plot=table.head(25).copy()
+        plot[group[0]]=plot[group[0]].map(lambda x:html.escape(str(x)))
+        fig=px.bar(plot,x=group[0],y=['Planned_pcs','Actual_pcs','Pending_pcs'],barmode='group',title=title+' — planned / actual / pending pcs',color_discrete_sequence=['#F58220','#12395B','#6C889A'])
+        sections.append(fig.to_html(full_html=False,include_plotlyjs=True if not sections else False))
+        sections.append('<details><summary>'+title+' — complete table</summary>'+table.to_html(index=False,escape=True)+'</details>')
+    evidence=d.to_html(index=False,escape=True,table_id='source-rows',na_rep='Unknown')
+    return ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recovery dashboard</title><style>body{font:16px Tahoma,sans-serif;margin:24px;color:#12395b;background:#f8fafc}h1{border-left:8px solid #f58220;padding:12px}.cards{display:flex;gap:16px;flex-wrap:wrap}.cards div{background:white;padding:20px;border-radius:12px;min-width:200px}.cards b{display:block;font-size:32px;color:#bd4d08}table{border-collapse:collapse;font-size:13px}td,th{padding:7px;border:1px solid #ddd}details{overflow:auto;margin:16px 0}input{padding:12px;width:90%;max-width:500px}</style><h1>Recovery — plan / actual / pending<br>แผน · ผลจริง · ค้าง</h1>'+cards+'<p>Pending is row-linked: excess actual on one row does not offset another row. Tonnes use separately matched Plan-2026 CQ grams per piece; they are reference equivalents, not measured actual weights. Missing weight is unknown.</p>'+''.join(sections)+'<h2>Work orders / source rows</h2><input id="search" placeholder="Search WO / customer / reason"><details open><summary>Complete source evidence</summary>'+evidence+'</details><script>document.getElementById("search").oninput=function(){const q=this.value.toLowerCase();document.querySelectorAll("#source-rows tbody tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));};</script></html>').encode('utf-8')

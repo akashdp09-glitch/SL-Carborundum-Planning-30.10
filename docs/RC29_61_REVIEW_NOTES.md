@@ -1,0 +1,11 @@
+# RC29.61 — Recovery HTML, branded shortcut, build identity and admin accounts
+
+Recovery has a standalone offline HTML dashboard and preview, showing pending pieces and reference tonnes, planned/actual/pending comparisons, customer/category/reason tables and searchable source rows. Generated HTML is saved under the configured REPORTS folder and available for download. It uses the same Recovery calculations as the on-screen and Excel reports; unknown weight remains unknown.
+
+The Windows shortcut uses assets/sl_carborundum.ico converted from the existing supplied SL logo, with multiple icon sizes. Run CREATE_DESKTOP_SHORTCUT.bat (or the normal launcher) to refresh the shortcut. Windows COM shortcut creation and shell icon display remain on-device checks.
+
+A small caption in the interface shows VERSION, the current code-folder name, build timestamp in Bangkok and source commit from RELEASE_MANIFEST.json. A source checkout without a manifest is labelled Development copy rather than inventing a creation date.
+
+Admin → Shared accounts now shows usernames, roles, active state and default passwords ONLY when those defaults still match the saved hashes. Custom existing passwords cannot be recovered from hashes and are labelled Reset. Administrators can create accounts, reset passwords, deactivate/remove login access and reactivate accounts. Removing preserves history, and the final active administrator cannot be removed. Every change is recorded with actor/time. Backend checks require an active admin in the database. Deactivated users are rejected on subsequent hub reruns/mobile requests. Existing passwords are not automatically reset and plaintext custom passwords are not stored.
+
+Validation: ten focused account/HTML/Recovery tests passed; mobile 98 passed/1 skipped. Browser checks cover existing workflows and the new admin controls. Previous review limitations for full planner/factory acceptance remain unchanged. Data changes are additive: account_admin_history only; no old users, source files, audits or production records deleted. Close services, extract new code, reuse existing CENTRAL_DATA; never replace it with an empty directory. Roll back code by stopping services and selecting the previous folder, retaining shared data/backups.

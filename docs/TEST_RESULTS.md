@@ -1,3 +1,12 @@
+# RC29.58 — issued plan is a Production instruction
+
+Owner clarification: issued firing dates are targets for Production to achieve, using upstream push/pull and evaluating overtime. Current forming shortages no longer reject an otherwise valid issued commitment. The date and quantity remain in the main Firing Loads and Operator Print. Production Instructions shows the additional forming quantity and required firing date, with exact source rows. Actual output is never invented. Quantities are reserved against remaining firing demand before optimization, including quantities still to be formed.
+
+Physical kiln/program/overlap limits, closed or missing WOs and quantities exceeding remaining demand still produce explicit exceptions. Overtime hours and additional capacity are not assumed approved or calculated without resource inputs. Drying and physical release checks remain separate from the issued production target. Earlier RC29.57 notes describe the superseded formed-WIP rejection policy; this note supersedes that policy only.
+
+Focused regression tests and operational export checks are synthetic, not verification of the older factory workbook named in pasted chat. Other RC29.57 test results/limitations remain applicable; no full factory acceptance is claimed. Extract the new folder and reuse existing CENTRAL_DATA without overwriting it. No private factory files/databases are bundled.
+
+
 Current broader suite: 318 passed, 8 skipped, 16 failed. Fourteen previously reproduce on the RC29.53 baseline; two additional old monthly-upload assertions expect the format/navigation that the owner explicitly replaced. They remain visible failures, not marked passed. Firing integrity retains three inherited mismatches; daily integrity passes with pending review entries. Missing cloud validation script is recorded.
 
 RC29.57: 38 focused tests passed; mobile 98 passed / 1 skipped; 10 real-browser checks passed. Real fast allocator + merged operational Excel scenario passed with synthetic data, hard pull/upstream validation disabled for that scenario. Full factory-file acceptance remains outstanding. See RC57 logs and review notes.

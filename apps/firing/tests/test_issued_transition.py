@@ -59,16 +59,27 @@ def test_main_outputs_and_export_include_all_eight_starts_and_25_rows(tmp_path,m
     assert len(reread)==25 and reread['Planned Firing Qty'].sum()==250
 
 
-def test_insufficient_wip_rejects_whole_load_without_clipping_and_keeps_source_evidence():
+def test_unfinished_forming_preserves_issued_instruction_and_reports_required_supply():
     upload,plan,editor=evidence();plan.loc[0,'Forming Actual']=9
     rows=read_commitments([upload],START,END)
     retained,review,qty,blocks=reconcile(rows,plan,editor)
-    assert len(retained)==21 and len(review)==25
+    assert len(retained)==25 and len(review)==25
     first=review[review['Kiln'].eq('T12')]
-    assert len(first)==4 and first.Result.eq('REJECTED').all()
-    assert 'exceeds unreserved formed WIP 9' in first.iloc[0].Reason
-    assert 'SYNTHETIC-0-0' not in qty and 'T12' not in blocks
-    assert rows['Planned Firing Qty'].sum()==250 # originals unchanged
+    assert first.Result.ne('REJECTED').all()
+    assert 'PRODUCTION INSTRUCTION' in first.iloc[0].Reason
+    assert qty['SYNTHETIC-0-0']==10 and retained['Load Date'].min()==START
+    out=merge_operational({'loads':pd.DataFrame(),'details':pd.DataFrame()},retained,review,START,END+timedelta(days=1))
+    actions=out['transition_production_actions']
+    assert len(actions)==1 and actions.iloc[0]['Additional forming supply pcs']==1
+    assert plan.loc[0,'Forming Actual']==9 # target is not invented actual output
+
+
+def test_issued_quantity_above_remaining_demand_is_rejected_with_reason():
+    upload,plan,editor=evidence();plan.loc[0,'Firing Actual']=25
+    retained,review,qty,blocks=reconcile(read_commitments([upload],START,END),plan,editor)
+    assert len(retained)==21
+    assert review[review.Kiln.eq('T12')].Result.eq('REJECTED').all()
+    assert 'remaining unreserved firing demand 5' in review.iloc[0].Reason
 
 
 def test_quantities_and_drying_budget_reserved_once_without_modifying_actuals():

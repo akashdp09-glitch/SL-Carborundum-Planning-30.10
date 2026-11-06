@@ -71,7 +71,7 @@ def read_commitments(files, start, through):
 
 
 def reconcile(commitments, plan, kiln_editor, blocks=None, starts=2, max_volume=.95):
-    """Reserve only complete loads supported by remaining formed WIP and calendar.
+    """Keep issued targets against remaining demand; turn unfinished WIP into production actions.
 
     No proportional quantity clipping or fabricated capacity/finish evidence.
     Missing geometry is retained under HOLD and never called capacity-verified.
@@ -88,7 +88,7 @@ def reconcile(commitments, plan, kiln_editor, blocks=None, starts=2, max_volume=
                 if pd.notna(q):return max(float(q),0)
             return 0.
         actual=amount('Eff Firing','Firing Actual');formed=amount('Eff Forming','Forming Actual')
-        target=amount('Firing Plan','Order Qty')
+        target=amount('Firing Plan') or amount('Order Qty')
         remaining[wo]=max(target-actual,0);available[wo]=min(max(formed-actual,0),remaining[wo])
     editors={str(r.get('Kiln','')).upper():r for _,r in kiln_editor.iterrows()}
     occupied=dict(blocks or {});reservations={};accepted=[];review=[];normal={};resin=set();t0=set()
@@ -113,7 +113,9 @@ def reconcile(commitments, plan, kiln_editor, blocks=None, starts=2, max_volume=
             if job is None:reasons.append(f'{wo}: absent from current Plan 2026');continue
             if len(job)!=1:reasons.append(f'{wo}: duplicate current master rows');continue
             if bool(job.iloc[0].get('Overall Closed',False)):reasons.append(f'{wo}: whole order closed');continue
-            if pd.isna(q) or q>available.get(wo,0)+1e-7:reasons.append(f'{wo}: issued {q:g} exceeds unreserved formed WIP {available.get(wo,0):g}')
+            unreserved=max(remaining.get(wo,0)-reservations.get(wo,0),0)
+            if pd.isna(q) or q>unreserved+1e-7:reasons.append(f'{wo}: issued {q:g} exceeds remaining unreserved firing demand {unreserved:g}')
+            elif q>available.get(wo,0)+1e-7:holds.append(f'{wo}: PRODUCTION INSTRUCTION — supply {q-available.get(wo,0):g} additional formed pcs before firing {day}; expedite/pull/overtime resources require confirmation')
         typ='resin' if kiln in {'R4','R5','R6'} else 't0' if kiln=='T0' else 'normal'
         if typ=='normal' and normal.get(day,0)>=starts:reasons.append('Normal kiln starts/day capacity exceeded')
         if typ=='resin' and (day,kiln) in resin:reasons.append('Repeated resin start on same kiln/day')
@@ -127,16 +129,19 @@ def reconcile(commitments, plan, kiln_editor, blocks=None, starts=2, max_volume=
                 occupancy=pd.to_numeric(g[field],errors='coerce')
                 if occupancy.gt(max_volume+1e-7).any():reasons.append('Issued load exceeds selected maximum occupancy')
         holds.append('Physical placement/furniture and current capacity must be verified before release')
+        row_budget=dict(available)
         for _,r in g.iterrows():
-            review.append({'Load ID':lid,'Work Order':r['Work Order'],'Load Date':day,'Kiln':kiln,'Issued qty':r['Planned Firing Qty'],'Current unreserved formed WIP':available.get(r['Work Order'],None),'Result':'REJECTED' if reasons else 'RETAINED — EXECUTION HOLD','Reason':'; '.join(reasons or holds),'Source':r['Issued source'],'Sheet':r['Issued sheet'],'Row':r['Issued row'],'SHA256':r['Issued SHA256']})
+            source_wo=r['Work Order'];ready_for_row=max(row_budget.get(source_wo,0),0)
+            row_budget[source_wo]=max(ready_for_row-float(r['Planned Firing Qty']),0)
+            review.append({'Load ID':lid,'Work Order':r['Work Order'],'Load Date':day,'Kiln':kiln,'Issued qty':r['Planned Firing Qty'],'Current unreserved formed WIP':ready_for_row,'Result':'REJECTED' if reasons else 'RETAINED — EXECUTION HOLD','Reason':'; '.join(reasons or holds),'Source':r['Issued source'],'Sheet':r['Issued sheet'],'Row':r['Issued row'],'SHA256':r['Issued SHA256']})
         if reasons:continue
-        for wo,q in quantities.items():available[wo]-=float(q);reservations[wo]=reservations.get(wo,0)+float(q)
+        for wo,q in quantities.items():available[wo]=max(available[wo]-float(q),0);reservations[wo]=reservations.get(wo,0)+float(q)
         occupied[kiln]=finish+timedelta(days=1)
         if typ=='normal':normal[day]=normal.get(day,0)+1
         elif typ=='resin':resin.add((day,kiln))
         else:t0.add(day)
         kept=g.copy();kept['Release Gate']='HOLD — verify retained physical loading and drying';kept['Release Reason']='; '.join(holds)
-        kept['Cutover / Previous Plan Protection']='RETAINED ISSUED — original date and quantity';accepted.append(kept)
+        kept['Cutover / Previous Plan Protection']='ISSUED PRODUCTION TARGET — original date and quantity';accepted.append(kept)
     return (pd.concat(accepted,ignore_index=True) if accepted else commitments.iloc[:0].copy(),pd.DataFrame(review),reservations,occupied)
 
 
@@ -148,6 +153,13 @@ def reserve_frame(plan,reservations):
 def merge_operational(fr,retained,review,start,new_start):
     """Single output state drives UI, Excel, operator print and daily firing anchor."""
     fr['transition_review']=review
+    actions=[]
+    if not review.empty:
+        kept=review[review['Result'].ne('REJECTED')]
+        for _,r in kept.iterrows():
+            missing=max(float(r['Issued qty'])-float(r['Current unreserved formed WIP']),0)
+            if missing>0:actions.append({'Load ID':r['Load ID'],'Work Order':r['Work Order'],'Kiln':r['Kiln'],'Firing target date':r['Load Date'],'Issued quantity pcs':r['Issued qty'],'Additional forming supply pcs':missing,'Instruction':'Production must supply the shortfall by the issued firing target; prioritize upstream push/pull and evaluate overtime','Resource confirmation':'Overtime hours, upstream capacity, drying and physical loading must be checked; no extra capacity or completed output assumed','Source':r['Source'],'Sheet':r['Sheet'],'Row':r['Row']})
+    fr['transition_production_actions']=pd.DataFrame(actions)
     fr['retained_transition']=retained
     fr['transition_control']=pd.DataFrame([{'Requested start':start,'New optimization begins':new_start,'Retained rows':len(retained),'Retained loads':retained['Load ID'].nunique() if not retained.empty else 0,'Quantity policy':'Retained quantities reserved before optimization; production actuals unchanged','Release policy':'Retained records remain HOLD until physical loading and drying verified'}])
     if retained.empty:return fr

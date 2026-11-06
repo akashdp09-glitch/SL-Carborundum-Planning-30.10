@@ -870,7 +870,7 @@ def save_firing(fr,path):
             ("Firing Loads","loads"),("Operator Print","details"),("Floor Pattern Data","floor"),
             ("Upstream Hard Pull","upstream_plan"),("Upstream Issues","upstream_issues"),
             ("Workload Balance","workload_balance"),("Drying Readiness","drying_check"),("Release Summary","release_summary"),("Selected Start Check","selected_start_check"),
-            ("Transition Control","transition_control"),("Transition Reconciliation","transition_review"),("Retained Transition","retained_transition"),
+            ("Production Instructions","transition_production_actions"),("Transition Control","transition_control"),("Transition Reconciliation","transition_review"),("Retained Transition","retained_transition"),
             ("Plan Control","plan_control"),("Previous Plan Audit","previous_plan_cutover_audit"),("Plan2026 Status","plan2026_status_snapshot"),
             ("PL Mgr Validation","pm_validation"),("Exceptions","exceptions"),("Kiln Master","kiln_editor"),
             ("Plate Furniture","plate_master"),("I-block Furniture","iblock_master")]:

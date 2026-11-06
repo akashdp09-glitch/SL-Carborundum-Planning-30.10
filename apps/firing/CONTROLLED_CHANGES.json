@@ -33,8 +33,8 @@
   },
   "ppc_fast_core_v4_6.py": {
     "baseline_sha256": "765ccca19c106350110e36579db37e4acfc660d53178776ad48742002e9964f3",
-    "accepted_sha256": "ed08a785121f0143eea10ecf5eee99dd7c3005d225b7fd433563b12549783b39",
-    "reason": "Reserve issued transition quantities before allocation and merge validated commitments into operational exports; separate existing WIP from future supply",
+    "accepted_sha256": "3efc652d529300bcd1889788cbfeb28038f8916112e9651857e48fc1e23f53e9",
+    "reason": "Export issued production targets and explicit upstream supply instructions; unfinished forming does not postpone issued dates; quantities reserved without altering actuals",
     "evidence": "apps/firing/tests/test_issued_transition.py",
     "reviewed": false,
     "recorded": "2026-11-06"

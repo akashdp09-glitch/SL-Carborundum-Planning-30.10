@@ -1373,7 +1373,7 @@ def scan_page(request: Request, station: str = ""):
     from urllib.parse import urlencode
     from suite.hub_auth import issue
     root=Path(os.environ.get('SL_COMPANY_DATA',str(SHARED_ROOT/'COMPANY_DATA')))
-    hub=os.environ.get('SL_HUB_URL',str(request.url.replace(port=8510,path='/',query=''))).rstrip('/')
+    hub=os.environ.get('SL_HUB_URL',str(request.url.replace(scheme='http',port=8510,path='/',query=''))).rstrip('/')
     ticket=issue(root,user['username'],user['role'])
     plans=[('🔥','แผนเผา','Firing plan','firing'),('📅','แผนรายวันและแผนก','Daily / section plans','daily'),('🏭','สถานะการผลิต','Production status','production_analysis'),('📊','WIP และ Plan 2026','Plan 2026 / WIP','wip')]
     links=[dict(icon=i,thai=th,english=en,url=hub+'/?'+urlencode({'page':page,'auth_ticket':ticket})) for i,th,en,page in plans]
